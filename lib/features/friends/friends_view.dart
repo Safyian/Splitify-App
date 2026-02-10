@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:splitify/Utils/themes.dart';
+import 'package:splitify/shared/widgets/friend_card.dart';
 
-import '../../Utils/constants.dart';
-import '../../Widgets/activity_card.dart';
+import '../../core/constants/constants.dart';
+import '../../core/theme/app_themes.dart';
 
-class ActivityScreen extends StatelessWidget {
-  const ActivityScreen({super.key});
+class FriendsScreen extends StatelessWidget {
+  const FriendsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,42 +14,63 @@ class ActivityScreen extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          'Activity',
+          'Friends',
           style: AppTheme.headingText,
-        ),
-        leading: Row(
-          children: [
-            const SizedBox(width: 16),
-            SvgPicture.asset(
-              Constants.notificationLogo,
-              width: 24,
-              height: 24,
-            ),
-          ],
         ),
         actions: [
           SvgPicture.asset(
-            Constants.filterLogo,
+            Constants.searchLogo,
+            width: 24,
+            height: 24,
+          ),
+          const SizedBox(width: 16),
+          SvgPicture.asset(
+            Constants.teamsLogo,
             width: 24,
             height: 24,
           ),
           const SizedBox(width: 16),
         ],
-        backgroundColor: Constants.bgColorLight,
-        foregroundColor: Constants.bgColorLight,
+        backgroundColor: Constants.bgColor,
+        foregroundColor: Constants.bgColor,
       ),
-      backgroundColor: Constants.bgColorLight,
+      backgroundColor: Constants.bgColor,
       body: Container(
-        color: Constants.bgColorLight,
+        color: Constants.bgColor,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              Text(
-                "Recent",
-                style: AppTheme.headingText,
+              Row(
+                children: [
+                  // owing status
+                  RichText(
+                    text: TextSpan(
+                      style: DefaultTextStyle.of(context).style,
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: 'Overall, you are owed ',
+                          style: AppTheme.subHeadingText,
+                        ),
+                        TextSpan(
+                          text: "\$14.45",
+                          style: AppTheme.subHeadingText.copyWith(
+                            color: Constants.activeColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  // filter
+                  SvgPicture.asset(
+                    Constants.filterLineLogo,
+                    width: 24,
+                    height: 24,
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               ListView.builder(
@@ -59,11 +80,11 @@ class ActivityScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 2),
-                      child: ActivityCard(index: index),
+                      child: FriendCard(index: index),
                     );
                   }),
               const SizedBox(height: 16),
-              // Start a new group
+              // Add more mates
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
@@ -81,7 +102,7 @@ class ActivityScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Start a new group',
+                      'Add more mates',
                       style: AppTheme.subHeadingText.copyWith(
                           color: Constants.activeColor,
                           fontWeight: FontWeight.w600),

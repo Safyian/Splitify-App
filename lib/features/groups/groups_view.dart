@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:splitify/Utils/themes.dart';
-import 'package:splitify/Widgets/group_card.dart';
+import 'package:get/get.dart';
+import 'package:splitify/shared/widgets/group_card.dart';
 
-import '../../Utils/constants.dart';
+import '../../core/constants/constants.dart';
+import '../../core/theme/app_themes.dart';
+import 'group_summary_model.dart';
+import 'groups_controller.dart';
 
 class GroupsScreen extends StatelessWidget {
-  const GroupsScreen({super.key});
+  GroupsScreen({super.key});
 
+  final groupCtrl = Get.put(GroupsController());
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,12 +35,12 @@ class GroupsScreen extends StatelessWidget {
           ),
           const SizedBox(width: 16),
         ],
-        backgroundColor: Constants.bgColorLight,
-        foregroundColor: Constants.bgColorLight,
+        backgroundColor: Constants.bgColor,
+        foregroundColor: Constants.bgColor,
       ),
-      backgroundColor: Constants.bgColorLight,
+      backgroundColor: Constants.bgColor,
       body: Container(
-        color: Constants.bgColorLight,
+        color: Constants.bgColor,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: SingleChildScrollView(
           child: Column(
@@ -73,16 +77,21 @@ class GroupsScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              ListView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 2),
-                      child: GroupCard(index: index),
-                    );
-                  }),
+              SizedBox(
+                width: Get.width,
+                height: 500,
+                child: ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: groupCtrl.summaries.length,
+                    itemBuilder: (context, index) {
+                      GroupSummary summary = groupCtrl.summaries[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: GroupCard(summary: summary),
+                      );
+                    }),
+              ),
               const SizedBox(height: 16),
               // Start a new group
               Container(

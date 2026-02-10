@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../Utils/constants.dart';
-import '../Utils/themes.dart';
+import '../../core/constants/constants.dart';
+import '../../core/theme/app_themes.dart';
 
 class FriendCard extends StatelessWidget {
   const FriendCard({super.key, required this.index});
@@ -9,7 +9,7 @@ class FriendCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Constants.bgColorLight,
+      color: Constants.bgColor,
       elevation: 0.6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
