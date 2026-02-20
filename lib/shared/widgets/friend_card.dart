@@ -9,7 +9,7 @@ class FriendCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Constants.bgColor,
+      color: Constants.bgColorLight,
       elevation: 0.6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(

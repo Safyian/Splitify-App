@@ -5,13 +5,12 @@ import 'package:splitify/shared/widgets/group_card.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
-import 'group_summary_model.dart';
 import 'groups_controller.dart';
 
 class GroupsScreen extends StatelessWidget {
   GroupsScreen({super.key});
 
-  final groupCtrl = Get.put(GroupsController());
+  final groupCtrl = Get.find<GroupsController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,17 +79,18 @@ class GroupsScreen extends StatelessWidget {
               SizedBox(
                 width: Get.width,
                 height: 500,
-                child: ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: groupCtrl.summaries.length,
-                    itemBuilder: (context, index) {
-                      GroupSummary summary = groupCtrl.summaries[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 2),
-                        child: GroupCard(summary: summary),
-                      );
-                    }),
+                child: Obx(() {
+                  return ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: groupCtrl.summaries.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: GroupCard(index: index),
+                        );
+                      });
+                }),
               ),
               const SizedBox(height: 16),
               // Start a new group

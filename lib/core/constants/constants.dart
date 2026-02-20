@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Constants {
   // color palette
@@ -31,4 +33,46 @@ class Constants {
   static const String paidLogo = "assets/images/wallet.svg";
   static const String meatLogo = "assets/images/Meat.svg";
   static const String groceryLogo = "assets/images/Store.svg";
+  static const String settleLogo = "assets/images/settle.json";
+  static const String arrowLogo = "assets/images/arrow.json";
+  static const String cashLogo = "assets/images/cash.svg";
+  static const String settledLogo = "assets/images/like.png";
 }
+
+// ********* TextField Input Decoration Constant **********
+InputDecoration inputDecoration = InputDecoration(
+  isDense: true,
+  border: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(10),
+    // borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+    borderSide: BorderSide.none,
+  ),
+  focusedBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(10),
+    // borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+    // borderSide: BorderSide.none,
+  ),
+  focusedErrorBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(10),
+    borderSide: const BorderSide(color: Colors.red, width: 1.0),
+    // borderSide: BorderSide.none,
+  ),
+  enabledBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(10),
+    // borderSide: BorderSide(color: Colors.grey, width: 1.0),
+    // borderSide: BorderSide.none,
+  ),
+  errorBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(10),
+    borderSide: const BorderSide(color: Colors.red, width: 1.0),
+    // borderSide: BorderSide.none,
+  ),
+  errorStyle: GoogleFonts.inter(fontSize: 14.sp, color: Colors.red),
+  // hintText: 'xyz@abc.com',
+  hintStyle: GoogleFonts.inter(
+      color: Colors.black54, fontSize: 15.sp, fontWeight: FontWeight.w600),
+  // labelText: 'Email',
+  labelStyle: GoogleFonts.inter(
+      color: Colors.black54, fontSize: 15.sp, fontWeight: FontWeight.w600),
+  filled: true,
+);

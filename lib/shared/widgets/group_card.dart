@@ -9,19 +9,19 @@ import '../../core/theme/app_themes.dart';
 import '../../features/groups/group_expenses_view.dart';
 
 class GroupCard extends StatelessWidget {
-  GroupCard({super.key, required this.summary});
-  final GroupSummary summary;
+  GroupCard({super.key, required this.index});
+  final int index;
 
   final groupCtrl = Get.find<GroupsController>();
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        groupCtrl.fetchGroupExpenses(groupId: summary.id);
-        Get.to(() => GroupExpensesView(summary: summary));
+        groupCtrl.fetchGroupExpenses(groupId: groupCtrl.summaries[index].id);
+        Get.to(() => GroupExpensesView(index: index));
       },
       child: Card(
-        color: Constants.bgColor,
+        color: Constants.bgColorLight,
         elevation: 0.6,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: Padding(
@@ -43,78 +43,88 @@ class GroupCard extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        summary.name,
-                        style: AppTheme.headingText.copyWith(height: 0.85),
-                      ),
-                      summary.balance.status == BalanceStatus.settled
-                          ? Text(
-                              "You're all settled",
-                              style: AppTheme.subHeadingText.copyWith(
-                                color: Constants.activeColor,
-                              ),
-                            )
-                          : RichText(
-                              text: TextSpan(
-                                style: DefaultTextStyle.of(context).style,
-                                children: <TextSpan>[
-                                  TextSpan(
-                                    text: summary.balance.status ==
-                                            BalanceStatus.youOwe
-                                        ? "You owe "
-                                        : "You are owed ",
-                                    style: AppTheme.normalText,
-                                  ),
-                                  TextSpan(
-                                    text: "\$${summary.balance.net}",
-                                    style: AppTheme.subHeadingText.copyWith(
-                                      color: summary.balance.status ==
+                  child: Obx(() {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          groupCtrl.summaries[index].name,
+                          style: AppTheme.headingText.copyWith(height: 0.85),
+                        ),
+                        groupCtrl.summaries[index].balance.status ==
+                                BalanceStatus.settled
+                            ? Text(
+                                "You're all settled",
+                                style: AppTheme.subHeadingText.copyWith(
+                                  color: Constants.activeColor,
+                                ),
+                              )
+                            : RichText(
+                                text: TextSpan(
+                                  style: DefaultTextStyle.of(context).style,
+                                  children: <TextSpan>[
+                                    TextSpan(
+                                      text: groupCtrl.summaries[index].balance
+                                                  .status ==
                                               BalanceStatus.youOwe
-                                          ? Constants.redColor
-                                          : Constants.activeColor,
+                                          ? "You owe "
+                                          : "You are owed ",
+                                      style: AppTheme.normalText,
                                     ),
-                                  ),
-                                ],
+                                    TextSpan(
+                                      text:
+                                          "\$${groupCtrl.summaries[index].balance.net}",
+                                      style: AppTheme.subHeadingText.copyWith(
+                                        color: groupCtrl.summaries[index]
+                                                    .balance.status ==
+                                                BalanceStatus.youOwe
+                                            ? Constants.redColor
+                                            : Constants.activeColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                      summary.balance.status == BalanceStatus.settled
-                          ? const SizedBox()
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: summary.preview.length,
-                              itemBuilder: (context, index) {
-                                var entity = summary.preview[index];
-                                return RichText(
-                                  text: TextSpan(
-                                    style: DefaultTextStyle.of(context).style,
-                                    children: <TextSpan>[
-                                      TextSpan(
-                                        text: entity.direction ==
-                                                PreviewDirection.youPay
-                                            ? "You owe ${entity.name} "
-                                            : '${entity.name} owes you',
-                                        style: AppTheme.normalText.copyWith(
-                                            color: Constants.textGrey),
-                                      ),
-                                      TextSpan(
-                                        text: "\$${entity.amount}",
-                                        style: AppTheme.normalText.copyWith(
-                                          color: entity.direction ==
+                        groupCtrl.summaries[index].balance.status ==
+                                BalanceStatus.settled
+                            ? const SizedBox()
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount:
+                                    groupCtrl.summaries[index].preview.length,
+                                itemBuilder: (context, index) {
+                                  var entity = groupCtrl
+                                      .summaries[this.index].preview[index];
+                                  return RichText(
+                                    text: TextSpan(
+                                      style: DefaultTextStyle.of(context).style,
+                                      children: <TextSpan>[
+                                        TextSpan(
+                                          text: entity.direction ==
                                                   PreviewDirection.youPay
-                                              ? Constants.redColor
-                                              : Constants.activeColor,
+                                              ? "You owe ${entity.name} "
+                                              : '${entity.name} owes you',
+                                          style: AppTheme.normalText.copyWith(
+                                              color: Constants.textGrey),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }),
-                    ],
-                  ),
+                                        TextSpan(
+                                          text: "\$${entity.amount}",
+                                          style: AppTheme.normalText.copyWith(
+                                            color: entity.direction ==
+                                                    PreviewDirection.youPay
+                                                ? Constants.redColor
+                                                : Constants.activeColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
+                      ],
+                    );
+                  }),
                 ),
               ),
             ],

@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
-import '../../features/expenses/add_expense_view.dart';
 import '../../features/navigation/nav_controller.dart';
 
 class BottomNavBar extends StatelessWidget {
@@ -28,11 +27,11 @@ class BottomNavBar extends StatelessWidget {
           currentIndex: controller.currentIndex.value,
           onTap: (index) {
             if (index == 2) {
-              Get.to(
-                () => const AddExpenseView(),
-                transition: Transition.downToUp,
-                duration: const Duration(milliseconds: 300),
-              );
+              // Get.to(
+              //   () => AddExpenseView(),
+              //   transition: Transition.downToUp,
+              //   duration: const Duration(milliseconds: 300),
+              // );
             } else {
               controller.changeTab(index);
             }

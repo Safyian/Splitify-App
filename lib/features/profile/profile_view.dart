@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:splitify/core/constants/constants.dart';
 import 'package:splitify/features/auth/auth_controller.dart';
+import 'package:splitify/features/auth/login_view.dart';
 
 import '../../core/theme/app_themes.dart';
 
@@ -41,6 +42,7 @@ class ProfileView extends StatelessWidget {
             GestureDetector(
               onTap: () async {
                 await authCtrl.logout();
+                Get.offAll(() => LoginView());
               },
               child: Container(
                 width: Get.width,
