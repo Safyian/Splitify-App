@@ -10,7 +10,6 @@ class ProfileController extends GetxController {
 
   Future<void> getUserDetails() async {
     try {
-      print("runing = getUserDetails()");
       user.value = await ProfileService().getUser();
     } catch (e) {
       // Token invalid/expired

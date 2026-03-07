@@ -40,6 +40,7 @@ class Expense {
   String? description;
   double? amount;
   PaidBy? paidBy;
+  final String? splitType;
   List<Split>? splits;
   DateTime? createdAt;
   DateTime? updatedAt;
@@ -51,6 +52,7 @@ class Expense {
     this.description,
     this.amount,
     this.paidBy,
+    this.splitType,
     this.splits,
     this.createdAt,
     this.updatedAt,
@@ -63,6 +65,7 @@ class Expense {
         description: json["description"],
         amount: json["amount"]?.toDouble(),
         paidBy: json["paidBy"] == null ? null : PaidBy.fromJson(json["paidBy"]),
+        splitType: json['splitType'],
         splits: json["splits"] == null
             ? []
             : List<Split>.from(json["splits"]!.map((x) => Split.fromJson(x))),
@@ -118,22 +121,26 @@ class Split {
   PaidBy? user;
   double? amount;
   String? id;
+  final double? percentage;
 
   Split({
     this.user,
     this.amount,
     this.id,
+    this.percentage,
   });
 
   factory Split.fromJson(Map<String, dynamic> json) => Split(
         user: json["user"] == null ? null : PaidBy.fromJson(json["user"]),
         amount: json["amount"]?.toDouble(),
+        percentage: (json['percentage'] as num?)?.toDouble(),
         id: json["_id"],
       );
 
   Map<String, dynamic> toJson() => {
         "user": user?.toJson(),
         "amount": amount,
+        "percentage": percentage,
         "_id": id,
       };
 }

@@ -20,4 +20,49 @@ class ExpenseService {
       throw Exception(message);
     }
   }
+
+  Future<void> updateExpense({
+    required String groupId,
+    required String expenseId,
+    required AddExpenseRequest request,
+  }) async {
+    try {
+      await _dio.patch(
+        '/groups/$groupId/expenses/$expenseId',
+        data: request.toJson(),
+      );
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Failed to update expense';
+      throw Exception(message);
+    }
+  }
+
+  Future<void> deleteExpense({
+    required String groupId,
+    required String expenseId,
+  }) async {
+    try {
+      await _dio.delete('/groups/$groupId/expenses/$expenseId');
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Failed to delete expense';
+      throw Exception(message);
+    }
+  }
+
+  Future<void> updateSettlement({
+    required String groupId,
+    required String expenseId,
+    required double amount,
+  }) async {
+    try {
+      await _dio.patch(
+        '/groups/$groupId/settlements/$expenseId',
+        data: {'amount': amount},
+      );
+    } on DioException catch (e) {
+      final message =
+          e.response?.data['message'] ?? 'Failed to update settlement';
+      throw Exception(message);
+    }
+  }
 }

@@ -5,9 +5,13 @@
 *.swp
 .DS_Store
 .atom/
+.claude/
+lib.zip
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related

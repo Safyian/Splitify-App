@@ -21,9 +21,9 @@ class _SplashViewState extends State<SplashView> {
     Future.delayed(const Duration(milliseconds: 1000), () async {
       await profileCtrl.getUserDetails();
       if (auth.isLoggedIn.value && profileCtrl.user.value.user != null) {
-        Get.offAll(() => NavigationView());
+        Get.off(() => NavigationView());
       } else {
-        Get.offAll(() => LoginView());
+        Get.off(() => LoginView());
       }
     });
   }

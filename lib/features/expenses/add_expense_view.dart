@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:splitify/core/constants/constants.dart';
 import 'package:splitify/features/groups/group_members_model.dart';
@@ -18,7 +17,7 @@ class AddExpenseView extends StatefulWidget {
 }
 
 class _AddExpenseViewState extends State<AddExpenseView> {
-  final expenseCtrl = Get.put(AddExpenseController());
+  final expenseCtrl = Get.find<AddExpenseController>();
   final groupCtrl = Get.find<GroupsController>();
 
   late final String groupId;
@@ -26,8 +25,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
   @override
   void initState() {
     super.initState();
-    groupId = groupCtrl.summaries[widget.index].id;
-    expenseCtrl.fetchGroupMembers(groupId: groupId);
+    groupId = expenseCtrl.groupId;
   }
 
   @override
@@ -35,7 +33,10 @@ class _AddExpenseViewState extends State<AddExpenseView> {
     return Scaffold(
       backgroundColor: Constants.bgColor,
       appBar: AppBar(
-        title: const Text("Add Expense"),
+        title: Obx(() => Text(
+              expenseCtrl.isEditMode.value ? "Edit Expense" : "Add Expense",
+              style: AppTheme.headingText,
+            )),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Get.back(),
@@ -76,7 +77,8 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                   ),
-                  items: expenseCtrl.groupMembers.value.members
+                  // Paid By dropdown
+                  items: expenseCtrl.groupMembersData.members
                       ?.map((e) => DropdownMenuItem(
                             value: e,
                             child: Text(e.name!),
@@ -136,7 +138,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
 
             // ── Members Split Inputs ──────────────────
             Obx(() {
-              final members = expenseCtrl.groupMembers.value.members ?? [];
+              final members = expenseCtrl.groupMembersData.members ?? [];
               final splitType = expenseCtrl.selectedSplitType.value;
 
               if (members.isEmpty) {
@@ -162,6 +164,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                       controllers: expenseCtrl.splitInputControllers,
                       members: members,
                       amountCtrl: expenseCtrl.amountCtrl,
+                      selectedMembers: expenseCtrl.selectedMembers,
                     ),
                   ],
                 ],
@@ -176,14 +179,31 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                   child: ElevatedButton(
                     onPressed: expenseCtrl.isLoading.value
                         ? null
-                        : () => expenseCtrl.submitExpense(groupId: groupId),
+                        : () async {
+                            final success = await expenseCtrl.submitExpense(
+                                groupId: groupId);
+                            if (success) {
+                              Get.back(result: true);
+                              Get.snackbar(
+                                "Success",
+                                expenseCtrl.isEditMode.value
+                                    ? "Expense updated successfully"
+                                    : "Expense added successfully",
+                                snackPosition: SnackPosition.BOTTOM,
+                              );
+                            }
+                          },
                     child: expenseCtrl.isLoading.value
                         ? const SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text("Add Expense"),
+                        : Text(
+                            expenseCtrl.isEditMode.value
+                                ? "Update Expense"
+                                : "Add Expense",
+                          ),
                   ),
                 )),
           ],
@@ -194,67 +214,125 @@ class _AddExpenseViewState extends State<AddExpenseView> {
 
   // ── Member row: shows input only for exact & percentage ──
   Widget _buildMemberSplitRow(Member member, SplitType splitType) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          // Avatar
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: Constants.activeColor,
-            child: Text(
-              member.name![0].toUpperCase(),
-              style: const TextStyle(color: Colors.white, fontSize: 14),
-            ),
-          ),
-          const SizedBox(width: 12),
+    return Obx(() {
+      final isSelected = expenseCtrl.selectedMembers.contains(member.id);
 
-          // Name
-          Expanded(
-            child: Text(member.name!, style: AppTheme.subHeadingText),
-          ),
-
-          // Input field — only for exact & percentage
-          if (splitType != SplitType.equal)
-            SizedBox(
-              width: 100,
-              child: TextField(
-                controller: expenseCtrl.splitInputControllers[member.id],
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 10,
-                  ),
-                  border: const OutlineInputBorder(),
-                  suffixText: splitType == SplitType.percentage ? "%" : null,
-                  prefixText: splitType == SplitType.exact ? "\$" : null,
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: GestureDetector(
+          onTap: () => expenseCtrl.toggleMember(member.id!),
+          child: AnimatedOpacity(
+            opacity: isSelected ? 1.0 : 0.4,
+            duration: const Duration(milliseconds: 200),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: Constants.bgColorLight,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected
+                      ? Constants.activeColor.withAlpha(60)
+                      : Colors.transparent,
                 ),
               ),
-            ),
+              child: Row(
+                children: [
+                  // ✅ Checkbox
+                  GestureDetector(
+                    onTap: () => expenseCtrl.toggleMember(member.id!),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Constants.activeColor
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: isSelected
+                              ? Constants.activeColor
+                              : Colors.grey.shade400,
+                          width: 2,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: isSelected
+                          ? const Icon(Icons.check,
+                              size: 14, color: Colors.white)
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
 
-          // Equal — just show "Equal share" badge
-          if (splitType == SplitType.equal)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: Constants.activeColor.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                "Equal share",
-                style: AppTheme.normalText.copyWith(
-                    fontSize: 11.sp,
-                    color: Constants.activeColor,
-                    fontWeight: FontWeight.normal),
+                  // Avatar
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: isSelected
+                        ? Constants.activeColor
+                        : Colors.grey.shade400,
+                    child: Text(
+                      member.name![0].toUpperCase(),
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Name
+                  Expanded(
+                    child: Text(member.name!, style: AppTheme.subHeadingText),
+                  ),
+
+                  // Input field — only for exact & percentage & only if selected
+                  if (splitType != SplitType.equal && isSelected)
+                    SizedBox(
+                      width: 100,
+                      child: TextField(
+                        controller:
+                            expenseCtrl.splitInputControllers[member.id],
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 10,
+                          ),
+                          border: const OutlineInputBorder(),
+                          suffixText:
+                              splitType == SplitType.percentage ? "%" : null,
+                          prefixText:
+                              splitType == SplitType.exact ? "\$" : null,
+                        ),
+                      ),
+                    ),
+
+                  // Equal share badge — only if selected
+                  if (splitType == SplitType.equal && isSelected)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Constants.activeColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        "Equal share",
+                        style: AppTheme.normalText.copyWith(
+                          fontSize: 11,
+                          color: Constants.activeColor,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-        ],
-      ),
-    );
+          ),
+        ),
+      );
+    });
   }
 
   String _splitTypeLabel(SplitType type) {
@@ -286,12 +364,14 @@ class _TotalHintRow extends StatefulWidget {
   final Map<String, TextEditingController> controllers;
   final List<Member> members;
   final TextEditingController amountCtrl;
+  final RxSet<String> selectedMembers;
 
   const _TotalHintRow({
     required this.splitType,
     required this.controllers,
     required this.members,
     required this.amountCtrl,
+    required this.selectedMembers,
   });
 
   @override
@@ -305,14 +385,19 @@ class _TotalHintRowState extends State<_TotalHintRow> {
   void initState() {
     super.initState();
     // Listen to all split input controllers for live updates
+    _recalculate();
     for (final member in widget.members) {
       widget.controllers[member.id]?.addListener(_recalculate);
     }
+
+    widget.amountCtrl.addListener(_recalculate);
   }
 
   void _recalculate() {
     double sum = 0;
     for (final member in widget.members) {
+      // ✅ Only sum selected members
+      if (!widget.selectedMembers.contains(member.id)) continue;
       final val = double.tryParse(
             widget.controllers[member.id]?.text.trim() ?? '',
           ) ??
@@ -327,6 +412,7 @@ class _TotalHintRowState extends State<_TotalHintRow> {
     for (final member in widget.members) {
       widget.controllers[member.id]?.removeListener(_recalculate);
     }
+    widget.amountCtrl.removeListener(_recalculate);
     super.dispose();
   }
 

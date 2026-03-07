@@ -32,8 +32,9 @@ class SplitInput {
       case SplitType.exact:
         return {'user': user, 'amount': amount};
       case SplitType.percentage:
-        return {'user': user, 'percentage': percentage};
+        return {'user': user, 'percentage': percentage}; // sends percentage
       case SplitType.equal:
+      default:
         return {'user': user};
     }
   }

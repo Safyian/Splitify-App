@@ -44,10 +44,6 @@ String previewDirectionToString(PreviewDirection dir) {
   }
 }
 
-// To parse this JSON data, do
-//
-//     final GroupSummary = groupSummaryFromJson(jsonString);
-
 List<GroupSummary> groupSummaryFromJson(String str) => List<GroupSummary>.from(
     json.decode(str).map((x) => GroupSummary.fromJson(x)));
 
@@ -57,6 +53,9 @@ String groupSummaryToJson(List<GroupSummary> data) =>
 class GroupSummary {
   String id;
   String name;
+  String emoji;
+  String defaultSplitType;
+  String createdBy;
   Balance balance;
   List<Preview> preview;
   int othersCount;
@@ -64,6 +63,9 @@ class GroupSummary {
   GroupSummary({
     required this.id,
     required this.name,
+    this.emoji = "🏠",
+    this.defaultSplitType = "equal",
+    this.createdBy = "",
     required this.balance,
     required this.preview,
     required this.othersCount,
@@ -72,6 +74,9 @@ class GroupSummary {
   factory GroupSummary.fromJson(Map<String, dynamic> json) => GroupSummary(
         id: json["_id"],
         name: json["name"],
+        emoji: json["emoji"] ?? "🏠",
+        defaultSplitType: json["defaultSplitType"] ?? "equal",
+        createdBy: json["createdBy"] ?? "",
         balance: Balance.fromJson(json["balance"]),
         preview:
             List<Preview>.from(json["preview"].map((x) => Preview.fromJson(x))),
@@ -81,6 +86,9 @@ class GroupSummary {
   Map<String, dynamic> toJson() => {
         "_id": id,
         "name": name,
+        "emoji": emoji,
+        "defaultSplitType": defaultSplitType,
+        "createdBy": createdBy,
         "balance": balance.toJson(),
         "preview": List<dynamic>.from(preview.map((x) => x.toJson())),
         "othersCount": othersCount,
