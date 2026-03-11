@@ -1,359 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter_screenutil/flutter_screenutil.dart';
-// import 'package:flutter_svg/svg.dart';
-// import 'package:get/get.dart';
-// import 'package:lottie/lottie.dart';
-// import 'package:splitify/features/groups/groups_controller.dart';
-//
-// import '../../core/constants/constants.dart';
-// import '../../core/theme/app_themes.dart';
-// import '../../shared/widgets/alert_widgets.dart';
-// import 'group_summary_model.dart';
-//
-// class SettleUpView extends StatelessWidget {
-//   SettleUpView({super.key, required this.index});
-//   final int index;
-//   final groupCtrl = Get.find<GroupsController>();
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Constants.bgColor,
-//       appBar: AppBar(
-//         centerTitle: false,
-//         title: Text(
-//           "Settle Up",
-//           style: AppTheme.normalText,
-//         ),
-//         titleSpacing: 0.0,
-//         leading: GestureDetector(
-//           onTap: () => Get.back(),
-//           child: Container(
-//             width: 24.w,
-//             height: 24.w,
-//             alignment: Alignment.center,
-//             child: SvgPicture.asset(
-//               Constants.backLogo,
-//               width: 24.w,
-//               height: 24.w,
-//             ),
-//           ),
-//         ),
-//         backgroundColor: Constants.bgColor,
-//         foregroundColor: Constants.bgColor,
-//       ),
-//       body: Container(
-//         width: Get.width,
-//         height: Get.height,
-//         color: Constants.bgColor,
-//         padding: const EdgeInsets.symmetric(horizontal: 16),
-//         child: Obx(() {
-//           return Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               groupCtrl.summaries[index].balance.status ==
-//                       BalanceStatus.youAreOwed
-//                   ? Text(
-//                       "You're owed",
-//                       style: AppTheme.subHeadingText,
-//                     )
-//                   : Text(
-//                       "Make full or partial settlement",
-//                       style: AppTheme.subHeadingText,
-//                     ),
-//               const SizedBox(height: 12),
-//               ListView.builder(
-//                   shrinkWrap: true,
-//                   physics: const NeverScrollableScrollPhysics(),
-//                   padding: const EdgeInsets.only(top: 6),
-//                   itemCount: groupCtrl.summaries[index].preview.length,
-//                   itemBuilder: (context, index) {
-//                     var entity = groupCtrl.summaries[this.index].preview[index];
-//                     return GestureDetector(
-//                       onTap: () => Get.to(() => SettleAmountView(
-//                           entity: entity,
-//                           groupId: groupCtrl.summaries[this.index].id)),
-//                       child: Container(
-//                         color: Constants.bgColor,
-//                         child: Column(
-//                           children: [
-//                             Row(
-//                               children: [
-//                                 const CircleAvatar(
-//                                   backgroundColor: Constants.bgColorLight,
-//                                   radius: 24,
-//                                   child: Icon(
-//                                     Icons.person,
-//                                     color: Constants.activeColor,
-//                                   ),
-//                                 ),
-//                                 const SizedBox(width: 16),
-//                                 Text(
-//                                   entity.name,
-//                                   style: AppTheme.subHeadingText,
-//                                 ),
-//                                 const Spacer(),
-//                                 Column(
-//                                   children: [
-//                                     Text(
-//                                       entity.direction ==
-//                                               PreviewDirection.youPay
-//                                           ? "You owe"
-//                                           : "Owes you",
-//                                       style: AppTheme.normalText,
-//                                     ),
-//                                     Text(
-//                                       "\$${entity.amount}",
-//                                       style: AppTheme.subHeadingText.copyWith(
-//                                         color: entity.direction ==
-//                                                 PreviewDirection.youPay
-//                                             ? Constants.redColor
-//                                             : Constants.activeColor,
-//                                       ),
-//                                     ),
-//                                   ],
-//                                 ),
-//                               ],
-//                             ),
-//                             index <
-//                                     groupCtrl.summaries[this.index].preview
-//                                             .length -
-//                                         1
-//                                 ? const Divider(
-//                                     indent: 12, endIndent: 12, height: 20)
-//                                 : const SizedBox(),
-//                           ],
-//                         ),
-//                       ),
-//                     );
-//                   }),
-//               SizedBox(height: 0.1.sh),
-//               Center(
-//                 child: Lottie.asset(Constants.settleLogo,
-//                     width: 280, height: 280, repeat: false),
-//               ),
-//             ],
-//           );
-//         }),
-//       ),
-//     );
-//   }
-// }
-//
-// class SettleAmountView extends StatefulWidget {
-//   SettleAmountView({super.key, required this.entity, required this.groupId});
-//   final Preview entity;
-//   final String groupId;
-//
-//   @override
-//   State<SettleAmountView> createState() => _SettleAmountViewState();
-// }
-//
-// class _SettleAmountViewState extends State<SettleAmountView> {
-//   late TextEditingController settleCtrl;
-//
-//   final formKey = GlobalKey<FormState>();
-//   final groupCtrl = Get.find<GroupsController>();
-//   @override
-//   void initState() {
-//     super.initState();
-//     settleCtrl = TextEditingController(
-//       text: widget.entity.amount.toStringAsFixed(2),
-//     );
-//   }
-//
-//   @override
-//   void dispose() {
-//     settleCtrl.dispose();
-//     super.dispose();
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       resizeToAvoidBottomInset: true,
-//       backgroundColor: Constants.bgColor,
-//       appBar: AppBar(
-//         leading: GestureDetector(
-//           onTap: () => Get.back(),
-//           child: Container(
-//             width: 24.w,
-//             height: 24.w,
-//             alignment: Alignment.center,
-//             child: SvgPicture.asset(
-//               Constants.backLogo,
-//               width: 24.w,
-//               height: 24.w,
-//             ),
-//           ),
-//         ),
-//         backgroundColor: Constants.bgColor,
-//         foregroundColor: Constants.bgColor,
-//       ),
-//       body: Container(
-//         width: Get.width,
-//         height: Get.height,
-//         color: Constants.bgColor,
-//         padding: const EdgeInsets.symmetric(horizontal: 16),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Text(
-//               "Make full or partial settlement",
-//               style: AppTheme.subHeadingText,
-//             ),
-//             const SizedBox(height: 26),
-//             Center(
-//               child: Padding(
-//                 padding: const EdgeInsets.symmetric(horizontal: 36),
-//                 child: Row(
-//                   children: [
-//                     Column(
-//                       children: [
-//                         const CircleAvatar(
-//                           backgroundColor: Constants.bgColorLight,
-//                           radius: 24,
-//                           child: Icon(
-//                             Icons.person,
-//                             color: Constants.activeColor,
-//                           ),
-//                         ),
-//                         Text(
-//                           "You",
-//                           style: AppTheme.subHeadingText,
-//                         ),
-//                       ],
-//                     ),
-//                     const Spacer(),
-//                     Lottie.asset(
-//                       Constants.arrowLogo,
-//                       width: 180,
-//                       height: 180,
-//                       repeat: false,
-//                     ),
-//                     const Spacer(),
-//                     Column(
-//                       children: [
-//                         const CircleAvatar(
-//                           backgroundColor: Constants.bgColorLight,
-//                           radius: 24,
-//                           child: Icon(
-//                             Icons.person,
-//                             color: Constants.activeColor,
-//                           ),
-//                         ),
-//                         Text(
-//                           widget.entity.name,
-//                           style: AppTheme.subHeadingText,
-//                         ),
-//                       ],
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ),
-//             // const SizedBox(height: 26),
-//             Row(
-//               mainAxisAlignment: MainAxisAlignment.center,
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 SizedBox(
-//                   width: 32,
-//                   height: 32,
-//                   child: SvgPicture.asset(
-//                     Constants.cashLogo,
-//                     // color: Constants.activeColor,
-//                   ),
-//                 ),
-//                 const SizedBox(width: 12),
-//                 SizedBox(
-//                   width: 0.4.sw,
-//                   child: Padding(
-//                     padding: const EdgeInsets.only(bottom: 12.0),
-//                     child: Form(
-//                       key: formKey,
-//                       child: TextFormField(
-//                         controller: settleCtrl,
-//                         decoration: InputDecoration(
-//                           hintText: "0.00",
-//                           prefixText: "\$",
-//                           helper: RichText(
-//                             text: TextSpan(
-//                               children: <TextSpan>[
-//                                 TextSpan(
-//                                   text: "You owe ",
-//                                   style: AppTheme.normalText
-//                                       .copyWith(color: Colors.grey.shade600),
-//                                 ),
-//                                 TextSpan(
-//                                   text:
-//                                       "\$${widget.entity.amount.toStringAsFixed(2)}",
-//                                   style: AppTheme.normalText.copyWith(
-//                                     color: Constants.redColor,
-//                                   ),
-//                                 ),
-//                               ],
-//                             ),
-//                           ),
-//                           isDense: true,
-//                         ),
-//                         keyboardType: const TextInputType.numberWithOptions(
-//                             decimal: true),
-//                         validator: (val) {
-//                           if (val == null || val.isEmpty) {
-//                             return 'Please enter an amount';
-//                           }
-//
-//                           double entered = double.tryParse(val) ?? 0;
-//
-//                           if (entered > widget.entity.amount) {
-//                             return "Cannot exceed \$${widget.entity.amount.toStringAsFixed(2)}";
-//                           }
-//
-//                           return null;
-//                         },
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//             const SizedBox(height: 12),
-//             Center(
-//               child: GestureDetector(
-//                 onTap: () async {
-//                   if (formKey.currentState!.validate()) {
-//                     AlertWidgets.showLoadingDialog(context,
-//                         message: 'Please wait ...');
-//
-//                     await groupCtrl.settleExpense(
-//                         groupId: widget.groupId,
-//                         toUserId: widget.entity.userId,
-//                         amount: double.parse(settleCtrl.value.text));
-//                   }
-//                 },
-//                 child: Container(
-//                   width: 0.4.sw,
-//                   height: 36,
-//                   decoration: BoxDecoration(
-//                       color: Constants.activeColor,
-//                       borderRadius: BorderRadius.circular(8)),
-//                   alignment: Alignment.center,
-//                   child: Text("Settle Up",
-//                       style: AppTheme.subHeadingText.copyWith(
-//                         color: Constants.textLight,
-//                       )),
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// **************** Cloude Code ************
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -474,7 +118,6 @@ class SettleUpView extends StatelessWidget {
 
               // ── Member List ────────────────────────────────────
               ...preview.asMap().entries.map((entry) {
-                final i = entry.key;
                 final entity = entry.value;
                 final youPay = entity.direction == PreviewDirection.youPay;
 
@@ -483,6 +126,7 @@ class SettleUpView extends StatelessWidget {
                     () => SettleAmountView(
                       entity: entity,
                       groupId: groupCtrl.summaries[index].id,
+                      popCount: 2, // SettleUpView + SettleAmountView
                     ),
                     transition: Transition.downToUp,
                     duration: const Duration(milliseconds: 300),
@@ -496,7 +140,6 @@ class SettleUpView extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        // ── Avatar with initial ──────────────────
                         CircleAvatar(
                           radius: 22,
                           backgroundColor: Constants.activeColor.withAlpha(25),
@@ -510,16 +153,11 @@ class SettleUpView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 14),
-
-                        // ── Name + direction ─────────────────────
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                entity.name,
-                                style: AppTheme.subHeadingText,
-                              ),
+                              Text(entity.name, style: AppTheme.subHeadingText),
                               const SizedBox(height: 2),
                               Text(
                                 youPay
@@ -533,8 +171,6 @@ class SettleUpView extends StatelessWidget {
                             ],
                           ),
                         ),
-
-                        // ── Amount + arrow ───────────────────────
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
@@ -557,17 +193,14 @@ class SettleUpView extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(width: 8),
-                        Icon(
-                          Icons.chevron_right_rounded,
-                          color: Colors.grey.shade400,
-                        ),
+                        Icon(Icons.chevron_right_rounded,
+                            color: Colors.grey.shade400),
                       ],
                     ),
                   ),
                 );
               }),
 
-              // ── Lottie animation ───────────────────────────────
               const SizedBox(height: 20),
               Center(
                 child: Lottie.asset(
@@ -591,9 +224,11 @@ class SettleAmountView extends StatefulWidget {
     super.key,
     required this.entity,
     required this.groupId,
+    this.popCount = 2, // default: SettleUpView + SettleAmountView
   });
   final Preview entity;
   final String groupId;
+  final int popCount;
 
   @override
   State<SettleAmountView> createState() => _SettleAmountViewState();
@@ -649,7 +284,6 @@ class _SettleAmountViewState extends State<SettleAmountView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Title ──────────────────────────────────────────
               Text(
                 youPay
                     ? "Settling with ${widget.entity.name}"
@@ -676,7 +310,6 @@ class _SettleAmountViewState extends State<SettleAmountView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // ── From ──
                     Column(
                       children: [
                         CircleAvatar(
@@ -691,23 +324,14 @@ class _SettleAmountViewState extends State<SettleAmountView> {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Text(
-                          youPay ? "You" : widget.entity.name,
-                          style: AppTheme.normalText,
-                        ),
+                        Text(youPay ? "You" : widget.entity.name,
+                            style: AppTheme.normalText),
                       ],
                     ),
-
-                    // ── Arrow animation ──
                     Expanded(
-                      child: Lottie.asset(
-                        Constants.arrowLogo,
-                        height: 80,
-                        repeat: false,
-                      ),
+                      child: Lottie.asset(Constants.arrowLogo,
+                          height: 80, repeat: false),
                     ),
-
-                    // ── To ──
                     Column(
                       children: [
                         CircleAvatar(
@@ -722,10 +346,8 @@ class _SettleAmountViewState extends State<SettleAmountView> {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Text(
-                          youPay ? widget.entity.name : "You",
-                          style: AppTheme.normalText,
-                        ),
+                        Text(youPay ? widget.entity.name : "You",
+                            style: AppTheme.normalText),
                       ],
                     ),
                   ],
@@ -762,13 +384,11 @@ class _SettleAmountViewState extends State<SettleAmountView> {
                         ),
                       ),
                       validator: (val) {
-                        if (val == null || val.isEmpty) {
+                        if (val == null || val.isEmpty)
                           return 'Please enter an amount';
-                        }
                         final entered = double.tryParse(val) ?? 0;
-                        if (entered <= 0) {
+                        if (entered <= 0)
                           return 'Amount must be greater than 0';
-                        }
                         if (entered > widget.entity.amount) {
                           return "Cannot exceed \$${widget.entity.amount.toStringAsFixed(2)}";
                         }
@@ -777,8 +397,6 @@ class _SettleAmountViewState extends State<SettleAmountView> {
                     ),
                     const Divider(),
                     const SizedBox(height: 4),
-
-                    // ── Quick amount chips ───────────────────────
                     Row(
                       children: [
                         _QuickAmount(
@@ -809,10 +427,8 @@ class _SettleAmountViewState extends State<SettleAmountView> {
                     const SizedBox(height: 8),
                     Text(
                       "Outstanding: \$${widget.entity.amount.toStringAsFixed(2)}",
-                      style: AppTheme.normalText.copyWith(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
+                      style: AppTheme.normalText
+                          .copyWith(color: Colors.grey, fontSize: 12),
                     ),
                   ],
                 ),
@@ -840,6 +456,7 @@ class _SettleAmountViewState extends State<SettleAmountView> {
                                   groupId: widget.groupId,
                                   toUserId: widget.entity.userId,
                                   amount: double.parse(settleCtrl.text.trim()),
+                                  popCount: widget.popCount,
                                 );
                               }
                             },
@@ -883,9 +500,7 @@ class _QuickAmount extends StatelessWidget {
         decoration: BoxDecoration(
           color: Constants.activeColor.withAlpha(25),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: Constants.activeColor.withAlpha(60),
-          ),
+          border: Border.all(color: Constants.activeColor.withAlpha(60)),
         ),
         child: Text(
           label,

@@ -10,6 +10,9 @@ import 'group_service.dart';
 import 'group_summary_model.dart';
 
 class GroupsController extends GetxController {
+  /// Register this from FriendsScreen to refresh friends after settlement
+  Future<void> Function()? onBalanceChanged;
+
   RxList<GroupSummary> summaries = <GroupSummary>[].obs;
   var groupExpenses = GroupExpenses().obs;
   RxBool isLoading = false.obs;
@@ -34,6 +37,7 @@ class GroupsController extends GetxController {
     try {
       isLoading.value = true;
       summaries.value = await _service.getSummary();
+      if (onBalanceChanged != null) onBalanceChanged!();
     } catch (e) {
       Get.snackbar("Error", "Failed to load groups");
     } finally {
@@ -67,6 +71,7 @@ class GroupsController extends GetxController {
     required String groupId,
     required String toUserId,
     required double amount,
+    int popCount = 2,
   }) async {
     try {
       isSettling.value = true;
@@ -75,11 +80,16 @@ class GroupsController extends GetxController {
         toUserId: toUserId,
         amount: amount,
       );
-      await fetchGroupExpenses(groupId: groupId);
-      await fetchSummary();
+      await Future.wait([
+        fetchGroupExpenses(groupId: groupId),
+        fetchSummary(),
+      ]);
+      // Refresh friends list if registered (callback set by FriendsScreen)
+
       AlertWidgets.hideLoadingDialog();
-      Get.back();
-      Get.back();
+      for (int i = 0; i < popCount; i++) {
+        Get.back();
+      }
       AlertWidgets.showSnackBar(message: 'Amount Settled Successfully!');
     } catch (e) {
       AlertWidgets.hideLoadingDialog();
@@ -281,6 +291,48 @@ class GroupsController extends GetxController {
     } catch (e) {
       AlertWidgets.showSnackBar(
           message: e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  // ── NEW: Create group and add friend to it ──────────────────────────────
+  Future<void> createGroupWithFriends({
+    required String name,
+    required String emoji,
+    required List<dynamic> friends,
+  }) async {
+    try {
+      isLoading.value = true;
+
+      // 1. Create group
+      final res = await _service.createGroup(name: name);
+      final groupId = res['id'] as String;
+
+      // 2. Update emoji if not default
+      if (emoji != '🏠') {
+        await _service.updateEmoji(groupId: groupId, emoji: emoji);
+      }
+
+      // 3. Add each selected friend by email (sequential to avoid race)
+      for (final friend in friends) {
+        try {
+          await _service.addMember(
+              groupId: groupId, email: friend.email as String);
+        } catch (_) {
+          // Skip silently if a specific friend fails — group still created
+        }
+      }
+      // 4. Refresh
+      await fetchSummary();
+
+      final friendWord = friends.isEmpty
+          ? ''
+          : ' with ${friends.length} friend${friends.length > 1 ? 's' : ''}';
+      AlertWidgets.showSnackBar(message: 'Group created$friendWord');
+    } catch (e) {
+      AlertWidgets.showSnackBar(
+          message: e.toString().replaceAll('Exception: ', ''));
+    } finally {
+      isLoading.value = false;
     }
   }
 

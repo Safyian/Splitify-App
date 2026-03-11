@@ -799,6 +799,8 @@ class _ExpenseDetailSheet extends StatelessWidget {
     } else {
       Get.back();
       final groupCtrl = Get.find<GroupsController>();
+      // Delete stale instance first so Get.put always creates fresh
+      Get.delete<AddExpenseController>(force: true);
 
       final expenseCtrl = AddExpenseController(editExpense: expense);
       expenseCtrl.groupId = groupCtrl.groupMembers.value.members != null

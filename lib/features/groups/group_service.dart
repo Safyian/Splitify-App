@@ -131,6 +131,16 @@ class GroupService {
     }
   }
 
+  Future<Map<String, dynamic>> createGroup({required String name}) async {
+    try {
+      final res = await _dio.post('/groups/new', data: {"name": name});
+      return res.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Failed to create group';
+      throw Exception(message);
+    }
+  }
+
   Future<void> leaveGroup({required String groupId}) async {
     try {
       await _dio.post('/groups/$groupId/leave');

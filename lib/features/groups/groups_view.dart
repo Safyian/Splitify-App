@@ -225,7 +225,7 @@ class GroupsScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_rounded,
+                        const Icon(Icons.add_rounded,
                             color: Constants.activeColor, size: 20),
                         const SizedBox(width: 8),
                         Text(

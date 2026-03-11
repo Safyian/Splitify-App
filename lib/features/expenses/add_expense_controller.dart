@@ -5,6 +5,7 @@ import '../../shared/widgets/alert_widgets.dart';
 import '../groups/group_members_model.dart';
 import '../groups/group_service.dart';
 import '../groups/groups_controller.dart';
+import '../profile/profile_controller.dart';
 import 'expense_payload_model.dart';
 import 'expense_service.dart';
 
@@ -69,16 +70,12 @@ class AddExpenseController extends GetxController {
   void _initSplitControllers() {
     _disposeSplitControllers();
     // ✅ Add this
-    print(
-        "=== _initSplitControllers called, isEditMode: ${isEditMode.value} ===");
     for (final member in groupMembersData.members ?? []) {
       splitInputControllers[member.id!] = TextEditingController();
       if (!isEditMode.value) {
         selectedMembers.add(member.id!);
       }
     }
-    // ✅ Add this
-    print("selectedMembers after _initSplitControllers: $selectedMembers");
   }
 
   // ─────────────────────────────────────────
@@ -148,9 +145,6 @@ class AddExpenseController extends GetxController {
         Get.find<GroupsController>().fetchGroupExpenses(groupId: groupId),
         Get.find<GroupsController>().fetchSummary()
       ]);
-      print("=== AFTER REFRESH ===");
-      print(
-          "summaries: ${Get.find<GroupsController>().summaries.map((s) => s.balance.net).toList()}");
 
       _resetForm();
       return true;
@@ -167,7 +161,20 @@ class AddExpenseController extends GetxController {
     descriptionCtrl.clear();
     amountCtrl.clear();
     selectedMember.value = null;
-    selectedSplitType.value = SplitType.equal;
+
+    // Use the user's saved preference instead of always defaulting to equal
+    final profileCtrl = Get.find<ProfileController>();
+    switch (profileCtrl.defaultSplitType.value) {
+      case 'exact':
+        selectedSplitType.value = SplitType.exact;
+        break;
+      case 'percentage':
+        selectedSplitType.value = SplitType.percentage;
+        break;
+      default:
+        selectedSplitType.value = SplitType.equal;
+    }
+
     selectedMembers.clear();
     for (final ctrl in splitInputControllers.values) {
       ctrl.clear();
@@ -185,13 +192,6 @@ class AddExpenseController extends GetxController {
     // ✅ Only include selected members
     final involvedMembers =
         members.where((m) => selectedMembers.contains(m.id)).toList();
-
-    print("=== _buildSplits ===");
-    print("selectedMembers: $selectedMembers");
-    print(
-        "involvedMembers: ${involvedMembers.map((m) => '${m.name}:${m.id}').toList()}");
-    print("splitType: ${selectedSplitType.value}");
-    print("===================");
 
     if (involvedMembers.isEmpty) {
       throw Exception("Select at least one member to split with");
@@ -262,10 +262,6 @@ class AddExpenseController extends GetxController {
     isEditMode.value = true;
     editingExpenseId = expense.id;
 
-    // ✅ Add this
-    print("=== LOAD EXPENSE FOR EDIT ===");
-    print("expense.splits: ${expense.splits?.map((s) => s.user?.id).toList()}");
-
     descriptionCtrl.text = expense.description ?? '';
     amountCtrl.text = expense.amount?.toString() ?? '';
 
@@ -282,9 +278,6 @@ class AddExpenseController extends GetxController {
         selectedMembers.add(split.user!.id!);
       }
     }
-
-    print("selectedMembers after clear+fill: $selectedMembers");
-    print("==============================");
 
     // Pre-fill split type
     switch (expense.splitType) {
@@ -348,10 +341,23 @@ class AddExpenseController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // ✅ Set edit mode BEFORE fetchGroupMembers triggers _initSplitControllers
+    // Set edit mode BEFORE fetchGroupMembers triggers _initSplitControllers
     if (editExpense != null) {
       isEditMode.value = true;
       editingExpenseId = editExpense.id;
+    } else {
+      // Apply user's preferred split type for new expenses
+      final profileCtrl = Get.find<ProfileController>();
+      switch (profileCtrl.defaultSplitType.value) {
+        case 'exact':
+          selectedSplitType.value = SplitType.exact;
+          break;
+        case 'percentage':
+          selectedSplitType.value = SplitType.percentage;
+          break;
+        default:
+          selectedSplitType.value = SplitType.equal;
+      }
     }
 
     if (groupId.isNotEmpty) {
