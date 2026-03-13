@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../constants/constants.dart';
 
@@ -25,7 +26,7 @@ class SnackBarHelper {
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(
+                style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,

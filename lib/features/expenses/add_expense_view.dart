@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:splitify/core/constants/constants.dart';
 import 'package:splitify/features/groups/group_members_model.dart';
 import 'package:splitify/features/groups/groups_controller.dart';
@@ -9,8 +10,7 @@ import 'add_expense_controller.dart';
 import 'expense_payload_model.dart';
 
 class AddExpenseView extends StatefulWidget {
-  const AddExpenseView({super.key, required this.index});
-  final int index;
+  const AddExpenseView({super.key});
 
   @override
   State<AddExpenseView> createState() => _AddExpenseViewState();
@@ -273,7 +273,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                         : Colors.grey.shade400,
                     child: Text(
                       member.name![0].toUpperCase(),
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -432,7 +432,7 @@ class _TotalHintRowState extends State<_TotalHintRow> {
           isPercentage
               ? "Total: ${_currentTotal.toStringAsFixed(1)}% / 100%  "
               : "Total: \$${_currentTotal.toStringAsFixed(2)} / \$${target.toStringAsFixed(2)}  ",
-          style: TextStyle(
+          style: GoogleFonts.inter(
             fontSize: 13,
             color: isValid ? Colors.green : Colors.orange,
             fontWeight: FontWeight.w500,
@@ -443,7 +443,7 @@ class _TotalHintRowState extends State<_TotalHintRow> {
             isPercentage
                 ? "(${remaining > 0 ? '+' : ''}${remaining.toStringAsFixed(1)}% remaining)"
                 : "(${remaining > 0 ? '+' : ''}\$${remaining.toStringAsFixed(2)} remaining)",
-            style: const TextStyle(fontSize: 12, color: Colors.orange),
+            style: GoogleFonts.inter(fontSize: 12, color: Colors.orange),
           ),
         if (isValid)
           const Icon(Icons.check_circle, color: Colors.green, size: 16),

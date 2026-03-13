@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:splitify/core/constants/constants.dart';
 import 'package:splitify/core/theme/app_themes.dart';
 
@@ -266,7 +267,7 @@ class _DonutChartState extends State<_DonutChart> {
                         ? "\$${item.amount.toStringAsFixed(0)}"
                         : "$pct%",
                     radius: isTouched ? 60 : 50,
-                    titleStyle: TextStyle(
+                    titleStyle: GoogleFonts.inter(
                       fontSize: isTouched ? 13 : 11,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -336,7 +337,7 @@ class _BarChart extends StatelessWidget {
                 getTooltipItem: (group, groupIndex, rod, rodIndex) =>
                     BarTooltipItem(
                   "\$${rod.toY.toStringAsFixed(0)}",
-                  const TextStyle(
+                  GoogleFonts.inter(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
@@ -350,7 +351,7 @@ class _BarChart extends StatelessWidget {
                   reservedSize: 42,
                   getTitlesWidget: (value, meta) => Text(
                     "\$${value.toInt()}",
-                    style: const TextStyle(fontSize: 10, color: Colors.grey),
+                    style: GoogleFonts.inter(fontSize: 10, color: Colors.grey),
                   ),
                 ),
               ),
@@ -365,7 +366,7 @@ class _BarChart extends StatelessWidget {
                       child: Text(
                         data[i].label,
                         style:
-                            const TextStyle(fontSize: 11, color: Colors.grey),
+                            GoogleFonts.inter(fontSize: 11, color: Colors.grey),
                       ),
                     );
                   },
@@ -429,7 +430,7 @@ class _ToggleTab extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: TextStyle(
+          style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: isSelected ? Colors.white : Colors.grey,
@@ -548,7 +549,7 @@ class _MyShareChartState extends State<_MyShareChart> {
                         value: slice.amount == 0 ? 0.001 : slice.amount,
                         title: "$pct%",
                         radius: isTouched ? 62 : 52,
-                        titleStyle: TextStyle(
+                        titleStyle: GoogleFonts.inter(
                           fontSize: isTouched ? 13 : 11,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -566,7 +567,7 @@ class _MyShareChartState extends State<_MyShareChart> {
                       _touchedIndex == -1
                           ? "Net"
                           : slices[_touchedIndex].label.split(" ").first,
-                      style: const TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 11,
                         color: Colors.grey,
                       ),
@@ -575,7 +576,7 @@ class _MyShareChartState extends State<_MyShareChart> {
                       _touchedIndex == -1
                           ? _netText(widget.data)
                           : "\$${slices[_touchedIndex].amount.toStringAsFixed(2)}",
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: _touchedIndex == -1

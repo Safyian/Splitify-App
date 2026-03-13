@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:splitify/features/groups/groups_controller.dart';
 
@@ -145,7 +146,7 @@ class SettleUpView extends StatelessWidget {
                           backgroundColor: Constants.activeColor.withAlpha(25),
                           child: Text(
                             entity.name[0].toUpperCase(),
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               color: Constants.activeColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -317,7 +318,7 @@ class _SettleAmountViewState extends State<SettleAmountView> {
                           backgroundColor: Constants.activeColor.withAlpha(25),
                           child: Text(
                             youPay ? "You" : widget.entity.name[0],
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               color: Constants.activeColor,
                               fontWeight: FontWeight.bold,
                             ),
@@ -339,7 +340,7 @@ class _SettleAmountViewState extends State<SettleAmountView> {
                           backgroundColor: Constants.activeColor.withAlpha(25),
                           child: Text(
                             youPay ? widget.entity.name[0] : "You",
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               color: Constants.activeColor,
                               fontWeight: FontWeight.bold,
                             ),
@@ -504,7 +505,7 @@ class _QuickAmount extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: TextStyle(
+          style: GoogleFonts.inter(
             color: Constants.activeColor,
             fontSize: 12,
             fontWeight: FontWeight.w600,

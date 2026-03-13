@@ -37,6 +37,7 @@ class Constants {
   static const String arrowLogo = "assets/images/arrow.json";
   static const String cashLogo = "assets/images/cash.svg";
   static const String settledLogo = "assets/images/like.png";
+  static const String splitifyLogo = "assets/images/splitify-logo.svg";
 }
 
 // ********* TextField Input Decoration Constant **********

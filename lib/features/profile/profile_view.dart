@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:splitify/core/constants/constants.dart';
 import 'package:splitify/features/auth/auth_controller.dart';
 import 'package:splitify/features/groups/groups_controller.dart';
@@ -604,7 +605,7 @@ class _AvatarCard extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               initials,
-              style: const TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
@@ -712,7 +713,7 @@ class _BalanceSummaryCard extends StatelessWidget {
             netBalance == 0
                 ? 'All settled up 🎉'
                 : '${isPositive ? '+' : '-'}\$${netBalance.abs().toStringAsFixed(2)}',
-            style: const TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 28,
               fontWeight: FontWeight.w700,
               color: Colors.white,
@@ -756,13 +757,13 @@ class _StatPill extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(value,
-                style: const TextStyle(
+                style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: Colors.white)),
             const SizedBox(height: 2),
             Text(label,
-                style: TextStyle(
+                style: GoogleFonts.inter(
                     fontSize: 10,
                     color: Colors.white.withAlpha(170),
                     fontWeight: FontWeight.w500)),

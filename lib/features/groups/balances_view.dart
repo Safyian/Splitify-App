@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
@@ -68,7 +69,7 @@ class BalancesView extends StatelessWidget {
                         backgroundColor: Constants.activeColor.withAlpha(25),
                         child: Text(
                           name[0].toUpperCase(),
-                          style: TextStyle(color: Constants.activeColor),
+                          style: GoogleFonts.inter(color: Constants.activeColor),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -96,7 +97,7 @@ class BalancesView extends StatelessWidget {
                                 : isPositive
                                     ? "gets back"
                                     : "owes",
-                            style: const TextStyle(
+                            style: GoogleFonts.inter(
                                 fontSize: 11, color: Colors.grey),
                           ),
                         ],
@@ -142,7 +143,7 @@ class BalancesView extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               "How is this calculated?",
-                              style: TextStyle(
+                              style: GoogleFonts.inter(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: Constants.activeColor,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:splitify/core/constants/constants.dart';
 
 import '../../core/theme/app_themes.dart';
@@ -49,6 +50,7 @@ class GroupSettingsView extends StatelessWidget {
       backgroundColor: Constants.bgColor,
       appBar: _buildAppBar(),
       body: Obx(() {
+        if (index >= groupCtrl.summaries.length) return const SizedBox.shrink();
         final summary = groupCtrl.summaries[index];
         final myId = profileCtrl.user.value.user?.id ?? '';
         final isCreator = myId == summary.createdBy;
@@ -313,7 +315,7 @@ class _EmojiAndNameCard extends StatelessWidget {
                           : null,
                     ),
                     alignment: Alignment.center,
-                    child: Text(emoji, style: const TextStyle(fontSize: 22)),
+                    child: Text(emoji, style: GoogleFonts.inter(fontSize: 22)),
                   ),
                 );
               },
@@ -652,7 +654,7 @@ class _MembersCard extends StatelessWidget {
                       backgroundColor: Constants.activeColor.withAlpha(25),
                       child: Text(
                         (member.name ?? '?')[0].toUpperCase(),
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Constants.activeColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
 import '../../shared/widgets/group_card.dart';
+import 'create_group_view.dart';
 import 'groups_controller.dart';
 
 class GroupsScreen extends StatelessWidget {
@@ -190,6 +191,33 @@ class GroupsScreen extends StatelessWidget {
                             style: AppTheme.normalText
                                 .copyWith(color: Colors.grey),
                           ),
+                          const SizedBox(height: 24),
+                          GestureDetector(
+                            onTap: () => Get.to(() => const CreateGroupScreen()),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14, horizontal: 32),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: Constants.activeColor,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.add_rounded,
+                                      color: Colors.white, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Start a new group',
+                                    style: AppTheme.subHeadingText.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -212,7 +240,7 @@ class GroupsScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                 child: GestureDetector(
-                  onTap: () {}, // hook up create group
+                  onTap: () => Get.to(() => const CreateGroupScreen()),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(

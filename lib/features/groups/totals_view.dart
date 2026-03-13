@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:splitify/core/constants/constants.dart';
 import 'package:splitify/core/theme/app_themes.dart';
 import 'package:splitify/features/expenses/chart_helpers.dart';
@@ -99,7 +100,7 @@ class TotalsView extends StatelessWidget {
                           backgroundColor: Constants.activeColor.withAlpha(25),
                           child: Text(
                             name[0].toUpperCase(),
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               color: Constants.activeColor,
                               fontWeight: FontWeight.bold,
                             ),
@@ -125,7 +126,7 @@ class TotalsView extends StatelessWidget {
                             member.net == 0
                                 ? "Settled"
                                 : "${isPositive ? '+' : ''}\$${member.net.toStringAsFixed(2)}",
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: member.net == 0

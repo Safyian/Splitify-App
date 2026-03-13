@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:splitify/shared/widgets/friend_card.dart';
 
 import '../../core/constants/constants.dart';
@@ -229,7 +230,7 @@ class FriendsScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(g['emoji'] as String,
-                          style: const TextStyle(fontSize: 22)),
+                          style: GoogleFonts.inter(fontSize: 22)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(g['name'] as String,
@@ -280,6 +281,78 @@ class FriendsScreen extends StatelessWidget {
         backgroundColor: Constants.bgColor,
         foregroundColor: Constants.bgColor,
         elevation: 0,
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.fromLTRB(
+            16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
+        decoration: const BoxDecoration(
+          color: Constants.bgColor,
+        ),
+        child: Row(
+          children: [
+            // ── Add Friend ───────────────────────────────
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _showAddFriendDialog(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: Constants.activeColor.withAlpha(180)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.person_add_outlined,
+                          size: 17, color: Constants.activeColor),
+                      const SizedBox(width: 7),
+                      Text(
+                        'Add Friend',
+                        style: AppTheme.normalText.copyWith(
+                          color: Constants.activeColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            // ── Create Group ─────────────────────────────
+            Expanded(
+              child: GestureDetector(
+                onTap: () => Get.to(
+                  () => const CreateGroupScreen(),
+                  transition: Transition.rightToLeft,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  decoration: BoxDecoration(
+                    color: Constants.activeColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.group_add_outlined,
+                          size: 17, color: Colors.white),
+                      const SizedBox(width: 7),
+                      Text(
+                        'New Group',
+                        style: AppTheme.normalText.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       body: Obx(() {
         if (friendsCtrl.isLoading.isTrue) {
@@ -357,74 +430,7 @@ class FriendsScreen extends StatelessWidget {
                   ),
                 ),
 
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-                  child: Column(
-                    children: [
-                      // ── Create Group button ─────────────────────
-                      GestureDetector(
-                        onTap: () => Get.to(
-                          () => const CreateGroupScreen(),
-                          transition: Transition.rightToLeft,
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            color: Constants.activeColor,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.group_add_outlined,
-                                  size: 18, color: Colors.white),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Create New Group",
-                                style: AppTheme.subHeadingText.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // ── Add Friend button ───────────────────────
-                      GestureDetector(
-                        onTap: () => _showAddFriendDialog(context),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                                color: Constants.activeColor.withAlpha(150)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.person_add_outlined,
-                                  size: 18, color: Constants.activeColor),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Add a Friend",
-                                style: AppTheme.subHeadingText.copyWith(
-                                  color: Constants.activeColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
           ),
         );
@@ -630,27 +636,6 @@ class _EmptyState extends StatelessWidget {
                 : "Add a friend to get started",
             style: AppTheme.normalText.copyWith(color: Colors.grey.shade400),
           ),
-          if (!isFiltered) ...[
-            const SizedBox(height: 20),
-            GestureDetector(
-              onTap: onAdd,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
-                decoration: BoxDecoration(
-                  color: Constants.activeColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  "Add a friend",
-                  style: AppTheme.normalText.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );

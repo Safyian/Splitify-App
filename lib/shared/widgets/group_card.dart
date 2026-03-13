@@ -142,6 +142,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
@@ -287,7 +288,7 @@ class GroupCard extends StatelessWidget {
                       isSettled
                           ? "Settled"
                           : "\$${summary.balance.net.abs().toStringAsFixed(2)}",
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: balanceColor,
                         fontSize: 12,
                         fontWeight: FontWeight.w700,

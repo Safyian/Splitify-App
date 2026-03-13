@@ -59,14 +59,6 @@ class AddExpenseController extends GetxController {
       Get.find<GroupsController>().groupMembers.value;
 
   /// Creates one TextEditingController per member
-  /// Call this after members are loaded
-  // void _initSplitControllers() {
-  //   _disposeSplitControllers();
-  //   for (final member in groupMembersData.members ?? []) {
-  //     splitInputControllers[member.id!] = TextEditingController();
-  //     selectedMembers.add(member.id!); // select all by default
-  //   }
-  // }
   void _initSplitControllers() {
     _disposeSplitControllers();
     // ✅ Add this

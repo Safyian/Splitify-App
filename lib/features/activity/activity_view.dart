@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
@@ -172,7 +173,7 @@ class _TimelineItem extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Text(
                     _initials,
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: color,
@@ -233,7 +234,7 @@ class _TimelineItem extends StatelessWidget {
                               const SizedBox(width: 4),
                               Text(
                                 _typeLabel,
-                                style: TextStyle(
+                                style: GoogleFonts.inter(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
                                   color: color,
@@ -380,27 +381,27 @@ class _RichDescription extends StatelessWidget {
   final Color accentColor;
 
   // Text styles
-  static const _actorStyle = TextStyle(
+  static final _actorStyle = GoogleFonts.inter(
     fontSize: 13,
     fontWeight: FontWeight.w700,
-    color: Color(0xFF1C1C1E),
+    color: const Color(0xFF1C1C1E),
     height: 1.45,
   );
-  static final _verbStyle = TextStyle(
+  static final _verbStyle = GoogleFonts.inter(
     fontSize: 13,
     fontWeight: FontWeight.w400,
     color: Colors.grey.shade500,
     height: 1.45,
   );
-  static const _labelStyle = TextStyle(
+  static final _labelStyle = GoogleFonts.inter(
     fontSize: 13,
     fontWeight: FontWeight.w500,
-    color: Color(0xFF3A3A3C),
+    color: const Color(0xFF3A3A3C),
     height: 1.45,
     fontStyle: FontStyle.italic,
   );
 
-  TextStyle get _amountStyle => TextStyle(
+  TextStyle get _amountStyle => GoogleFonts.inter(
         fontSize: 13,
         fontWeight: FontWeight.w700,
         color: accentColor,

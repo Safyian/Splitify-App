@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:splitify/core/constants/constants.dart';
 import 'package:splitify/features/groups/settle_up_view.dart';
 import 'package:splitify/features/groups/totals_view.dart';
@@ -31,7 +32,7 @@ class GroupExpensesView extends StatelessWidget {
     expenseCtrl.groupId = groupCtrl.summaries[index].id;
     await expenseCtrl.fetchGroupMembers(groupId: expenseCtrl.groupId);
     final result = await Get.to(
-      () => AddExpenseView(index: index),
+      () => const AddExpenseView(),
       transition: Transition.downToUp,
       duration: const Duration(milliseconds: 300),
     );
@@ -53,6 +54,9 @@ class GroupExpensesView extends StatelessWidget {
       body: Obx(() {
         if (groupCtrl.isLoading.isTrue) {
           return const Center(child: CircularProgressIndicator());
+        }
+        if (index >= groupCtrl.summaries.length) {
+          return const SizedBox.shrink();
         }
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -156,6 +160,7 @@ class _GroupHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      if (index >= groupCtrl.summaries.length) return const SizedBox.shrink();
       final summary = groupCtrl.summaries[index];
       final isSettled = summary.balance.status == BalanceStatus.settled;
 
@@ -295,6 +300,7 @@ class _ActionChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      if (index >= groupCtrl.summaries.length) return const SizedBox.shrink();
       final isSettled =
           groupCtrl.summaries[index].balance.status == BalanceStatus.settled;
 
@@ -422,6 +428,7 @@ class _ExpenseList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      if (index >= groupCtrl.summaries.length) return const SizedBox.shrink();
       final expenses = groupCtrl.groupExpenses.value.expenses;
       final groupId = groupCtrl.summaries[index].id;
 
@@ -551,15 +558,15 @@ class _ExpenseList extends StatelessWidget {
                     ),
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.only(right: 20),
-                    child: const Column(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.delete_outline,
+                        const Icon(Icons.delete_outline,
                             color: Colors.white, size: 24),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           "Delete",
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -809,7 +816,7 @@ class _ExpenseDetailSheet extends StatelessWidget {
       Get.put(expenseCtrl);
 
       Get.to(
-        () => const AddExpenseView(index: -1),
+        () => const AddExpenseView(),
         transition: Transition.downToUp,
         duration: const Duration(milliseconds: 300),
       );
@@ -1090,7 +1097,7 @@ class _ExpenseDetailSheet extends StatelessWidget {
                       backgroundColor: Constants.activeColor.withAlpha(25),
                       child: Text(
                         name[0].toUpperCase(),
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Constants.activeColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,

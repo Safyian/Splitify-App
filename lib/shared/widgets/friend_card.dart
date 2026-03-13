@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
@@ -42,7 +43,7 @@ class FriendCard extends StatelessWidget {
               backgroundColor: Constants.activeColor.withAlpha(28),
               child: Text(
                 friend.name[0].toUpperCase(),
-                style: const TextStyle(
+                style: GoogleFonts.inter(
                   color: Constants.activeColor,
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
@@ -140,14 +141,14 @@ class FriendCard extends StatelessWidget {
         color: Constants.redColor,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        child: const Column(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.person_remove_outlined, color: Colors.white, size: 22),
-            SizedBox(height: 4),
+            const Icon(Icons.person_remove_outlined, color: Colors.white, size: 22),
+            const SizedBox(height: 4),
             Text(
               "Remove",
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,

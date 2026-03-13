@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
 import '../friends/friends_controller.dart';
 import '../friends/friends_model.dart';
 import '../groups/groups_controller.dart';
+import '../navigation/nav_controller.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -114,7 +116,17 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
       friends: selectedFriends,
     );
     _isCreating.value = false;
+
+    // Clear fields
+    _nameCtrl.clear();
+    _selectedEmoji.value = '🏠';
+    _selectedFriendIds.clear();
+    _searchQuery.value = '';
+    _searchCtrl.clear();
+
+    // Close screen then switch to Groups tab
     Get.back();
+    Get.find<NavigationController>().currentIndex.value = 1;
   }
 
   void _showEmojiPicker() {
@@ -180,7 +192,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                 ],
                         ),
                         alignment: Alignment.center,
-                        child: Text(e, style: const TextStyle(fontSize: 26)),
+                        child: Text(e, style: GoogleFonts.inter(fontSize: 26)),
                       ),
                     );
                   }).toList(),
@@ -265,7 +277,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(_selectedEmoji.value,
-                                      style: const TextStyle(fontSize: 46)),
+                                      style: GoogleFonts.inter(fontSize: 46)),
                                 ),
                               )),
                           const SizedBox(height: 10),
@@ -452,7 +464,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(_selectedEmoji.value,
-                                style: const TextStyle(fontSize: 16)),
+                                style: GoogleFonts.inter(fontSize: 16)),
                             const SizedBox(width: 8),
                             Text(_nameCtrl.text.trim(),
                                 style: AppTheme.normalText.copyWith(
@@ -567,7 +579,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                 alignment: Alignment.center,
                                 child: Text(
                                   friend.name[0].toUpperCase(),
-                                  style: TextStyle(
+                                  style: GoogleFonts.inter(
                                     color: isSel
                                         ? Colors.white
                                         : Constants.activeColor,
@@ -650,7 +662,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text("$count",
-                          style: const TextStyle(
+                          style: GoogleFonts.inter(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
                               fontSize: 12)),

@@ -9,11 +9,13 @@ class ApiClient {
   late Dio dio;
 
   final storage = const FlutterSecureStorage();
-
+  static const bool isProduction = bool.fromEnvironment('dart.vm.product');
   ApiClient._internal() {
     dio = Dio(
       BaseOptions(
-        baseUrl: "http://localhost:3000", // for IOS Simulator
+        baseUrl: !isProduction
+            ? "https://splitify-backend-production.up.railway.app"
+            : "http://localhost:3000",
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
       ),

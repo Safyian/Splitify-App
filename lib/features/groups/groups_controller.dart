@@ -323,11 +323,6 @@ class GroupsController extends GetxController {
       }
       // 4. Refresh
       await fetchSummary();
-
-      final friendWord = friends.isEmpty
-          ? ''
-          : ' with ${friends.length} friend${friends.length > 1 ? 's' : ''}';
-      AlertWidgets.showSnackBar(message: 'Group created$friendWord');
     } catch (e) {
       AlertWidgets.showSnackBar(
           message: e.toString().replaceAll('Exception: ', ''));
