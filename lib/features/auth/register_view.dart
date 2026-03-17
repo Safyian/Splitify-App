@@ -99,7 +99,7 @@ class RegisterView extends StatelessWidget {
 
               // ── Create account button ─────────────────────────
               Obx(() => c.isLoading.value
-                  ? Center(
+                  ? const Center(
                       child: CircularProgressIndicator(
                           color: Constants.activeColor),
                     )

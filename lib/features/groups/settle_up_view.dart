@@ -385,11 +385,13 @@ class _SettleAmountViewState extends State<SettleAmountView> {
                         ),
                       ),
                       validator: (val) {
-                        if (val == null || val.isEmpty)
+                        if (val == null || val.isEmpty) {
                           return 'Please enter an amount';
+                        }
                         final entered = double.tryParse(val) ?? 0;
-                        if (entered <= 0)
+                        if (entered <= 0) {
                           return 'Amount must be greater than 0';
+                        }
                         if (entered > widget.entity.amount) {
                           return "Cannot exceed \$${widget.entity.amount.toStringAsFixed(2)}";
                         }

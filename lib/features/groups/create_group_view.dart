@@ -230,10 +230,10 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                   onPressed: () => Get.back(),
                 ),
                 const Spacer(),
-                Row(
+                const Row(
                   children: [
                     _StepDot(active: true),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     _StepDot(active: false),
                   ],
                 ),
@@ -342,7 +342,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: Constants.redColor),
+                            borderSide: const BorderSide(color: Constants.redColor),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 18, vertical: 18),
@@ -432,10 +432,10 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                     },
                   ),
                   const Spacer(),
-                  Row(
+                  const Row(
                     children: [
                       _StepDot(active: false),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6),
                       _StepDot(active: true),
                     ],
                   ),

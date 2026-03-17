@@ -88,7 +88,7 @@ class LoginView extends StatelessWidget {
 
               // ── Sign in button ────────────────────────────────
               Obx(() => c.isLoading.value
-                  ? Center(
+                  ? const Center(
                       child: CircularProgressIndicator(
                           color: Constants.activeColor),
                     )

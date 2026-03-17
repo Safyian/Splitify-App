@@ -14,9 +14,6 @@ class ActivityScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<ActivityController>()) {
-      Get.put(ActivityController());
-    }
     final ctrl = Get.find<ActivityController>();
 
     return Scaffold(
@@ -27,19 +24,42 @@ class ActivityScreen extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
-              child: Column(
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Activity',
-                      style: AppTheme.headingText.copyWith(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.5,
-                      )),
-                  Text('Everything happening in your groups',
-                      style: AppTheme.normalText.copyWith(
-                        color: Colors.grey.shade400,
-                        fontSize: 12,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Activity',
+                            style: AppTheme.headingText.copyWith(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5,
+                            )),
+                        Text('Everything happening in your groups',
+                            style: AppTheme.normalText.copyWith(
+                              color: Colors.grey.shade400,
+                              fontSize: 12,
+                            )),
+                      ],
+                    ),
+                  ),
+                  // Small refresh indicator — visible only during background refresh
+                  Obx(() => AnimatedOpacity(
+                        opacity: ctrl.isRefreshing.value ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Constants.activeColor.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ),
                       )),
                 ],
               ),
@@ -47,12 +67,13 @@ class ActivityScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Expanded(
               child: Obx(() {
-                if (ctrl.isLoading.value) {
+                // Full-screen spinner only on very first load (list is empty)
+                if (ctrl.isLoading.value && ctrl.activities.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(
+                        const SizedBox(
                           width: 28,
                           height: 28,
                           child: CircularProgressIndicator(
@@ -68,7 +89,7 @@ class ActivityScreen extends StatelessWidget {
                     ),
                   );
                 }
-                if (ctrl.error.value.isNotEmpty) {
+                if (ctrl.error.value.isNotEmpty && ctrl.activities.isEmpty) {
                   return _ErrorState(ctrl: ctrl);
                 }
                 if (ctrl.activities.isEmpty) {
@@ -83,8 +104,9 @@ class ActivityScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(0, 4, 0, 40),
                     itemCount: groups.length + (ctrl.hasMore.value ? 1 : 0),
                     itemBuilder: (context, i) {
-                      if (i == groups.length)
+                      if (i == groups.length) {
                         return _LoadMoreButton(ctrl: ctrl);
+                      }
                       return _ActivitySection(section: groups[i]);
                     },
                   ),
@@ -533,7 +555,7 @@ class _LoadMoreButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: Center(
             child: ctrl.isLoadingMore.value
-                ? SizedBox(
+                ? const SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
@@ -589,7 +611,7 @@ class _ErrorState extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
-              child: Icon(Icons.wifi_off_rounded,
+              child: const Icon(Icons.wifi_off_rounded,
                   size: 28, color: Constants.redColor),
             ),
             const SizedBox(height: 16),

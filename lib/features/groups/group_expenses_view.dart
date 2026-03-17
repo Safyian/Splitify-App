@@ -18,6 +18,7 @@ import 'group_settings_view.dart';
 import 'group_summary_model.dart';
 import 'groups_controller.dart';
 import 'settlement_breakdown_sheet.dart'; // ← NEW
+import '../../shared/widgets/shimmer.dart';
 
 class GroupExpensesView extends StatelessWidget {
   GroupExpensesView({super.key, required this.index});
@@ -28,21 +29,18 @@ class GroupExpensesView extends StatelessWidget {
 
   Future<void> _goToAddExpense() async {
     await Get.delete<AddExpenseController>(force: true);
-    final expenseCtrl = Get.put(AddExpenseController());
+    // Set groupId before Get.put so onInit auto-fetches members in the background
+    final expenseCtrl = AddExpenseController();
     expenseCtrl.groupId = groupCtrl.summaries[index].id;
-    await expenseCtrl.fetchGroupMembers(groupId: expenseCtrl.groupId);
-    final result = await Get.to(
+    Get.put(expenseCtrl);
+    // Navigate immediately — AddExpenseView shows its own loading state for members
+    // submitExpense already fetches expenses + summary before returning true,
+    // so there is nothing to do on return — data is already fresh.
+    await Get.to(
       () => const AddExpenseView(),
       transition: Transition.downToUp,
       duration: const Duration(milliseconds: 300),
     );
-
-    if (result == true) {
-      await Future.wait([
-        groupCtrl.fetchGroupExpenses(groupId: groupCtrl.summaries[index].id),
-        groupCtrl.fetchSummary(),
-      ]);
-    }
   }
 
   @override
@@ -52,11 +50,14 @@ class GroupExpensesView extends StatelessWidget {
       appBar: _buildAppBar(),
       floatingActionButton: _buildFAB(),
       body: Obx(() {
-        if (groupCtrl.isLoading.isTrue) {
-          return const Center(child: CircularProgressIndicator());
-        }
+        // Guard: group was deleted/left
         if (index >= groupCtrl.summaries.length) {
           return const SizedBox.shrink();
+        }
+        // Full skeleton only on first open before any data has loaded
+        if (groupCtrl.isLoading.isTrue &&
+            groupCtrl.groupExpenses.value.expenses == null) {
+          return const _GroupExpensesSkeleton();
         }
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -167,11 +168,18 @@ class _GroupHeader extends StatelessWidget {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // ── Group Avatar ──────────────────────────────────
-          CircleAvatar(
-            radius: 30.w,
-            backgroundImage: const NetworkImage(
-              "https://jarvis.cx/tools/_next/image?url=https%3A%2F%2Ffiles.oaiusercontent.com%2Ffile-ctTMt4msuva5EDGFhkxV4zR7%3Fse%3D2123-11-06T01%253A08%253A20Z%26sp%3Dr%26sv%3D2021-08-06%26sr%3Db%26rscc%3Dmax-age%253D31536000%252C%2520immutable%26rscd%3Dattachment%253B%2520filename%253Ddanny-2.webp%26sig%3DHFENdbWjKuaTqdZOdWHzlZ%252BsF1CRtZW1pBI3q94pJ0s%253D&w=1080&q=75",
+          // ── Group emoji avatar ────────────────────────────
+          Container(
+            width: 60.w,
+            height: 60.w,
+            decoration: BoxDecoration(
+              color: Constants.activeColor.withAlpha(20),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              summary.emoji,
+              style: TextStyle(fontSize: 28.w),
             ),
           ),
           const SizedBox(width: 14),
@@ -260,7 +268,7 @@ class _GroupHeader extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.north_east_rounded,
                                 size: 12,
                                 color: Constants.activeColor,
@@ -433,7 +441,7 @@ class _ExpenseList extends StatelessWidget {
       final groupId = groupCtrl.summaries[index].id;
 
       if (expenses == null) {
-        return const Center(child: CircularProgressIndicator());
+        return const _ExpenseListSkeleton();
       }
 
       if (expenses.isEmpty) {
@@ -924,9 +932,9 @@ class _ExpenseDetailSheet extends StatelessWidget {
     }
 
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Constants.bgColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       child: Column(
@@ -1161,7 +1169,7 @@ class _ExpenseDetailSheet extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle_outline_rounded,
+                  const Icon(Icons.check_circle_outline_rounded,
                       color: Constants.activeColor),
                   const SizedBox(width: 12),
                   Expanded(
@@ -1191,6 +1199,195 @@ class _ExpenseDetailSheet extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Full-page skeleton (first load) ──────────────────────────────────────────
+class _GroupExpensesSkeleton extends StatelessWidget {
+  const _GroupExpensesSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 12),
+
+            // ── Group Header ──
+            const Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ShimmerBox(width: 60, height: 60, shape: BoxShape.circle),
+                SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ShimmerBox(width: 130, height: 16, borderRadius: 6),
+                      SizedBox(height: 8),
+                      ShimmerBox(height: 12, borderRadius: 4),
+                      SizedBox(height: 5),
+                      ShimmerBox(width: 160, height: 12, borderRadius: 4),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // ── Action Chips ──
+            const Row(
+              children: [
+                ShimmerBox(width: 100, height: 38, borderRadius: 10),
+                SizedBox(width: 8),
+                ShimmerBox(width: 76, height: 38, borderRadius: 10),
+                SizedBox(width: 8),
+                ShimmerBox(width: 92, height: 38, borderRadius: 10),
+                SizedBox(width: 8),
+                ShimmerBox(width: 76, height: 38, borderRadius: 10),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // ── Month header ──
+            Row(
+              children: [
+                const ShimmerBox(width: 72, height: 24, borderRadius: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    height: 1,
+                    color: Colors.grey.withOpacity(0.12),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const ShimmerBox(width: 48, height: 12, borderRadius: 4),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // ── Expense rows ──
+            _expenseRowSkeleton(120),
+            _expenseRowSkeleton(160),
+            _expenseRowSkeleton(100),
+            _expenseRowSkeleton(140),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _expenseRowSkeleton(double descWidth) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Constants.bgColorLight,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const ShimmerBox(width: 40, height: 40, borderRadius: 10),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ShimmerBox(width: descWidth, height: 13, borderRadius: 4),
+                const SizedBox(height: 6),
+                const ShimmerBox(width: 90, height: 11, borderRadius: 4),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              ShimmerBox(width: 55, height: 13, borderRadius: 4),
+              SizedBox(height: 5),
+              ShimmerBox(width: 42, height: 18, borderRadius: 6),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Expense-list-only skeleton (fallback when header already rendered) ────────
+class _ExpenseListSkeleton extends StatelessWidget {
+  const _ExpenseListSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Month header
+          Padding(
+            padding: const EdgeInsets.only(top: 4, bottom: 12),
+            child: Row(
+              children: [
+                const ShimmerBox(width: 72, height: 24, borderRadius: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    height: 1,
+                    color: Colors.grey.withOpacity(0.12),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const ShimmerBox(width: 48, height: 12, borderRadius: 4),
+              ],
+            ),
+          ),
+          _row(120),
+          _row(160),
+          _row(100),
+          _row(140),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(double descWidth) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Constants.bgColorLight,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const ShimmerBox(width: 40, height: 40, borderRadius: 10),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ShimmerBox(width: descWidth, height: 13, borderRadius: 4),
+                const SizedBox(height: 6),
+                const ShimmerBox(width: 90, height: 11, borderRadius: 4),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              ShimmerBox(width: 55, height: 13, borderRadius: 4),
+              SizedBox(height: 5),
+              ShimmerBox(width: 42, height: 18, borderRadius: 6),
+            ],
+          ),
         ],
       ),
     );

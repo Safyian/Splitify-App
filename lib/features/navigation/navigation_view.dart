@@ -21,8 +21,8 @@ class NavigationView extends StatelessWidget {
   final pages = [
     FriendsScreen(),
     GroupsScreen(),
-    SizedBox(),
-    ActivityScreen(),
+    const SizedBox(),
+    const ActivityScreen(),
     ProfileView(),
   ];
 

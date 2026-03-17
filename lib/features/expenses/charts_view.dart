@@ -33,8 +33,6 @@ class _ChartsViewState extends State<ChartsView> {
     Color(0xFFFF9F43),
   ];
 
-  static Color _colorAt(int i) => _colors[i % _colors.length];
-
   @override
   Widget build(BuildContext context) {
     final expenses = groupCtrl.groupExpenses.value.expenses ?? [];

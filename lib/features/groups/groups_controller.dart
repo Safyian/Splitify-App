@@ -17,6 +17,7 @@ class GroupsController extends GetxController {
   var groupExpenses = GroupExpenses().obs;
   RxBool isLoading = false.obs;
   RxBool isSettling = false.obs;
+  RxBool isLoadingBalances = false.obs;
   final GroupService _service = GroupService();
   final ExpenseService _expenseService = ExpenseService();
   var groupBalances =
@@ -25,11 +26,23 @@ class GroupsController extends GetxController {
 
   // ── Existing methods ─────────────────────────────────────────────────────────
 
+  /// Resets all group-specific data so a newly opened group never shows stale content.
+  void clearGroupData() {
+    groupExpenses.value = GroupExpenses();
+    groupBalances.value =
+        GroupBalancesModel(balances: [], settlements: [], pairwise: []);
+    groupMembers.value = GroupMembersModel();
+    isLoadingBalances.value = false;
+  }
+
   Future<void> fetchGroupBalances({required String groupId}) async {
     try {
+      isLoadingBalances.value = true;
       groupBalances.value = await _service.getGroupBalances(groupId: groupId);
     } catch (e) {
       Get.snackbar("Error", "Failed to load balances");
+    } finally {
+      isLoadingBalances.value = false;
     }
   }
 
@@ -58,12 +71,9 @@ class GroupsController extends GetxController {
 
   Future<void> fetchGroupMembers({required String groupId}) async {
     try {
-      isLoading.value = true;
       groupMembers.value = await _service.getGroupMembers(groupId: groupId);
     } catch (e) {
       Get.snackbar("Error", "Failed to load members");
-    } finally {
-      isLoading.value = false;
     }
   }
 

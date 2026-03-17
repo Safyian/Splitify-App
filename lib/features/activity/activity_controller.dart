@@ -10,7 +10,8 @@ class ActivityController extends GetxController {
 
   final RxList<ActivityModel> activities = <ActivityModel>[].obs;
   final RxList<ActivitySection> grouped = <ActivitySection>[].obs;
-  final RxBool isLoading = false.obs;
+  final RxBool isLoading = false.obs;      // first-load only (no data yet)
+  final RxBool isRefreshing = false.obs;   // background refresh (data already shown)
   final RxBool isLoadingMore = false.obs;
   final RxBool hasMore = false.obs;
   final RxString error = ''.obs;
@@ -27,16 +28,25 @@ class ActivityController extends GetxController {
   Future<void> fetchActivity({bool refresh = false}) async {
     if (refresh) _currentPage = 1;
     error.value = '';
-    try {
+    // Show full-screen spinner only on first load; after that refresh silently
+    if (activities.isEmpty) {
       isLoading.value = true;
+    } else {
+      isRefreshing.value = true;
+    }
+    try {
       final result = await _service.getActivity(page: 1);
       activities.value = result.activities;
       hasMore.value = result.pagination.hasMore;
       _currentPage = 1;
-    } catch (e, stack) {
-      error.value = e.toString().replaceAll('Exception: ', '');
+    } catch (e) {
+      // On background refresh, don't replace the existing list with an error
+      if (activities.isEmpty) {
+        error.value = e.toString().replaceAll('Exception: ', '');
+      }
     } finally {
       isLoading.value = false;
+      isRefreshing.value = false;
     }
   }
 

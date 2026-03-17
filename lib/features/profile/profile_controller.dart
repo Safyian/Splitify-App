@@ -22,6 +22,7 @@ class ProfileController extends GetxController {
   void onInit() {
     super.onInit();
     _loadPreferences();
+    getUserDetails();
   }
 
   Future<void> _loadPreferences() async {

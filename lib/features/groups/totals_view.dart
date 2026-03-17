@@ -176,7 +176,7 @@ class TotalsView extends StatelessWidget {
                         value: paidPct,
                         minHeight: 6,
                         backgroundColor: Colors.grey.withOpacity(0.15),
-                        valueColor: AlwaysStoppedAnimation<Color>(
+                        valueColor: const AlwaysStoppedAnimation<Color>(
                           Constants.activeColor,
                         ),
                       ),

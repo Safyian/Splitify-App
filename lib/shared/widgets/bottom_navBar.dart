@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../features/groups/group_summary_model.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
 import '../../features/expenses/add_expense_controller.dart';
 import '../../features/expenses/add_expense_view.dart';
+import '../../features/groups/group_summary_model.dart';
 import '../../features/groups/groups_controller.dart';
 import '../../features/navigation/nav_controller.dart';
 import 'alert_widgets.dart';
@@ -81,13 +81,15 @@ class BottomNavBar extends StatelessWidget {
                 Constants.friendsLogo,
                 width: 26,
                 height: 26,
-                color: Colors.grey[600],
+                colorFilter:
+                    ColorFilter.mode(Colors.grey.shade600, BlendMode.srcIn),
               ),
               activeIcon: SvgPicture.asset(
                 Constants.friendsLogo,
                 width: 26,
                 height: 26,
-                color: Constants.activeColor,
+                colorFilter: const ColorFilter.mode(
+                    Constants.activeColor, BlendMode.srcIn),
               ),
               label: 'Friends',
             ),
@@ -96,13 +98,15 @@ class BottomNavBar extends StatelessWidget {
                 Constants.groupsLogo,
                 width: 26,
                 height: 26,
-                color: Colors.grey[600],
+                colorFilter:
+                    ColorFilter.mode(Colors.grey.shade600, BlendMode.srcIn),
               ),
               activeIcon: SvgPicture.asset(
                 Constants.groupsLogo,
                 width: 26,
                 height: 26,
-                color: Constants.activeColor,
+                colorFilter: const ColorFilter.mode(
+                    Constants.activeColor, BlendMode.srcIn),
               ),
               label: 'Groups',
             ),
@@ -119,28 +123,28 @@ class BottomNavBar extends StatelessWidget {
                 Constants.activityLogo,
                 width: 26,
                 height: 26,
-                color: Colors.grey[600],
+                colorFilter:
+                    ColorFilter.mode(Colors.grey.shade600, BlendMode.srcIn),
               ),
               activeIcon: SvgPicture.asset(
                 Constants.activityLogo,
                 width: 26,
                 height: 26,
-                color: Constants.activeColor,
+                colorFilter: const ColorFilter.mode(
+                    Constants.activeColor, BlendMode.srcIn),
               ),
               label: 'Activity',
             ),
             BottomNavigationBarItem(
-              icon: SvgPicture.asset(
+              icon: Image.asset(
                 Constants.userLogo,
                 width: 26,
                 height: 26,
-                color: Colors.grey[600],
               ),
-              activeIcon: SvgPicture.asset(
+              activeIcon: Image.asset(
                 Constants.userLogo,
                 width: 26,
                 height: 26,
-                color: Constants.activeColor,
               ),
               label: 'Profile',
             ),
@@ -194,8 +198,8 @@ class _GroupPickerSheet extends StatelessWidget {
                 onTap: () => Navigator.of(context).pop(g.id),
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
                     color: Constants.bgColorLight,
                     border: Border.all(color: Colors.grey.shade200),
@@ -203,8 +207,7 @@ class _GroupPickerSheet extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Text(g.emoji,
-                          style: GoogleFonts.inter(fontSize: 22)),
+                      Text(g.emoji, style: GoogleFonts.inter(fontSize: 22)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(

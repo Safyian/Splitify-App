@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
+import '../../shared/widgets/shimmer.dart';
 import '../profile/profile_controller.dart';
 import 'groups_controller.dart';
 import 'settlement_breakdown_sheet.dart';
@@ -17,15 +18,12 @@ class BalancesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final myId = profileCtrl.user.value.user?.id ?? '';
-    final members = groupCtrl.groupMembers.value.members ?? [];
-
-    final nameMap = {for (final m in members) m.id!: m.name!};
-
     return Scaffold(
       backgroundColor: Constants.bgColor,
       appBar: AppBar(
         backgroundColor: Constants.bgColor,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Text("Balances", style: AppTheme.headingText),
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -33,74 +31,114 @@ class BalancesView extends StatelessWidget {
         ),
       ),
       body: Obx(() {
-        if (groupCtrl.isLoading.isTrue) {
-          return const Center(child: CircularProgressIndicator());
+        if (groupCtrl.isLoadingBalances.isTrue) {
+          return const _BalancesSkeleton();
         }
+
+        final myId = profileCtrl.user.value.user?.id ?? '';
+        final members = groupCtrl.groupMembers.value.members ?? [];
+        final nameMap = {for (final m in members) m.id!: m.name!};
 
         final balances = groupCtrl.groupBalances.value.balances;
         final settlements = groupCtrl.groupBalances.value.settlements;
-        final pairwise = groupCtrl.groupBalances.value.pairwise;
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Net Balances ───────────────────────────────
-              Text("Net Balances", style: AppTheme.subHeadingText),
-              const SizedBox(height: 8),
+              const _SectionHeader(label: 'Net Balances'),
+              const SizedBox(height: 10),
               ...balances.map((b) {
                 final isMe = b.userId == myId;
-                final name = isMe ? "You" : (nameMap[b.userId] ?? b.name);
-                final isPositive = b.net >= 0;
+                final name = isMe ? 'You' : (nameMap[b.userId] ?? b.name);
+                final isPositive = b.net > 0;
+                final isZero = b.net == 0;
 
                 return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
                   margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
                     color: Constants.bgColorLight,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.grey.shade100),
                   ),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 18,
-                        backgroundColor: Constants.activeColor.withAlpha(25),
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: isZero
+                              ? Colors.grey.shade100
+                              : isPositive
+                                  ? Constants.activeColor
+                                      .withValues(alpha: 0.12)
+                                  : Constants.redColor
+                                      .withValues(alpha: 0.10),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
                         child: Text(
                           name[0].toUpperCase(),
-                          style: GoogleFonts.inter(color: Constants.activeColor),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: isZero
+                                ? Colors.grey
+                                : isPositive
+                                    ? Constants.activeColor
+                                    : Constants.redColor,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(name, style: AppTheme.subHeadingText),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(name,
+                                style: AppTheme.subHeadingText
+                                    .copyWith(fontWeight: FontWeight.w600)),
+                            if (!isZero)
+                              Text(
+                                isPositive ? 'gets back' : 'owes',
+                                style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: Colors.grey.shade500),
+                              ),
+                          ],
+                        ),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            b.net == 0
-                                ? "Settled"
-                                : "${isPositive ? '+' : ''}\$${b.net.toStringAsFixed(2)}",
-                            style: AppTheme.subHeadingText.copyWith(
-                              color: b.net == 0
-                                  ? Colors.grey
-                                  : isPositive
-                                      ? Constants.activeColor
-                                      : Constants.redColor,
-                            ),
-                          ),
-                          Text(
-                            b.net == 0
-                                ? ""
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: isZero
+                              ? Colors.grey.shade100
+                              : isPositive
+                                  ? Constants.activeColor
+                                      .withValues(alpha: 0.10)
+                                  : Constants.redColor
+                                      .withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          isZero
+                              ? 'Settled'
+                              : '${isPositive ? '+' : ''}\$${b.net.toStringAsFixed(2)}',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: isZero
+                                ? Colors.grey
                                 : isPositive
-                                    ? "gets back"
-                                    : "owes",
-                            style: GoogleFonts.inter(
-                                fontSize: 11, color: Colors.grey),
+                                    ? Constants.activeColor
+                                    : Constants.redColor,
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
@@ -109,16 +147,16 @@ class BalancesView extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // ── Suggested Settlements header ───────────────
+              // ── Suggested Settlements ──────────────────────
               Row(
                 children: [
-                  Text("Suggested Settlements", style: AppTheme.subHeadingText),
+                  const _SectionHeader(label: 'Suggested Settlements'),
                   const Spacer(),
-
-                  // ✅ Trigger button — only show when there are settlements
                   if (settlements.isNotEmpty)
                     GestureDetector(
                       onTap: () {
+                        final myId =
+                            profileCtrl.user.value.user?.id ?? '';
                         final breakdownData =
                             SettlementBreakdownData.fromBalancesModel(
                           groupCtrl.groupBalances.value,
@@ -130,19 +168,22 @@ class BalancesView extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: Constants.activeColor.withOpacity(0.1),
+                          color: Constants.activeColor
+                              .withValues(alpha: 0.10),
                           border: Border.all(
-                              color: Constants.activeColor.withOpacity(0.3)),
+                              color: Constants.activeColor
+                                  .withValues(alpha: 0.3)),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.calculate_outlined,
-                                size: 13, color: Constants.activeColor),
+                            const Icon(Icons.calculate_outlined,
+                                size: 13,
+                                color: Constants.activeColor),
                             const SizedBox(width: 4),
                             Text(
-                              "How is this calculated?",
+                              'How is this calculated?',
                               style: GoogleFonts.inter(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -155,30 +196,58 @@ class BalancesView extends StatelessWidget {
                     ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
 
-              // ── Settlements list ───────────────────────────
               settlements.isEmpty
                   ? Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         color: Constants.bgColorLight,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: Colors.grey.shade100),
                       ),
-                      child: Text(
-                        "Everyone is settled up! 🎉",
-                        style: AppTheme.normalText,
-                        textAlign: TextAlign.center,
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Constants.activeColor
+                                  .withValues(alpha: 0.10),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: const Text('🎉',
+                                style: TextStyle(fontSize: 22)),
+                          ),
+                          const SizedBox(height: 10),
+                          Text('Everyone is settled up!',
+                              style: AppTheme.subHeadingText.copyWith(
+                                  fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 4),
+                          Text(
+                            'No outstanding balances in this group.',
+                            style: AppTheme.normalText
+                                .copyWith(color: Colors.grey.shade400),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     )
                   : Column(
                       children: settlements.map((s) {
+                        final members =
+                            groupCtrl.groupMembers.value.members ?? [];
+                        final nameMap = {
+                          for (final m in members) m.id!: m.name!
+                        };
                         final fromName = s.from == myId
-                            ? "You"
+                            ? 'You'
                             : (nameMap[s.from] ?? s.fromName);
-                        final toName =
-                            s.to == myId ? "you" : (nameMap[s.to] ?? s.toName);
+                        final toName = s.to == myId
+                            ? 'you'
+                            : (nameMap[s.to] ?? s.toName);
 
                         return Container(
                           padding: const EdgeInsets.symmetric(
@@ -186,32 +255,56 @@ class BalancesView extends StatelessWidget {
                           margin: const EdgeInsets.only(bottom: 10),
                           decoration: BoxDecoration(
                             color: Constants.bgColorLight,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                                color: Constants.redColor
+                                    .withValues(alpha: 0.12)),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.arrow_forward,
-                                  color: Constants.redColor, size: 20),
+                              Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: Constants.redColor
+                                      .withValues(alpha: 0.10),
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: const Icon(Icons.arrow_forward_rounded,
+                                    color: Constants.redColor, size: 16),
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: RichText(
                                   text: TextSpan(children: [
                                     TextSpan(
-                                        text: "$fromName ",
-                                        style: AppTheme.subHeadingText),
+                                        text: '$fromName ',
+                                        style: AppTheme.subHeadingText
+                                            .copyWith(
+                                                fontWeight:
+                                                    FontWeight.w600)),
                                     TextSpan(
-                                        text: "owes ",
-                                        style: AppTheme.normalText),
+                                        text: 'owes ',
+                                        style: AppTheme.normalText.copyWith(
+                                            color: Colors.grey.shade500)),
                                     TextSpan(
-                                        text: "$toName ",
-                                        style: AppTheme.subHeadingText),
+                                        text: toName,
+                                        style: AppTheme.subHeadingText
+                                            .copyWith(
+                                                fontWeight:
+                                                    FontWeight.w600)),
                                   ]),
                                 ),
                               ),
+                              const SizedBox(width: 8),
                               Text(
-                                "\$${s.amount.toStringAsFixed(2)}",
-                                style: AppTheme.subHeadingText
-                                    .copyWith(color: Constants.redColor),
+                                '\$${s.amount.toStringAsFixed(2)}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Constants.redColor,
+                                ),
                               ),
                             ],
                           ),
@@ -222,6 +315,147 @@ class BalancesView extends StatelessWidget {
           ),
         );
       }),
+    );
+  }
+}
+
+// ── Section header ────────────────────────────────────────────────────────────
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: GoogleFonts.inter(
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        color: Colors.grey.shade500,
+        letterSpacing: 0.4,
+      ),
+    );
+  }
+}
+
+// ── Skeleton loading state ────────────────────────────────────────────────────
+class _BalancesSkeleton extends StatelessWidget {
+  const _BalancesSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Status pill
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Constants.activeColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 12,
+                      height: 12,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 1.5,
+                        color:
+                            Constants.activeColor.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Calculating balances…',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Constants.activeColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Net Balances label
+            const ShimmerBox(width: 90, height: 12, borderRadius: 4),
+            const SizedBox(height: 12),
+            _balanceRowSkeleton(100),
+            _balanceRowSkeleton(140),
+            _balanceRowSkeleton(80),
+
+            const SizedBox(height: 28),
+
+            // Settlements label
+            const ShimmerBox(width: 140, height: 12, borderRadius: 4),
+            const SizedBox(height: 12),
+            _settlementRowSkeleton(120),
+            _settlementRowSkeleton(90),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _balanceRowSkeleton(double nameWidth) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Constants.bgColorLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Row(
+        children: [
+          const ShimmerBox(width: 38, height: 38, shape: BoxShape.circle),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ShimmerBox(width: nameWidth, height: 12, borderRadius: 4),
+                const SizedBox(height: 5),
+                const ShimmerBox(width: 50, height: 10, borderRadius: 4),
+              ],
+            ),
+          ),
+          const ShimmerBox(width: 64, height: 28, borderRadius: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _settlementRowSkeleton(double nameWidth) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Constants.bgColorLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Row(
+        children: [
+          const ShimmerBox(width: 34, height: 34, shape: BoxShape.circle),
+          const SizedBox(width: 12),
+          Expanded(
+            child:
+                ShimmerBox(width: nameWidth, height: 12, borderRadius: 4),
+          ),
+          const SizedBox(width: 12),
+          const ShimmerBox(width: 50, height: 12, borderRadius: 4),
+        ],
+      ),
     );
   }
 }

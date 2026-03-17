@@ -5,6 +5,7 @@ import 'package:splitify/shared/widgets/friend_card.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
+import '../../shared/widgets/shimmer.dart';
 import '../groups/create_group_view.dart';
 import '../groups/group_summary_model.dart';
 import '../groups/groups_controller.dart'; // already imported
@@ -126,9 +127,9 @@ class FriendsScreen extends StatelessWidget {
       Get.bottomSheet(
         Container(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Constants.bgColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -142,7 +143,7 @@ class FriendsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              Icon(Icons.check_circle_outline_rounded,
+              const Icon(Icons.check_circle_outline_rounded,
                   size: 48, color: Constants.activeColor),
               const SizedBox(height: 12),
               Text("All settled up with ${friend.name}",
@@ -177,9 +178,9 @@ class FriendsScreen extends StatelessWidget {
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Constants.bgColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -272,7 +273,7 @@ class FriendsScreen extends StatelessWidget {
                 color: Constants.activeColor.withAlpha(20),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.person_add_outlined,
+              child: const Icon(Icons.person_add_outlined,
                   size: 18, color: Constants.activeColor),
             ),
           ),
@@ -298,13 +299,13 @@ class FriendsScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 13),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: Constants.activeColor.withAlpha(180)),
+                    border:
+                        Border.all(color: Constants.activeColor.withAlpha(180)),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.person_add_outlined,
+                      const Icon(Icons.person_add_outlined,
                           size: 17, color: Constants.activeColor),
                       const SizedBox(width: 7),
                       Text(
@@ -356,7 +357,7 @@ class FriendsScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (friendsCtrl.isLoading.isTrue) {
-          return const Center(child: CircularProgressIndicator());
+          return const _FriendsSkeleton();
         }
 
         final all = friendsCtrl.friends;
@@ -416,7 +417,6 @@ class FriendsScreen extends StatelessWidget {
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: filtered.map((friend) {
-                        final isLast = friend == filtered.last;
                         return FriendCard(
                           friend: friend,
                           onTap: () => _showGroupPicker(context, friend),
@@ -607,6 +607,119 @@ class _FilterChips extends StatelessWidget {
             }).toList(),
           ),
         ));
+  }
+}
+
+// ── Skeleton loading state ────────────────────────────────────────────────────
+class _FriendsSkeleton extends StatelessWidget {
+  const _FriendsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Overall balance card ──
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: Constants.bgColorLight,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Row(
+                children: [
+                  ShimmerBox(width: 40, height: 40, borderRadius: 10),
+                  SizedBox(width: 14),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ShimmerBox(width: 90, height: 11, borderRadius: 4),
+                      SizedBox(height: 7),
+                      ShimmerBox(width: 160, height: 15, borderRadius: 5),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // ── Search bar ──
+            const ShimmerBox(
+                width: double.infinity, height: 42, borderRadius: 12),
+            const SizedBox(height: 12),
+
+            // ── Filter chips ──
+            const Row(
+              children: [
+                ShimmerBox(width: 40, height: 30, borderRadius: 20),
+                SizedBox(width: 8),
+                ShimmerBox(width: 68, height: 30, borderRadius: 20),
+                SizedBox(width: 8),
+                ShimmerBox(width: 76, height: 30, borderRadius: 20),
+                SizedBox(width: 8),
+                ShimmerBox(width: 72, height: 30, borderRadius: 20),
+                SizedBox(width: 8),
+                ShimmerBox(width: 88, height: 30, borderRadius: 20),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // ── Friend list container ──
+            Container(
+              decoration: BoxDecoration(
+                color: Constants.bgColorLight,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  _friendRowSkeleton(130, showDivider: false),
+                  _friendRowSkeleton(100),
+                  _friendRowSkeleton(150),
+                  _friendRowSkeleton(110),
+                  _friendRowSkeleton(140),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _friendRowSkeleton(double nameWidth, {bool showDivider = true}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        color: Constants.bgColorLight,
+        border: showDivider
+            ? Border(
+                top: BorderSide(color: Colors.grey.withValues(alpha: 0.08)))
+            : null,
+      ),
+      child: Row(
+        children: [
+          const ShimmerBox(width: 38, height: 38, shape: BoxShape.circle),
+          const SizedBox(width: 12),
+          Expanded(
+            child: ShimmerBox(width: nameWidth, height: 13, borderRadius: 4),
+          ),
+          const SizedBox(width: 12),
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              ShimmerBox(width: 52, height: 13, borderRadius: 4),
+              SizedBox(height: 4),
+              ShimmerBox(width: 40, height: 10, borderRadius: 4),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 

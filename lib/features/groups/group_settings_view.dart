@@ -59,25 +59,25 @@ class GroupSettingsView extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           children: [
             // ── Group Identity ───────────────────────────
-            _SectionHeader(title: "Group Identity"),
+            const _SectionHeader(title: "Group Identity"),
             const SizedBox(height: 10),
             _EmojiAndNameCard(index: index, groupCtrl: groupCtrl),
             const SizedBox(height: 24),
 
             // ── Expense Defaults ─────────────────────────
-            _SectionHeader(title: "Expense Defaults"),
+            const _SectionHeader(title: "Expense Defaults"),
             const SizedBox(height: 10),
             _SplitTypeCard(index: index, groupCtrl: groupCtrl),
             const SizedBox(height: 24),
 
             // ── Members ──────────────────────────────────
-            _SectionHeader(title: "Members"),
+            const _SectionHeader(title: "Members"),
             const SizedBox(height: 10),
             _MembersCard(index: index, groupCtrl: groupCtrl, myId: myId),
             const SizedBox(height: 24),
 
             // ── Danger Zone ──────────────────────────────
-            _SectionHeader(title: "Danger Zone", isRed: true),
+            const _SectionHeader(title: "Danger Zone", isRed: true),
             const SizedBox(height: 10),
             _DangerCard(
                 index: index,
@@ -261,9 +261,9 @@ class _EmojiAndNameCard extends StatelessWidget {
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Constants.bgColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -378,9 +378,9 @@ class _SplitTypeCard extends StatelessWidget {
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Constants.bgColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -693,7 +693,7 @@ class _MembersCard extends StatelessWidget {
                             color: Constants.redColor.withAlpha(20),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.person_remove_outlined,
                             size: 16,
                             color: Constants.redColor,

@@ -18,7 +18,7 @@ class Constants {
   static const String groupsLogo = "assets/images/Groups.svg";
   static const String addLogo = "assets/images/Add.svg";
   static const String activityLogo = "assets/images/Activity.svg";
-  static const String userLogo = "assets/images/User.svg";
+  static const String userLogo = "assets/images/User.png";
   static const String profileLogo = "assets/images/Profile.svg";
   static const String searchLogo = "assets/images/search.svg";
   static const String teamsLogo = "assets/images/Teams.svg";

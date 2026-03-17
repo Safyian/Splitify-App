@@ -75,7 +75,7 @@ class ProfileView extends StatelessWidget {
               const SizedBox(height: 24),
 
               // ── Account ──────────────────────────────────────
-              _SectionLabel(label: 'Account'),
+              const _SectionLabel(label: 'Account'),
               const SizedBox(height: 8),
               _SettingsCard(items: [
                 _SettingsItem(
@@ -95,7 +95,7 @@ class ProfileView extends StatelessWidget {
               const SizedBox(height: 20),
 
               // ── Splitify ─────────────────────────────────────
-              _SectionLabel(label: 'Splitify'),
+              const _SectionLabel(label: 'Splitify'),
               const SizedBox(height: 8),
               _SettingsCard(items: [
                 _SettingsItem(
@@ -115,7 +115,7 @@ class ProfileView extends StatelessWidget {
               const SizedBox(height: 20),
 
               // ── Support ──────────────────────────────────────
-              _SectionLabel(label: 'Support'),
+              const _SectionLabel(label: 'Support'),
               const SizedBox(height: 8),
               _SettingsCard(items: [
                 _SettingsItem(
@@ -135,7 +135,7 @@ class ProfileView extends StatelessWidget {
               const SizedBox(height: 20),
 
               // ── Danger zone ───────────────────────────────────
-              _SectionLabel(label: 'Danger zone'),
+              const _SectionLabel(label: 'Danger zone'),
               const SizedBox(height: 8),
               _SettingsCard(items: [
                 _SettingsItem(
@@ -164,7 +164,7 @@ class ProfileView extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.logout_rounded,
+                      const Icon(Icons.logout_rounded,
                           size: 18, color: Constants.redColor),
                       const SizedBox(width: 8),
                       Text(
@@ -425,7 +425,7 @@ class ProfileView extends StatelessWidget {
                             ),
                           ),
                           if (isSelected)
-                            Icon(Icons.check_circle_rounded,
+                            const Icon(Icons.check_circle_rounded,
                                 size: 20, color: Constants.activeColor),
                         ],
                       ),
@@ -492,7 +492,7 @@ class ProfileView extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
-              child: Icon(Icons.delete_forever_rounded,
+              child: const Icon(Icons.delete_forever_rounded,
                   size: 28, color: Constants.redColor),
             ),
             const SizedBox(height: 16),

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 
 import '../../shared/widgets/alert_widgets.dart';
 import '../groups/group_members_model.dart';
-import '../groups/group_service.dart';
 import '../groups/groups_controller.dart';
 import '../profile/profile_controller.dart';
 import 'expense_payload_model.dart';
@@ -19,8 +18,6 @@ class AddExpenseController extends GetxController {
 
   // var groupMembers = GroupMembersModel().obs;
   RxBool isLoading = false.obs;
-
-  final GroupService _service = GroupService();
   final ExpenseService _expenseService = ExpenseService();
 
   var selectedMember = Rxn<Member>(); // Paid by
@@ -74,27 +71,33 @@ class AddExpenseController extends GetxController {
   // Submit Expense
   // ─────────────────────────────────────────
 
-  Future<bool> submitExpense({required String groupId}) async {
+  /// Returns a validation error message, or null if all fields are valid.
+  /// Call this before showing any loading UI.
+  String? validate() {
     final desc = descriptionCtrl.text.trim();
     final amt = amountCtrl.text.trim();
 
-    // Basic validation
-    if (desc.isEmpty || amt.isEmpty) {
-      AlertWidgets.showSnackBar(message: "Fill all fields");
-      return false;
-    }
+    if (desc.isEmpty) return 'Add a description';
+    if (amt.isEmpty) return 'Enter an amount';
 
     final amount = double.tryParse(amt);
-    if (amount == null || amount <= 0) {
-      AlertWidgets.showSnackBar(message: "Invalid amount");
-      return false;
+    if (amount == null || amount <= 0) return 'Enter a valid amount';
+
+    if (selectedMember.value == null) return 'Select who paid';
+
+    try {
+      _buildSplits(amount);
+    } catch (e) {
+      return e.toString();
     }
 
-    if (selectedMember.value == null) {
-      // print("Select who paid");
-      AlertWidgets.showSnackBar(message: "Select who paid");
-      return false;
-    }
+    return null;
+  }
+
+  Future<bool> submitExpense({required String groupId}) async {
+    final desc = descriptionCtrl.text.trim();
+    final amt = amountCtrl.text.trim();
+    final amount = double.tryParse(amt) ?? 0;
 
     // Build splits
     List<SplitInput> splits;

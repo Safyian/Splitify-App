@@ -9,7 +9,7 @@ Future<void> main() async {
 
   runApp(
     ScreenUtilInit(
-      builder: (_, child) => GetMaterialApp(
+      builder: (_, child) => const GetMaterialApp(
         debugShowCheckedModeBanner: false,
         home: SplashView(),
       ),

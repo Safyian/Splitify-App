@@ -3,7 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 
+import '../activity/activity_controller.dart';
+import '../expenses/add_expense_controller.dart';
+import '../friends/friends_controller.dart';
+import '../groups/groups_controller.dart';
+import '../navigation/nav_controller.dart';
 import '../navigation/navigation_view.dart';
+import '../profile/profile_controller.dart';
 import 'auth_services.dart';
 import 'login_view.dart';
 
@@ -84,6 +90,15 @@ class AuthController extends GetxController {
     if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
     Get.closeAllSnackbars();
     await storage.delete(key: "token");
+
+    // Delete all controllers so stale data is not shown to the next user
+    await Get.delete<AddExpenseController>(force: true);
+    await Get.delete<FriendsController>(tag: 'friends', force: true);
+    await Get.delete<ActivityController>(force: true);
+    await Get.delete<GroupsController>(force: true);
+    await Get.delete<ProfileController>(force: true);
+    await Get.delete<NavigationController>(force: true);
+
     Get.offAll(() => LoginView());
   }
 
