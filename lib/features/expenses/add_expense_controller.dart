@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../core/utils/cache_manager.dart';
 import '../../shared/widgets/alert_widgets.dart';
 import '../groups/group_members_model.dart';
 import '../groups/groups_controller.dart';
@@ -53,7 +54,7 @@ class AddExpenseController extends GetxController {
 
 // Getter for convenience
   GroupMembersModel get groupMembersData =>
-      Get.find<GroupsController>().groupMembers.value;
+      Get.find<GroupsController>().membersFor(groupId);
 
   /// Creates one TextEditingController per member
   void _initSplitControllers() {
@@ -136,9 +137,17 @@ class AddExpenseController extends GetxController {
           request: request,
         );
       }
+      // Invalidate cache so everything reflects the new expense
+      CacheManager().invalidateAll([
+        CacheKeys.summaries,
+        CacheKeys.friends,
+        CacheKeys.activity,
+        CacheKeys.groupExpenses(groupId),
+      ]);
       await Future.wait([
-        Get.find<GroupsController>().fetchGroupExpenses(groupId: groupId),
-        Get.find<GroupsController>().fetchSummary()
+        Get.find<GroupsController>()
+            .fetchGroupExpenses(groupId: groupId, forceRefresh: true),
+        Get.find<GroupsController>().fetchSummary(forceRefresh: true),
       ]);
 
       _resetForm();

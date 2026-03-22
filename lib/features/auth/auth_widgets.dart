@@ -26,6 +26,7 @@ class AuthInputField extends StatelessWidget {
     this.keyboardType,
     this.obscure = false,
     this.suffix,
+    this.errorText,
   });
 
   final TextEditingController controller;
@@ -34,37 +35,63 @@ class AuthInputField extends StatelessWidget {
   final TextInputType? keyboardType;
   final bool obscure;
   final Widget? suffix;
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: obscure,
-        keyboardType: keyboardType,
-        style: AppTheme.normalText,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: AppTheme.normalText.copyWith(color: Colors.grey.shade400),
-          prefixIcon: Icon(prefixIcon, size: 20, color: Colors.grey.shade400),
-          suffixIcon: suffix != null
-              ? Padding(
-                  padding: const EdgeInsets.only(right: 14),
-                  child: suffix,
-                )
-              : null,
-          suffixIconConstraints:
-              const BoxConstraints(minWidth: 0, minHeight: 0),
-          border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: (errorText != null && errorText!.isNotEmpty)
+                  ? const Color(0xFFE56D39)
+                  : Colors.grey.shade200,
+            ),
+          ),
+          child: TextField(
+            controller: controller,
+            obscureText: obscure,
+            keyboardType: keyboardType,
+            style: AppTheme.normalText,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle:
+                  AppTheme.normalText.copyWith(color: Colors.grey.shade400),
+              prefixIcon:
+                  Icon(prefixIcon, size: 20, color: Colors.grey.shade400),
+              suffixIcon: suffix != null
+                  ? Padding(
+                      padding: const EdgeInsets.only(right: 14),
+                      child: suffix,
+                    )
+                  : null,
+              suffixIconConstraints:
+                  const BoxConstraints(minWidth: 0, minHeight: 0),
+              border: InputBorder.none,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            ),
+          ),
         ),
-      ),
+        if (errorText != null && errorText!.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              errorText!,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFFE56D39),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

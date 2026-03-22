@@ -610,8 +610,8 @@ class _MembersCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final members = groupCtrl.groupMembers.value.members ?? [];
     final groupId = groupCtrl.summaries[index].id;
+    final members = groupCtrl.membersFor(groupId).members ?? [];
 
     // Fetch members if not loaded
     if (members.isEmpty) {
@@ -619,7 +619,7 @@ class _MembersCard extends StatelessWidget {
     }
 
     return Obx(() {
-      final memberList = groupCtrl.groupMembers.value.members ?? [];
+      final memberList = groupCtrl.membersFor(groupId).members ?? [];
 
       return Container(
         decoration: BoxDecoration(

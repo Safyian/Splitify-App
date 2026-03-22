@@ -17,7 +17,8 @@ class TotalsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final expenses = groupCtrl.groupExpenses.value.expenses ?? [];
+    final expenses =
+        groupCtrl.expensesFor(groupCtrl.summaries[index].id).expenses ?? [];
     final totals = ChartHelpers.memberTotals(expenses);
     final myId = profileCtrl.user.value.user?.id ?? '';
 

@@ -56,7 +56,8 @@ class ActivityScreen extends StatelessWidget {
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Constants.activeColor.withValues(alpha: 0.6),
+                              color:
+                                  Constants.activeColor.withValues(alpha: 0.6),
                             ),
                           ),
                         ),
@@ -99,7 +100,7 @@ class ActivityScreen extends StatelessWidget {
                 return RefreshIndicator(
                   color: Constants.activeColor,
                   backgroundColor: Constants.bgColorLight,
-                  onRefresh: () => ctrl.fetchActivity(refresh: true),
+                  onRefresh: () => ctrl.fetchActivity(forceRefresh: true),
                   child: ListView.builder(
                     padding: const EdgeInsets.fromLTRB(0, 4, 0, 40),
                     itemCount: groups.length + (ctrl.hasMore.value ? 1 : 0),
@@ -625,7 +626,7 @@ class _ErrorState extends StatelessWidget {
                 textAlign: TextAlign.center),
             const SizedBox(height: 20),
             GestureDetector(
-              onTap: () => ctrl.fetchActivity(refresh: true),
+              onTap: () => ctrl.fetchActivity(forceRefresh: true),
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 11),

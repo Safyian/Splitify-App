@@ -11,14 +11,15 @@ class ApiClient {
   final storage = const FlutterSecureStorage();
   static const bool isProduction = bool.fromEnvironment('dart.vm.product');
   ApiClient._internal() {
+    // print("Production Mode: $isProduction");
     dio = Dio(
       BaseOptions(
         baseUrl:
-            //isProduction
-            //  ?
+            // isProduction
+            //     ?
             "https://splitify-backend-production.up.railway.app"
-        //   :
-        //"http://localhost:3000"
+        // :
+        // "http://localhost:3000"
         ,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),

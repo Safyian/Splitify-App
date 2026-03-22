@@ -30,4 +30,12 @@ class AuthService {
 
     return res.data;
   }
+
+  Future resendVerification(String email) async {
+    final res = await _dio.post(
+      "/auth/resend-verification",
+      data: {"email": email},
+    );
+    return res.data;
+  }
 }

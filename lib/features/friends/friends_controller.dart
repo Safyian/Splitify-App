@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:splitify/core/utils/cache_manager.dart';
 
 import '../../shared/widgets/alert_widgets.dart';
 import '../groups/groups_controller.dart';
@@ -7,19 +8,25 @@ import 'friends_services.dart';
 
 class FriendsController extends GetxController {
   final FriendService _service = FriendService();
+  final _cache = CacheManager();
 
   RxList<Friend> friends = <Friend>[].obs;
   RxBool isLoading = false.obs;
 
-  // ── Computed: overall net balance across all friends ──────────────────────
   double get overallNet {
     return friends.fold(0.0, (sum, f) => sum + f.balance.net);
   }
 
-  Future<void> fetchFriends() async {
+  // ── Fetch ─────────────────────────────────────────────────────────────────
+
+  Future<void> fetchFriends({bool forceRefresh = false}) async {
+    if (!forceRefresh &&
+        _cache.isFresh(CacheKeys.friends) &&
+        friends.isNotEmpty) return;
     try {
       isLoading.value = true;
       friends.value = await _service.getFriends();
+      _cache.markFetched(CacheKeys.friends);
     } catch (e) {
       AlertWidgets.showSnackBar(
           message: e.toString().replaceAll('Exception: ', ''));
@@ -28,10 +35,13 @@ class FriendsController extends GetxController {
     }
   }
 
+  // ── Add ───────────────────────────────────────────────────────────────────
+
   Future<void> addFriend({required String email}) async {
     try {
       await _service.addFriend(email: email);
-      await fetchFriends();
+      _cache.invalidate(CacheKeys.friends);
+      await fetchFriends(forceRefresh: true);
       AlertWidgets.showSnackBar(message: 'Friend added successfully');
     } catch (e) {
       AlertWidgets.showSnackBar(
@@ -39,14 +49,15 @@ class FriendsController extends GetxController {
     }
   }
 
+  // ── Remove ────────────────────────────────────────────────────────────────
+
   Future<void> removeFriend({required String friendId}) async {
-    // Optimistic update — if also a group contact, keep in list as contact only
     final idx = friends.indexWhere((f) => f.id == friendId);
     if (idx == -1) return;
 
     final original = friends[idx];
+    // Optimistic update
     if (original.isGroupContact) {
-      // Downgrade to contact only, stays visible in All & Contacts
       friends[idx] = Friend(
         id: original.id,
         name: original.name,
@@ -56,30 +67,28 @@ class FriendsController extends GetxController {
         balance: original.balance,
       );
     } else {
-      // Pure explicit friend with no group relation — remove entirely
       friends.removeAt(idx);
     }
 
     try {
       await _service.removeFriend(friendId: friendId);
+      _cache.invalidate(CacheKeys.friends);
       AlertWidgets.showSnackBar(message: 'Friend removed');
     } catch (e) {
-      // Rollback on failure
-      await fetchFriends();
+      // Rollback
+      await fetchFriends(forceRefresh: true);
       AlertWidgets.showSnackBar(
           message: e.toString().replaceAll('Exception: ', ''));
     }
   }
 
-  // ── Get shared groups between current user and a friend ───────────────────
-  // Returns list of {index, name, emoji, groupId, preview} for groups they share
+  // ── Shared groups ─────────────────────────────────────────────────────────
+
   List<Map<String, dynamic>> sharedGroupsWithFriend(String friendId) {
     final groupsCtrl = Get.find<GroupsController>();
     final result = <Map<String, dynamic>>[];
-
     for (int i = 0; i < groupsCtrl.summaries.length; i++) {
       final summary = groupsCtrl.summaries[i];
-      // Find the preview entry for this specific friend
       final previewEntry =
           summary.preview.where((p) => p.userId == friendId).firstOrNull;
       if (previewEntry != null) {
@@ -89,11 +98,10 @@ class FriendsController extends GetxController {
           'emoji': summary.emoji,
           'groupId': summary.id,
           'status': summary.balance.status,
-          'preview': previewEntry, // Preview object ready for SettleAmountView
+          'preview': previewEntry,
         });
       }
     }
-
     return result;
   }
 

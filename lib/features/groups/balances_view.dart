@@ -35,12 +35,13 @@ class BalancesView extends StatelessWidget {
           return const _BalancesSkeleton();
         }
 
+        final groupId = groupCtrl.summaries[index].id;
         final myId = profileCtrl.user.value.user?.id ?? '';
-        final members = groupCtrl.groupMembers.value.members ?? [];
+        final members = groupCtrl.membersFor(groupId).members ?? [];
         final nameMap = {for (final m in members) m.id!: m.name!};
 
-        final balances = groupCtrl.groupBalances.value.balances;
-        final settlements = groupCtrl.groupBalances.value.settlements;
+        final balances = groupCtrl.balancesFor(groupId).balances;
+        final settlements = groupCtrl.balancesFor(groupId).settlements;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
@@ -155,11 +156,12 @@ class BalancesView extends StatelessWidget {
                   if (settlements.isNotEmpty)
                     GestureDetector(
                       onTap: () {
+                        final gId = groupCtrl.summaries[index].id;
                         final myId =
                             profileCtrl.user.value.user?.id ?? '';
                         final breakdownData =
                             SettlementBreakdownData.fromBalancesModel(
-                          groupCtrl.groupBalances.value,
+                          groupCtrl.balancesFor(gId),
                           myId,
                         );
                         showSettlementBreakdown(context, breakdownData);
@@ -238,7 +240,7 @@ class BalancesView extends StatelessWidget {
                   : Column(
                       children: settlements.map((s) {
                         final members =
-                            groupCtrl.groupMembers.value.members ?? [];
+                            groupCtrl.membersFor(groupId).members ?? [];
                         final nameMap = {
                           for (final m in members) m.id!: m.name!
                         };

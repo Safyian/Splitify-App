@@ -446,7 +446,7 @@ class ProfileView extends StatelessWidget {
     // Share.share('Join me on Splitify — the easiest way to split bills with friends!\nhttps://apps.apple.com/your-app-link');
 
     // Fallback: copy to clipboard until share_plus is added
-    const appLink = 'https://splitify.app'; // replace with real link
+    const appLink = 'https://your-app-link-here.com'; // TODO: replace with your real Play Store / App Store link
     Clipboard.setData(const ClipboardData(text: appLink));
     Get.snackbar(
       'Link copied! 🎉',

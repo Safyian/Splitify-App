@@ -55,8 +55,9 @@ class GroupExpensesView extends StatelessWidget {
           return const SizedBox.shrink();
         }
         // Full skeleton only on first open before any data has loaded
+        final groupId = groupCtrl.summaries[index].id;
         if (groupCtrl.isLoading.isTrue &&
-            groupCtrl.groupExpenses.value.expenses == null) {
+            groupCtrl.expensesFor(groupId).expenses == null) {
           return const _GroupExpensesSkeleton();
         }
         return Padding(
@@ -135,18 +136,17 @@ class _GroupHeader extends StatelessWidget {
 
   // ── Trigger the breakdown sheet ──────────────────────────
   void _showBreakdown(BuildContext context) {
+    final groupId = groupCtrl.summaries[index].id;
     final myId = Get.find<ProfileController>().user.value.user?.id ?? '';
-    final balances = groupCtrl.groupBalances.value;
+    final balances = groupCtrl.balancesFor(groupId);
 
     // Guard: balances not yet loaded for this screen
     if (balances.balances.isEmpty) {
       // Fetch first, then show
-      groupCtrl
-          .fetchGroupBalances(groupId: groupCtrl.summaries[index].id)
-          .then((_) {
+      groupCtrl.fetchGroupBalances(groupId: groupId).then((_) {
         if (!context.mounted) return;
         final data = SettlementBreakdownData.fromBalancesModel(
-          groupCtrl.groupBalances.value,
+          groupCtrl.balancesFor(groupId),
           myId,
         );
         showSettlementBreakdown(context, data);
@@ -437,8 +437,8 @@ class _ExpenseList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       if (index >= groupCtrl.summaries.length) return const SizedBox.shrink();
-      final expenses = groupCtrl.groupExpenses.value.expenses;
       final groupId = groupCtrl.summaries[index].id;
+      final expenses = groupCtrl.expensesFor(groupId).expenses;
 
       if (expenses == null) {
         return const _ExpenseListSkeleton();
@@ -617,11 +617,131 @@ class _ExpenseCard extends StatelessWidget {
     );
   }
 
-  String get _icon {
-    if (isSettlement) return Constants.walletLogo;
-    final desc = (expense.description as String? ?? '').toLowerCase();
-    if (desc.contains("meat")) return Constants.meatLogo;
-    return Constants.groceryLogo;
+  IconData get _expenseIcon {
+    if (isSettlement) return Icons.account_balance_wallet_outlined;
+    return _resolveIcon(expense.description as String? ?? '');
+  }
+
+  /// Tokenises [description] into lowercase words and returns the first
+  /// matching category icon, falling back to a generic receipt icon.
+  static IconData _resolveIcon(String description) {
+    final words = description
+        .toLowerCase()
+        .split(RegExp(r'[^a-z]+'))
+        .where((w) => w.length > 1)
+        .toSet();
+
+    // (keywords, icon) — checked in order, first match wins
+    const rules = [
+      // ── Food & Dining ─────────────────────────────────────
+      (
+        <String>{
+          'restaurant', 'food', 'lunch', 'dinner', 'breakfast',
+          'cafe', 'coffee', 'tea', 'pizza', 'burger', 'sushi',
+          'biryani', 'eat', 'meal', 'snack', 'drink', 'drinks',
+          'bar', 'dine', 'takeaway', 'takeout', 'bbq', 'grill',
+        },
+        Icons.restaurant_outlined,
+      ),
+      (
+        <String>{
+          'grocery', 'groceries', 'supermarket', 'market',
+          'vegetable', 'vegetables', 'fruit', 'fruits',
+          'bread', 'milk', 'eggs', 'dairy', 'store',
+        },
+        Icons.local_grocery_store_outlined,
+      ),
+      (
+        <String>{
+          'meat', 'chicken', 'beef', 'pork', 'mutton',
+          'fish', 'seafood', 'prawns', 'shrimp', 'lamb',
+        },
+        Icons.set_meal_outlined,
+      ),
+      // ── Transport ─────────────────────────────────────────
+      (
+        <String>{
+          'fuel', 'petrol', 'diesel', 'refuel', 'filling', 'cng',
+        },
+        Icons.local_gas_station_outlined,
+      ),
+      (
+        <String>{
+          'uber', 'taxi', 'cab', 'ride', 'bus', 'train', 'metro',
+          'subway', 'ticket', 'toll', 'parking', 'carpool', 'auto',
+          'rickshaw', 'flight', 'airline', 'transport', 'ferry',
+        },
+        Icons.directions_car_outlined,
+      ),
+      // ── Home & Accommodation ──────────────────────────────
+      (
+        <String>{
+          'rent', 'house', 'flat', 'apartment', 'hotel', 'airbnb',
+          'hostel', 'stay', 'lease', 'mortgage', 'room', 'accommodation',
+        },
+        Icons.home_outlined,
+      ),
+      // ── Internet & Phone ──────────────────────────────────
+      (
+        <String>{
+          'internet', 'wifi', 'broadband', 'fiber', 'data',
+          'phone', 'mobile', 'sim', 'recharge', 'topup', 'postpaid',
+          'prepaid', 'subscription', 'streaming',
+        },
+        Icons.wifi_outlined,
+      ),
+      // ── Utilities & Bills ─────────────────────────────────
+      (
+        <String>{
+          'electricity', 'electric', 'power', 'water', 'gas',
+          'bill', 'bills', 'utility', 'utilities', 'maintenance',
+          'sewage', 'council',
+        },
+        Icons.bolt_outlined,
+      ),
+      // ── Entertainment ─────────────────────────────────────
+      (
+        <String>{
+          'movie', 'cinema', 'netflix', 'disney', 'hbo',
+          'spotify', 'music', 'concert', 'show', 'event',
+          'game', 'gaming', 'esports', 'sports', 'gym',
+          'fitness', 'workout', 'yoga', 'cricket', 'football',
+        },
+        Icons.sports_esports_outlined,
+      ),
+      // ── Shopping ─────────────────────────────────────────
+      (
+        <String>{
+          'shopping', 'clothes', 'clothing', 'amazon', 'flipkart',
+          'order', 'delivery', 'shop', 'mall', 'fashion', 'shoes',
+          'accessories', 'gadget', 'electronics',
+        },
+        Icons.shopping_bag_outlined,
+      ),
+      // ── Health & Medical ─────────────────────────────────
+      (
+        <String>{
+          'medicine', 'doctor', 'hospital', 'pharmacy', 'health',
+          'medical', 'dental', 'clinic', 'prescription', 'chemist',
+          'test', 'lab', 'surgery', 'physiotherapy',
+        },
+        Icons.local_hospital_outlined,
+      ),
+      // ── Education ────────────────────────────────────────
+      (
+        <String>{
+          'book', 'books', 'course', 'tuition', 'school',
+          'college', 'university', 'education', 'study',
+          'class', 'lesson', 'stationery', 'fees',
+        },
+        Icons.menu_book_outlined,
+      ),
+    ];
+
+    for (final (keywords, icon) in rules) {
+      if (words.any(keywords.contains)) return icon;
+    }
+    return Icons.receipt_long_outlined;
   }
 
   @override
@@ -642,19 +762,17 @@ class _ExpenseCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40.w,
-              height: 40.w,
+              width: 44.w,
+              height: 44.w,
               decoration: BoxDecoration(
-                color: Constants.activeColor.withAlpha(20),
-                borderRadius: BorderRadius.circular(10),
+                color: Constants.activeColor.withAlpha(25),
+                borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,
-              child: SvgPicture.asset(
-                _icon,
-                width: 20.w,
-                height: 20.w,
-                colorFilter: const ColorFilter.mode(
-                    Constants.activeColor, BlendMode.srcIn),
+              child: Icon(
+                _expenseIcon,
+                size: 21.w,
+                color: Constants.activeColor,
               ),
             ),
             const SizedBox(width: 12),
@@ -818,9 +936,10 @@ class _ExpenseDetailSheet extends StatelessWidget {
       Get.delete<AddExpenseController>(force: true);
 
       final expenseCtrl = AddExpenseController(editExpense: expense);
-      expenseCtrl.groupId = groupCtrl.groupMembers.value.members != null
-          ? expense.group ?? ''
-          : '';
+      expenseCtrl.groupId =
+          groupCtrl.membersFor(expense.group ?? '').members != null
+              ? expense.group ?? ''
+              : '';
       Get.put(expenseCtrl);
 
       Get.to(

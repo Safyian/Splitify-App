@@ -1,4 +1,7 @@
+// lib/features/activity/activity_controller.dart
+
 import 'package:get/get.dart';
+import 'package:splitify/core/utils/cache_manager.dart';
 
 import 'activity_model.dart';
 import 'activity_services.dart';
@@ -7,40 +10,50 @@ typedef ActivitySection = ({String label, List<ActivityModel> items});
 
 class ActivityController extends GetxController {
   final _service = ActivityService();
+  final _cache = CacheManager();
 
   final RxList<ActivityModel> activities = <ActivityModel>[].obs;
   final RxList<ActivitySection> grouped = <ActivitySection>[].obs;
-  final RxBool isLoading = false.obs;      // first-load only (no data yet)
-  final RxBool isRefreshing = false.obs;   // background refresh (data already shown)
+  final RxBool isLoading = false.obs;
+  final RxBool isRefreshing = false.obs;
   final RxBool isLoadingMore = false.obs;
   final RxBool hasMore = false.obs;
   final RxString error = ''.obs;
   int _currentPage = 1;
 
+  // Activity feed has a shorter TTL — changes more frequently
+  static const _ttl = Duration(minutes: 2);
+
   @override
   void onInit() {
-    // Recompute grouped whenever activities changes
     ever(activities, (_) => _regroup());
     fetchActivity();
     super.onInit();
   }
 
-  Future<void> fetchActivity({bool refresh = false}) async {
-    if (refresh) _currentPage = 1;
+  Future<void> fetchActivity({bool forceRefresh = false}) async {
+    // Skip if cache is fresh and we already have data
+    if (!forceRefresh &&
+        _cache.isFresh(CacheKeys.activity, ttl: _ttl) &&
+        activities.isNotEmpty) return;
+
+    _currentPage = 1;
     error.value = '';
-    // Show full-screen spinner only on first load; after that refresh silently
+
+    // First load → show full spinner; subsequent → refresh silently
     if (activities.isEmpty) {
       isLoading.value = true;
     } else {
       isRefreshing.value = true;
     }
+
     try {
       final result = await _service.getActivity(page: 1);
       activities.value = result.activities;
       hasMore.value = result.pagination.hasMore;
       _currentPage = 1;
+      _cache.markFetched(CacheKeys.activity);
     } catch (e) {
-      // On background refresh, don't replace the existing list with an error
       if (activities.isEmpty) {
         error.value = e.toString().replaceAll('Exception: ', '');
       }
@@ -60,17 +73,19 @@ class ActivityController extends GetxController {
       hasMore.value = result.pagination.hasMore;
       _currentPage = nextPage;
     } catch (e) {
-      // ignore load-more errors silently
+      // silent
     } finally {
       isLoadingMore.value = false;
     }
   }
 
+  /// Call this after any mutation so next tab visit gets fresh data
+  void invalidate() => _cache.invalidate(CacheKeys.activity);
+
   void _regroup() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
-
     final Map<String, List<ActivityModel>> map = {};
 
     for (final a in activities) {

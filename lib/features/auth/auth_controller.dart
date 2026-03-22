@@ -12,6 +12,7 @@ import '../navigation/navigation_view.dart';
 import '../profile/profile_controller.dart';
 import 'auth_services.dart';
 import 'login_view.dart';
+import 'verify_email_view.dart';
 
 class AuthController extends GetxController {
   final AuthService _service = AuthService();
@@ -24,6 +25,39 @@ class AuthController extends GetxController {
   RxBool isLoggedIn = false.obs;
   var isLoading = false.obs;
 
+  // Field-level validation errors
+  final RxMap<String, String> fieldErrors = <String, String>{}.obs;
+
+  void _clearErrors() => fieldErrors.clear();
+
+  // Returns true if valid, false if not
+  bool _validateRegister() {
+    fieldErrors.clear();
+    final name = nameCtrl.text.trim();
+    final email = emailCtrl.text.trim();
+    final pass = passCtrl.text;
+
+    if (name.length < 2)
+      fieldErrors['name'] = 'Name must be at least 2 characters';
+    if (!GetUtils.isEmail(email))
+      fieldErrors['email'] = 'Enter a valid email address';
+    if (pass.length < 8)
+      fieldErrors['password'] = 'Password must be at least 8 characters';
+    else if (!pass.contains(RegExp(r'[0-9]')) || !pass.contains(RegExp(r'[a-zA-Z]')))
+      fieldErrors['password'] = 'Password must contain letters and numbers';
+
+    return fieldErrors.isEmpty;
+  }
+
+  bool _validateLogin() {
+    fieldErrors.clear();
+    if (!GetUtils.isEmail(emailCtrl.text.trim()))
+      fieldErrors['email'] = 'Enter a valid email address';
+    if (passCtrl.text.isEmpty)
+      fieldErrors['password'] = 'Password cannot be empty';
+    return fieldErrors.isEmpty;
+  }
+
   // ✅ Just reads token, NO navigation
   Future<void> checkLogin() async {
     final token = await storage.read(key: "token");
@@ -32,6 +66,7 @@ class AuthController extends GetxController {
 
   Future login() async {
     try {
+      if (!_validateLogin()) return;
       isLoading.value = true;
 
       final res = await _service.login(
@@ -47,10 +82,15 @@ class AuthController extends GetxController {
 
       Get.offAll(() => NavigationView());
     } on DioException catch (e) {
-      final message = e.response?.data['message'] ?? 'Login failed';
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.snackbar("Error", message, snackPosition: SnackPosition.BOTTOM);
-      });
+      if (e.response?.statusCode == 403) {
+        final email = emailCtrl.text.trim();
+        Get.to(() => VerifyEmailView(email: email));
+      } else {
+        final message = e.response?.data['message'] ?? 'Login failed';
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.snackbar("Error", message, snackPosition: SnackPosition.BOTTOM);
+        });
+      }
     } catch (e) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.snackbar("Error", "Login failed",
@@ -63,22 +103,48 @@ class AuthController extends GetxController {
 
   Future register() async {
     try {
+      if (!_validateRegister()) return;
       isLoading.value = true;
 
-      await _service.register(
+      final res = await _service.register(
         nameCtrl.text,
         emailCtrl.text,
         passCtrl.text,
       );
 
+      final email = res['email'] as String? ?? emailCtrl.text.trim();
+      Get.off(() => VerifyEmailView(email: email));
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Registration failed';
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.snackbar("Success", "Account created",
-            snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar("Error", message, snackPosition: SnackPosition.BOTTOM);
       });
-      Get.back();
     } catch (e) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.snackbar("Error", "Register failed",
+        Get.snackbar("Error", "Registration failed",
+            snackPosition: SnackPosition.BOTTOM);
+      });
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future resendVerification(String email) async {
+    try {
+      isLoading.value = true;
+      await _service.resendVerification(email);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.snackbar("Email sent", "Check your inbox for the verification link",
+            snackPosition: SnackPosition.BOTTOM);
+      });
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Could not resend email';
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.snackbar("Error", message, snackPosition: SnackPosition.BOTTOM);
+      });
+    } catch (e) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.snackbar("Error", "Could not resend email",
             snackPosition: SnackPosition.BOTTOM);
       });
     } finally {
@@ -87,6 +153,7 @@ class AuthController extends GetxController {
   }
 
   Future logout() async {
+    _clearErrors();
     if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
     Get.closeAllSnackbars();
     await storage.delete(key: "token");

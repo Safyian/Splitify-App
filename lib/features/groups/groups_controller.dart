@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:splitify/core/utils/cache_manager.dart';
 import 'package:splitify/features/expenses/expense_service.dart';
 
 import '../../core/utils/snackbar_helper.dart';
@@ -14,66 +15,134 @@ class GroupsController extends GetxController {
   Future<void> Function()? onBalanceChanged;
 
   RxList<GroupSummary> summaries = <GroupSummary>[].obs;
-  var groupExpenses = GroupExpenses().obs;
   RxBool isLoading = false.obs;
   RxBool isSettling = false.obs;
   RxBool isLoadingBalances = false.obs;
   final GroupService _service = GroupService();
   final ExpenseService _expenseService = ExpenseService();
-  var groupBalances =
-      GroupBalancesModel(balances: [], settlements: [], pairwise: []).obs;
-  var groupMembers = GroupMembersModel().obs;
+  final _cache = CacheManager();
 
-  // ── Existing methods ─────────────────────────────────────────────────────────
+  // ── Per-group caches ──────────────────────────────────────────────────────
+  final RxMap<String, GroupExpenses> allGroupExpenses =
+      <String, GroupExpenses>{}.obs;
+  final RxMap<String, GroupMembersModel> allGroupMembers =
+      <String, GroupMembersModel>{}.obs;
+  final RxMap<String, GroupBalancesModel> allGroupBalances =
+      <String, GroupBalancesModel>{}.obs;
 
-  /// Resets all group-specific data so a newly opened group never shows stale content.
-  void clearGroupData() {
-    groupExpenses.value = GroupExpenses();
-    groupBalances.value =
-        GroupBalancesModel(balances: [], settlements: [], pairwise: []);
-    groupMembers.value = GroupMembersModel();
-    isLoadingBalances.value = false;
+  // ── Helper getters ────────────────────────────────────────────────────────
+  GroupExpenses expensesFor(String groupId) =>
+      allGroupExpenses[groupId] ?? GroupExpenses();
+  GroupMembersModel membersFor(String groupId) =>
+      allGroupMembers[groupId] ?? GroupMembersModel();
+  GroupBalancesModel balancesFor(String groupId) =>
+      allGroupBalances[groupId] ??
+      GroupBalancesModel(balances: [], settlements: [], pairwise: []);
+
+  /// Removes map entries whose cache TTL has expired.
+  void pruneExpensesCache() {
+    for (final id in allGroupExpenses.keys.toList()) {
+      if (!_cache.isFresh(CacheKeys.groupExpenses(id))) {
+        allGroupExpenses.remove(id);
+      }
+    }
+    for (final id in allGroupMembers.keys.toList()) {
+      if (!_cache.isFresh(CacheKeys.groupMembers(id))) {
+        allGroupMembers.remove(id);
+      }
+    }
+    for (final id in allGroupBalances.keys.toList()) {
+      if (!_cache.isFresh(CacheKeys.groupBalances(id))) {
+        allGroupBalances.remove(id);
+      }
+    }
   }
 
-  Future<void> fetchGroupBalances({required String groupId}) async {
+// ── Balances ──────────────────────────────────────────────────────────────
+  Future<void> fetchGroupBalances({
+    required String groupId,
+    bool forceRefresh = false,
+  }) async {
+    final key = CacheKeys.groupBalances(groupId);
+    if (!forceRefresh && _cache.isFresh(key)) return;
     try {
       isLoadingBalances.value = true;
-      groupBalances.value = await _service.getGroupBalances(groupId: groupId);
+      allGroupBalances[groupId] =
+          await _service.getGroupBalances(groupId: groupId);
+      _cache.markFetched(key);
     } catch (e) {
-      Get.snackbar("Error", "Failed to load balances");
+      Get.snackbar('Error', 'Failed to load balances');
     } finally {
       isLoadingBalances.value = false;
     }
   }
 
-  Future<void> fetchSummary() async {
+  // ── Summary ───────────────────────────────────────────────────────────────
+
+  Future<void> fetchSummary({bool forceRefresh = false}) async {
+    if (!forceRefresh &&
+        _cache.isFresh(CacheKeys.summaries) &&
+        summaries.isNotEmpty) return;
     try {
       isLoading.value = true;
       summaries.value = await _service.getSummary();
+      _cache.markFetched(CacheKeys.summaries);
       if (onBalanceChanged != null) onBalanceChanged!();
     } catch (e) {
-      Get.snackbar("Error", "Failed to load groups");
+      Get.snackbar('Error', 'Failed to load groups');
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> fetchGroupExpenses({required String groupId}) async {
+  // ── Expenses ──────────────────────────────────────────────────────────────
+
+  Future<void> fetchGroupExpenses({
+    required String groupId,
+    bool forceRefresh = false,
+  }) async {
+    final key = CacheKeys.groupExpenses(groupId);
+    if (!forceRefresh &&
+        _cache.isFresh(key) &&
+        allGroupExpenses[groupId]?.expenses != null) {
+      print("Return Cache Data");
+      return;
+    }
     try {
+      print("Fetch Data");
       isLoading.value = true;
-      groupExpenses.value = await _service.getExpenses(groupId: groupId);
+      allGroupExpenses[groupId] = await _service.getExpenses(groupId: groupId);
+      _cache.markFetched(key);
+      // Passive cache-miss: another user may have changed the group.
+      // Refresh summaries in the background so group card stats stay current.
+      // (forceRefresh calls already invoke fetchSummary explicitly, skip here)
+      if (!forceRefresh) {
+        _cache.invalidate(CacheKeys.summaries);
+        fetchSummary();
+      }
     } catch (e) {
-      Get.snackbar("Error", "Failed to load groups");
+      Get.snackbar('Error', 'Failed to load expenses');
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> fetchGroupMembers({required String groupId}) async {
+  // ── Members ───────────────────────────────────────────────────────────────
+
+  Future<void> fetchGroupMembers({
+    required String groupId,
+    bool forceRefresh = false,
+  }) async {
+    final key = CacheKeys.groupMembers(groupId);
+    if (!forceRefresh &&
+        _cache.isFresh(key) &&
+        allGroupMembers[groupId]?.members != null) return;
     try {
-      groupMembers.value = await _service.getGroupMembers(groupId: groupId);
+      allGroupMembers[groupId] =
+          await _service.getGroupMembers(groupId: groupId);
+      _cache.markFetched(key);
     } catch (e) {
-      Get.snackbar("Error", "Failed to load members");
+      Get.snackbar('Error', 'Failed to load members');
     }
   }
 
@@ -90,9 +159,16 @@ class GroupsController extends GetxController {
         toUserId: toUserId,
         amount: amount,
       );
+      _cache.invalidateAll([
+        CacheKeys.summaries,
+        CacheKeys.friends,
+        CacheKeys.activity,
+        CacheKeys.groupExpenses(groupId),
+        CacheKeys.groupBalances(groupId),
+      ]);
       await Future.wait([
-        fetchGroupExpenses(groupId: groupId),
-        fetchSummary(),
+        fetchGroupExpenses(groupId: groupId, forceRefresh: true),
+        fetchSummary(forceRefresh: true),
       ]);
       // Refresh friends list if registered (callback set by FriendsScreen)
 
@@ -119,9 +195,15 @@ class GroupsController extends GetxController {
         groupId: groupId,
         expenseId: expenseId,
       );
+      _cache.invalidateAll([
+        CacheKeys.summaries,
+        CacheKeys.friends,
+        CacheKeys.activity,
+        CacheKeys.groupExpenses(groupId),
+      ]);
       await Future.wait([
-        fetchGroupExpenses(groupId: groupId),
-        fetchSummary(),
+        fetchGroupExpenses(groupId: groupId, forceRefresh: true),
+        fetchSummary(forceRefresh: true),
       ]);
     } catch (e) {
       // SnackBarHelper.error(e.toString());
@@ -142,9 +224,16 @@ class GroupsController extends GetxController {
         expenseId: expenseId,
         amount: amount,
       );
+      _cache.invalidateAll([
+        CacheKeys.summaries,
+        CacheKeys.friends,
+        CacheKeys.activity,
+        CacheKeys.groupExpenses(groupId),
+        CacheKeys.groupBalances(groupId),
+      ]);
       await Future.wait([
-        fetchGroupExpenses(groupId: groupId),
-        fetchSummary(),
+        fetchGroupExpenses(groupId: groupId, forceRefresh: true),
+        fetchSummary(forceRefresh: true),
       ]);
       SnackBarHelper.success("Settlement updated");
     } catch (e) {
@@ -163,9 +252,13 @@ class GroupsController extends GetxController {
   }) async {
     try {
       await _service.addMember(groupId: groupId, email: email);
+      _cache.invalidateAll([
+        CacheKeys.summaries,
+        CacheKeys.groupMembers(groupId),
+      ]);
       await Future.wait([
-        fetchGroupMembers(groupId: groupId),
-        fetchSummary(),
+        fetchGroupMembers(groupId: groupId, forceRefresh: true),
+        fetchSummary(forceRefresh: true),
       ]);
       AlertWidgets.showSnackBar(message: 'Member added successfully');
     } catch (e) {
@@ -174,6 +267,8 @@ class GroupsController extends GetxController {
     }
   }
 
+  // ── Remove member ─────────────────────────────────────────────────────────
+
   Future<bool> removeMember({
     required String groupId,
     required String memberId,
@@ -181,9 +276,13 @@ class GroupsController extends GetxController {
   }) async {
     try {
       await _service.removeMember(groupId: groupId, memberId: memberId);
+      _cache.invalidateAll([
+        CacheKeys.summaries,
+        CacheKeys.groupMembers(groupId),
+      ]);
       await Future.wait([
-        fetchGroupMembers(groupId: groupId),
-        fetchSummary(),
+        fetchGroupMembers(groupId: groupId, forceRefresh: true),
+        fetchSummary(forceRefresh: true),
       ]);
       AlertWidgets.showSnackBar(message: 'Member removed');
       return true;
@@ -194,6 +293,8 @@ class GroupsController extends GetxController {
     }
   }
 
+// ── Rename group ──────────────────────────────────────────────────────────
+
   Future<bool> renameGroup({
     required String groupId,
     required String name,
@@ -201,7 +302,7 @@ class GroupsController extends GetxController {
   }) async {
     try {
       await _service.renameGroup(groupId: groupId, name: name);
-      // Update locally so UI reflects immediately without full refetch
+      // Update locally — no need to invalidate summaries for a rename
       summaries[index] = GroupSummary(
         id: summaries[index].id,
         name: name,
@@ -221,6 +322,8 @@ class GroupsController extends GetxController {
       return false;
     }
   }
+
+  // ── Update emoji ──────────────────────────────────────────────────────────
 
   Future<void> updateEmoji({
     required String groupId,
@@ -245,6 +348,8 @@ class GroupsController extends GetxController {
           message: e.toString().replaceAll('Exception: ', ''));
     }
   }
+
+  // ── Update default split type ─────────────────────────────────────────────
 
   Future<void> updateDefaultSplitType({
     required String groupId,
@@ -272,12 +377,15 @@ class GroupsController extends GetxController {
     }
   }
 
+  // ── Leave group ───────────────────────────────────────────────────────────
+
   Future<void> leaveGroup({
     required String groupId,
     required int index,
   }) async {
     try {
       await _service.leaveGroup(groupId: groupId);
+      _cache.invalidate(CacheKeys.summaries);
       summaries.removeAt(index);
       summaries.refresh();
       Get.until((route) => route.isFirst);
@@ -288,12 +396,15 @@ class GroupsController extends GetxController {
     }
   }
 
+  // ── Delete group ──────────────────────────────────────────────────────────
+
   Future<void> deleteGroup({
     required String groupId,
     required int index,
   }) async {
     try {
       await _service.deleteGroup(groupId: groupId);
+      _cache.invalidate(CacheKeys.summaries);
       summaries.removeAt(index);
       summaries.refresh();
       Get.until((route) => route.isFirst);
@@ -304,7 +415,8 @@ class GroupsController extends GetxController {
     }
   }
 
-  // ── NEW: Create group and add friend to it ──────────────────────────────
+  // ── Create group ──────────────────────────────────────────────────────────
+
   Future<void> createGroupWithFriends({
     required String name,
     required String emoji,
@@ -312,33 +424,34 @@ class GroupsController extends GetxController {
   }) async {
     try {
       isLoading.value = true;
-
-      // 1. Create group
       final res = await _service.createGroup(name: name);
       final groupId = res['id'] as String;
-
-      // 2. Update emoji if not default
       if (emoji != '🏠') {
         await _service.updateEmoji(groupId: groupId, emoji: emoji);
       }
-
-      // 3. Add each selected friend by email (sequential to avoid race)
       for (final friend in friends) {
         try {
           await _service.addMember(
               groupId: groupId, email: friend.email as String);
-        } catch (_) {
-          // Skip silently if a specific friend fails — group still created
-        }
+        } catch (_) {}
       }
-      // 4. Refresh
-      await fetchSummary();
+      _cache.invalidate(CacheKeys.summaries);
+      await fetchSummary(forceRefresh: true);
     } catch (e) {
       AlertWidgets.showSnackBar(
           message: e.toString().replaceAll('Exception: ', ''));
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // ── Clear cache on logout ─────────────────────────────────────────────────
+
+  void clearCache() {
+    _cache.clear();
+    allGroupExpenses.clear();
+    allGroupMembers.clear();
+    allGroupBalances.clear();
   }
 
   @override

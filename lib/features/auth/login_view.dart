@@ -55,12 +55,13 @@ class LoginView extends StatelessWidget {
               // ── Email ─────────────────────────────────────────
               const AuthLabel('Email'),
               const SizedBox(height: 8),
-              AuthInputField(
-                controller: c.emailCtrl,
-                hint: 'you@example.com',
-                keyboardType: TextInputType.emailAddress,
-                prefixIcon: Icons.mail_outline_rounded,
-              ),
+              Obx(() => AuthInputField(
+                    controller: c.emailCtrl,
+                    hint: 'you@example.com',
+                    keyboardType: TextInputType.emailAddress,
+                    prefixIcon: Icons.mail_outline_rounded,
+                    errorText: c.fieldErrors['email'],
+                  )),
 
               const SizedBox(height: 20),
 
@@ -72,6 +73,7 @@ class LoginView extends StatelessWidget {
                     hint: '••••••••',
                     obscure: _obscure.value,
                     prefixIcon: Icons.lock_outline_rounded,
+                    errorText: c.fieldErrors['password'],
                     suffix: GestureDetector(
                       onTap: () => _obscure.value = !_obscure.value,
                       child: Icon(

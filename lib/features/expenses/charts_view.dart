@@ -35,7 +35,9 @@ class _ChartsViewState extends State<ChartsView> {
 
   @override
   Widget build(BuildContext context) {
-    final expenses = groupCtrl.groupExpenses.value.expenses ?? [];
+    final expenses =
+        groupCtrl.expensesFor(groupCtrl.summaries[widget.index].id).expenses ??
+            [];
     final memberData = ChartHelpers.spendingByMember(expenses);
     final monthlyData = ChartHelpers.spendingByMonth(expenses);
     final weeklyData = ChartHelpers.spendingByWeek(expenses);
