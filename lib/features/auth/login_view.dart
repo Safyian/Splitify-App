@@ -7,6 +7,7 @@ import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
 import 'auth_controller.dart';
 import 'auth_widgets.dart';
+import 'forgot_password_view.dart';
 import 'register_view.dart';
 
 class LoginView extends StatelessWidget {
@@ -86,7 +87,28 @@ class LoginView extends StatelessWidget {
                     ),
                   )),
 
-              const SizedBox(height: 36),
+              const SizedBox(height: 12),
+
+              // ── Forgot password link ──────────────────────────
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () {
+                    c.forgotEmailCtrl.clear();
+                    c.fieldErrors.clear();
+                    Get.to(() => ForgotPasswordView());
+                  },
+                  child: Text(
+                    'Forgot password?',
+                    style: AppTheme.normalText.copyWith(
+                      color: Constants.activeColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
 
               // ── Sign in button ────────────────────────────────
               Obx(() => c.isLoading.value

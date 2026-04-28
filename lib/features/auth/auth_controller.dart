@@ -21,6 +21,7 @@ class AuthController extends GetxController {
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
   final nameCtrl = TextEditingController();
+  final forgotEmailCtrl = TextEditingController();
 
   RxBool isLoggedIn = false.obs;
   var isLoading = false.obs;
@@ -43,7 +44,8 @@ class AuthController extends GetxController {
       fieldErrors['email'] = 'Enter a valid email address';
     if (pass.length < 8)
       fieldErrors['password'] = 'Password must be at least 8 characters';
-    else if (!pass.contains(RegExp(r'[0-9]')) || !pass.contains(RegExp(r'[a-zA-Z]')))
+    else if (!pass.contains(RegExp(r'[0-9]')) ||
+        !pass.contains(RegExp(r'[a-zA-Z]')))
       fieldErrors['password'] = 'Password must contain letters and numbers';
 
     return fieldErrors.isEmpty;
@@ -129,6 +131,36 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<bool> forgotPassword() async {
+    fieldErrors.clear();
+    if (!GetUtils.isEmail(forgotEmailCtrl.text.trim())) {
+      fieldErrors['forgotEmail'] = 'Enter a valid email address';
+      return false;
+    }
+    try {
+      isLoading.value = true;
+      await _service.forgotPassword(forgotEmailCtrl.text.trim());
+      return true;
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final message = (data is Map ? data['message'] as String? : null) ??
+          'Something went wrong';
+      print("msg: $message");
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.snackbar("Error", message, snackPosition: SnackPosition.BOTTOM);
+      });
+      return false;
+    } catch (e) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.snackbar("Error", "Something went wrong",
+            snackPosition: SnackPosition.BOTTOM);
+      });
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future resendVerification(String email) async {
     try {
       isLoading.value = true;
@@ -180,6 +212,7 @@ class AuthController extends GetxController {
     emailCtrl.dispose();
     passCtrl.dispose();
     nameCtrl.dispose();
+    forgotEmailCtrl.dispose();
     super.onClose();
   }
 }

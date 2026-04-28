@@ -38,4 +38,12 @@ class AuthService {
     );
     return res.data;
   }
+
+  Future forgotPassword(String email) async {
+    final res = await _dio.post(
+      "/auth/forgot-password",
+      data: {"email": email},
+    );
+    return res.data;
+  }
 }
