@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:splitify/core/utils/cache_manager.dart';
-import 'package:splitify/features/expenses/expense_service.dart';
+import 'package:splittify/core/utils/cache_manager.dart';
+import 'package:splittify/features/expenses/expense_service.dart';
 
 import '../../core/utils/snackbar_helper.dart';
 import '../../shared/widgets/alert_widgets.dart';

@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:splitify/core/constants/constants.dart';
-import 'package:splitify/features/auth/auth_controller.dart';
-import 'package:splitify/features/groups/groups_controller.dart';
+import 'package:splittify/core/constants/constants.dart';
+import 'package:splittify/features/auth/auth_controller.dart';
+import 'package:splittify/features/groups/groups_controller.dart';
 
 import '../../core/theme/app_themes.dart';
 import 'profile_controller.dart';
@@ -94,8 +94,8 @@ class ProfileView extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // ── Splitify ─────────────────────────────────────
-              const _SectionLabel(label: 'Splitify'),
+              // ── Splittify ────────────────────────────────────
+              const _SectionLabel(label: 'Splittify'),
               const SizedBox(height: 8),
               _SettingsCard(items: [
                 _SettingsItem(
@@ -120,7 +120,7 @@ class ProfileView extends StatelessWidget {
               _SettingsCard(items: [
                 _SettingsItem(
                   icon: Icons.info_outline_rounded,
-                  label: 'About Splitify',
+                  label: 'About Splittify',
                   value: 'v1.0.0',
                   onTap: () {},
                 ),

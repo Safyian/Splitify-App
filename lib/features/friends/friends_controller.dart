@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:splitify/core/utils/cache_manager.dart';
+import 'package:splittify/core/utils/cache_manager.dart';
 
 import '../../shared/widgets/alert_widgets.dart';
 import '../groups/groups_controller.dart';

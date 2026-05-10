@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:splitify/core/constants/constants.dart';
-import 'package:splitify/core/theme/app_themes.dart';
-import 'package:splitify/features/expenses/chart_helpers.dart';
-import 'package:splitify/features/profile/profile_controller.dart';
+import 'package:splittify/core/constants/constants.dart';
+import 'package:splittify/core/theme/app_themes.dart';
+import 'package:splittify/features/expenses/chart_helpers.dart';
+import 'package:splittify/features/profile/profile_controller.dart';
 
 import 'groups_controller.dart';
 

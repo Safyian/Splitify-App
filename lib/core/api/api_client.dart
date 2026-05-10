@@ -17,7 +17,8 @@ class ApiClient {
         baseUrl:
             // isProduction
             //     ?
-            "https://splitify-backend-production.up.railway.app",
+            // "https://splitify-backend-production.up.railway.app",
+            "https://api.splittify.app",
         // :
         // "http://localhost:3000",
         connectTimeout: const Duration(seconds: 10),

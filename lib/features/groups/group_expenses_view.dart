@@ -3,9 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:splitify/core/constants/constants.dart';
-import 'package:splitify/features/groups/settle_up_view.dart';
-import 'package:splitify/features/groups/totals_view.dart';
+import 'package:splittify/core/constants/constants.dart';
+import 'package:splittify/features/groups/settle_up_view.dart';
+import 'package:splittify/features/groups/totals_view.dart';
 
 import '../../core/theme/app_themes.dart';
 import '../../core/utils/date_helper.dart';

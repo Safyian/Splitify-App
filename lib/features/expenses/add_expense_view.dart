@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:splitify/core/constants/constants.dart';
-import 'package:splitify/features/groups/group_members_model.dart';
-import 'package:splitify/features/groups/groups_controller.dart';
+import 'package:splittify/core/constants/constants.dart';
+import 'package:splittify/features/groups/group_members_model.dart';
+import 'package:splittify/features/groups/groups_controller.dart';
 
 import '../../core/theme/app_themes.dart';
 import '../../shared/widgets/alert_widgets.dart';

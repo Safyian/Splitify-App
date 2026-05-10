@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:splitify/shared/widgets/friend_card.dart';
+import 'package:splittify/shared/widgets/friend_card.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
@@ -47,7 +47,7 @@ class FriendsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Enter the email of a registered Splitify user",
+                "Enter the email of a registered Splittify user",
                 style: AppTheme.normalText
                     .copyWith(color: Colors.grey.shade500, fontSize: 12),
               ),

@@ -2,8 +2,8 @@
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
-import 'package:splitify/features/profile/profile_service.dart';
-import 'package:splitify/features/profile/user_model.dart';
+import 'package:splittify/features/profile/profile_service.dart';
+import 'package:splittify/features/profile/user_model.dart';
 
 import '../auth/login_view.dart';
 

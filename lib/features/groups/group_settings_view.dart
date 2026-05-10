@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:splitify/core/constants/constants.dart';
+import 'package:splittify/core/constants/constants.dart';
 
 import '../../core/theme/app_themes.dart';
 import '../profile/profile_controller.dart';
@@ -519,7 +519,7 @@ class _MembersCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Enter the email of a registered Splitify user",
+                "Enter the email of a registered Splittify user",
                 style: AppTheme.normalText
                     .copyWith(color: Colors.grey, fontSize: 12),
               ),

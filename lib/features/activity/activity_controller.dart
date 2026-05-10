@@ -1,7 +1,7 @@
 // lib/features/activity/activity_controller.dart
 
 import 'package:get/get.dart';
-import 'package:splitify/core/utils/cache_manager.dart';
+import 'package:splittify/core/utils/cache_manager.dart';
 
 import 'activity_model.dart';
 import 'activity_services.dart';

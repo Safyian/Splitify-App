@@ -121,7 +121,7 @@ class _SplashViewState extends State<SplashView>
 
                   // App name
                   Text(
-                    'Splitify',
+                    'Splittify',
                     style: GoogleFonts.inter(
                       fontSize: 34,
                       fontWeight: FontWeight.w800,

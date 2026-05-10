@@ -4,7 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:splitify/features/groups/groups_controller.dart';
+import 'package:splittify/features/groups/groups_controller.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
