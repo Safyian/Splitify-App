@@ -9,49 +9,49 @@
 ### Registration
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 1.1 | Register with valid name, email, password | Verification email received, navigate to verify screen | |
-| 1.2 | Register with invalid email format | Inline error: "Enter a valid email address" | |
-| 1.3 | Register with name less than 2 characters | Inline error: "Name must be at least 2 characters" | |
-| 1.4 | Register with password less than 8 characters | Inline error: "Password must be at least 8 characters" | |
-| 1.5 | Register with password containing no numbers | Inline error: "Password must contain letters and numbers" | |
-| 1.6 | Register with already registered email | Error: "An account with this email already exists" | |
-| 1.7 | Register → skip verification → try login | Redirected to verify email screen | |
-| 1.8 | Register → verify email → login | Login successful, lands on Groups screen | |
-| 1.9 | Resend verification email | New email received, old link expired, new link works | |
+| 1.1 | Register with valid name, email, password | Verification email received, navigate to verify screen | | ✅
+| 1.2 | Register with invalid email format | Inline error: "Enter a valid email address" | | ✅
+| 1.3 | Register with name less than 2 characters | Inline error: "Name must be at least 2 characters" | | ✅
+| 1.4 | Register with password less than 8 characters | Inline error: "Password must be at least 8 characters" | | ✅
+| 1.5 | Register with password containing no numbers | Inline error: "Password must contain letters and numbers" | | ✅
+| 1.6 | Register with already registered email | Error: "An account with this email already exists" | | ✅
+| 1.7 | Register → skip verification → try login | Redirected to verify email screen | | ✅
+| 1.8 | Register → verify email → login | Login successful, lands on Groups screen | | ✅
+| 1.9 | Resend verification email | New email received, old link expired, new link works | | ✅
 
 ### Login
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 2.1 | Login with wrong password | Error: "Invalid credentials" | |
-| 2.2 | Login with unregistered email | Error: "Invalid credentials" | |
-| 2.3 | Login with invalid email format | Inline error on email field | |
-| 2.4 | Login with empty password | Inline error on password field | |
-| 2.5 | Login with correct credentials | Lands on Groups screen | |
-| 2.6 | Attempt login 11 times rapidly | Blocked: "Too many attempts. Please try again later." | |
+| 2.1 | Login with wrong password | Error: "Invalid credentials" | | ✅
+| 2.2 | Login with unregistered email | Error: "Invalid credentials" | | ✅
+| 2.3 | Login with invalid email format | Inline error on email field | | ✅
+| 2.4 | Login with empty password | Inline error on password field | | ✅
+| 2.5 | Login with correct credentials | Lands on Groups screen | | ✅
+| 2.6 | Attempt login 11 times rapidly | Blocked: "Too many attempts. Please try again later." | | 
 
 ### Forgot Password
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
 | 3.1 | Enter unregistered email in forgot password | Generic success message (email existence not revealed) | |
-| 3.2 | Enter registered email in forgot password | Reset email received | |
-| 3.3 | Click reset link in email | Reset password page opens in browser | |
-| 3.4 | Enter mismatched passwords on reset page | Error shown on page | |
-| 3.5 | Enter weak password on reset page | Error: password requirements shown | |
-| 3.6 | Enter valid new password → submit | Success page shown | |
-| 3.7 | Login with old password after reset | Fails: "Invalid credentials" | |
-| 3.8 | Login with new password after reset | Login successful | |
-| 3.9 | Click expired reset link (after 1 hour) | Expired page shown | |
+| 3.2 | Enter registered email in forgot password | Reset email received | | ✅
+| 3.3 | Click reset link in email | Reset password page opens in browser | | ✅
+| 3.4 | Enter mismatched passwords on reset page | Error shown on page | | ✅
+| 3.5 | Enter weak password on reset page | Error: password requirements shown | | ✅
+| 3.6 | Enter valid new password → submit | Success page shown | | ✅
+| 3.7 | Login with old password after reset | Fails: "Invalid credentials" | | ✅
+| 3.8 | Login with new password after reset | Login successful | | ✅
+| 3.9 | Click expired reset link (after 1 hour) | Expired page shown | | ✅
 
 ### Profile & Account
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 4.1 | Edit display name | Name updates instantly across the app | |
-| 4.2 | Delete account with unsettled balances | Blocked with clear error message | |
+| 4.1 | Edit display name | Name updates instantly across the app | | ✅
+| 4.2 | Delete account with unsettled balances | Blocked with clear error message | | ✅
 | 4.3 | Delete account with all balances settled | Account deleted, redirected to login | |
-| 4.4 | Logout | Cache cleared, login screen shown | |
-| 4.5 | Login again after logout | Fresh data loaded correctly | |
-| 4.6 | Change default split type to Exact | New expenses default to Exact split | |
-| 4.7 | Change default split type to Percentage | New expenses default to Percentage split | |
+| 4.4 | Logout | Cache cleared, login screen shown | | ✅
+| 4.5 | Login again after logout | Fresh data loaded correctly | | ✅
+| 4.6 | Change default split type to Exact | New expenses default to Exact split | | ✅
+| 4.7 | Change default split type to Percentage | New expenses default to Percentage split | | ✅
 
 ---
 
@@ -60,26 +60,26 @@
 ### Create Group
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 5.1 | Create group with name only | Created with default 🏠 emoji | |
-| 5.2 | Create group with custom emoji | Emoji shown correctly everywhere | |
-| 5.3 | Create group and add friends | Members added successfully | |
-| 5.4 | Create group | Appears in Groups list immediately | |
+| 5.1 | Create group with name only | Created with default 🏠 emoji | | ✅
+| 5.2 | Create group with custom emoji | Emoji shown correctly everywhere | | ✅
+| 5.3 | Create group and add friends | Members added successfully | | ✅
+| 5.4 | Create group | Appears in Groups list immediately | | ✅
 
 ### Group Settings
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 6.1 | Rename group | Name updates everywhere instantly | |
-| 6.2 | Change group emoji | Emoji updates everywhere instantly | |
-| 6.3 | Change default split type | New expenses use that split type | |
-| 6.4 | Add member by email | Member appears in list | |
-| 6.5 | Add member with non-existent email | Clear error message shown | |
-| 6.6 | Remove member with unsettled balance | Blocked with clear error | |
-| 6.7 | Remove member with zero balance | Removed successfully | |
-| 6.8 | Leave group with unsettled balance | Blocked with clear error | |
-| 6.9 | Leave group with zero balance | Removed from groups list | |
-| 6.10 | Delete group as creator with unsettled balances | Blocked with clear error | |
-| 6.11 | Delete group as creator with all settled | Group deleted successfully | |
-| 6.12 | Non-creator tries to delete group | Delete option not available | |
+| 6.1 | Rename group | Name updates everywhere instantly | | ✅
+| 6.2 | Change group emoji | Emoji updates everywhere instantly | | ✅
+| 6.3 | Change default split type | New expenses use that split type | | ✅
+| 6.4 | Add member by email | Member appears in list | | ✅
+| 6.5 | Add member with non-existent email | Clear error message shown | | ✅
+| 6.6 | Remove member with unsettled balance | Blocked with clear error | | ✅
+| 6.7 | Remove member with zero balance | Removed successfully | | ✅
+| 6.8 | Leave group with unsettled balance | Blocked with clear error | | ✅
+| 6.9 | Leave group with zero balance | Removed from groups list | | ✅
+| 6.10 | Delete group as creator with unsettled balances | Blocked with clear error | | ✅
+| 6.11 | Delete group as creator with all settled | Group deleted successfully | | ✅
+| 6.12 | Non-creator tries to delete group | Delete option not available | | ✅
 
 ---
 
