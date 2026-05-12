@@ -88,11 +88,11 @@
 ### Add Expense
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 7.1 | Add expense with equal split | Amounts calculated correctly per member | |
-| 7.2 | Add expense with exact split | Custom amounts accepted | |
-| 7.3 | Add expense with percentage split totalling 100% | Expense added successfully | |
-| 7.4 | Add expense with percentage not totalling 100% | Validation error shown | |
-| 7.5 | Add expense with zero amount | Validation error shown | |
+| 7.1 | Add expense with equal split | Amounts calculated correctly per member | ✅ |
+| 7.2 | Add expense with exact split | Custom amounts accepted | ✅ |
+| 7.3 | Add expense with percentage split totalling 100% | Expense added successfully | ✅ |
+| 7.4 | Add expense with percentage not totalling 100% | Validation error shown | ✅ |
+| 7.5 | Add expense with zero amount | Validation error shown | ✅ |
 | 7.6 | Add expense with empty description | Validation error shown | |
 | 7.7 | Add expense | Appears in expense list immediately | |
 | 7.8 | Add expense | Group balance updates correctly | |
