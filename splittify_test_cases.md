@@ -93,33 +93,33 @@
 | 7.3 | Add expense with percentage split totalling 100% | Expense added successfully | ✅ |
 | 7.4 | Add expense with percentage not totalling 100% | Validation error shown | ✅ |
 | 7.5 | Add expense with zero amount | Validation error shown | ✅ |
-| 7.6 | Add expense with empty description | Validation error shown | |
-| 7.7 | Add expense | Appears in expense list immediately | |
-| 7.8 | Add expense | Group balance updates correctly | |
-| 7.9 | Add expense | Activity feed shows new entry | |
+| 7.6 | Add expense with empty description | Validation error shown | ✅ |
+| 7.7 | Add expense | Appears in expense list immediately | ✅ |
+| 7.8 | Add expense | Group balance updates correctly | ✅ |
+| 7.9 | Add expense | Activity feed shows new entry | ✅ |
 
 ### Edit Expense
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 8.1 | Edit expense description | Updates correctly | |
-| 8.2 | Edit expense amount | Balances recalculate correctly | |
-| 8.3 | Edit expense split type | Splits recalculate correctly | |
-| 8.4 | Try to edit a settlement | Blocked — settlements have separate flow | |
+| 8.1 | Edit expense description | Updates correctly | ✅ |
+| 8.2 | Edit expense amount | Balances recalculate correctly | ✅ |
+| 8.3 | Edit expense split type | Splits recalculate correctly | ✅ |
+| 8.4 | Try to edit a settlement | Blocked — settlements have separate flow | ✅ |
 
 ### Delete Expense
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 9.1 | Delete expense | Removed from list immediately | |
-| 9.2 | Delete expense | Group balance recalculates | |
-| 9.3 | Delete expense | Activity feed shows deletion | |
+| 9.1 | Delete expense | Removed from list immediately | ✅ |
+| 9.2 | Delete expense | Group balance recalculates | ✅ |
+| 9.3 | Delete expense | Activity feed shows deletion |  |
 
 ### Split Calculations
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 10.1 | Equal split among 3 people | Each gets exactly 1/3 of amount | |
-| 10.2 | Exact split | Each person gets their specified amount | |
-| 10.3 | Percentage split | Amounts match percentages correctly | |
-| 10.4 | All split types | Balances on Groups screen match expense details | |
+| 10.1 | Equal split among 3 people | Each gets exactly 1/3 of amount | ✅ |
+| 10.2 | Exact split | Each person gets their specified amount | ✅ |
+| 10.3 | Percentage split | Amounts match percentages correctly | ✅ |
+| 10.4 | All split types | Balances on Groups screen match expense details | ✅ |
 
 ---
 
@@ -128,13 +128,13 @@
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
 | 11.1 | Settle full amount | Balance shows zero | |
-| 11.2 | Settle partial amount | Balance reduced correctly | |
-| 11.3 | Settle from Groups screen | Balance updates on groups screen | |
-| 11.4 | Settle from Friends screen | Friend balance updates | |
+| 11.2 | Settle partial amount | Balance reduced correctly | ✅ |
+| 11.3 | Settle from Groups screen | Balance updates on groups screen | ✅ |
+| 11.4 | Settle from Friends screen | Friend balance updates | ✅ |
 | 11.5 | Settle | Activity feed shows settlement event | |
-| 11.6 | Try to settle more than owed | Blocked — max amount enforced | |
-| 11.7 | Edit settlement amount | Balance recalculates correctly | |
-| 11.8 | Settlement in expense list | Shows as "Settlement" with correct amount | |
+| 11.6 | Try to settle more than owed | Blocked — max amount enforced | ✅ |
+| 11.7 | Edit settlement amount | Balance recalculates correctly | ✅ |
+| 11.8 | Settlement in expense list | Shows as "Settlement" with correct amount | ✅ |
 
 ---
 
@@ -142,13 +142,13 @@
 
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 12.1 | Add friend by email | Appears in friends list | |
-| 12.2 | Add non-existent email | Clear error message | |
-| 12.3 | Add already existing friend | Clear error message | |
-| 12.4 | Friend net balance | Shows correct balance across all shared groups | |
-| 12.5 | Remove explicit friend | Removed from friends list | |
-| 12.6 | Remove friend in shared group | Appears as group contact only (not removed entirely) | |
-| 12.7 | Friend detail screen | Shows shared groups correctly with balances | |
+| 12.1 | Add friend by email | Appears in friends list | ✅ |
+| 12.2 | Add non-existent email | Clear error message | ✅ |
+| 12.3 | Add already existing friend | Clear error message | ✅ |
+| 12.4 | Friend net balance | Shows correct balance across all shared groups | ✅ |
+| 12.5 | Remove explicit friend | Removed from friends list | ✅ |
+| 12.6 | Remove friend in shared group | Appears as group contact only (not removed entirely) | ✅ |
+| 12.7 | Friend detail screen | Shows shared groups correctly with balances | ✅ |
 
 ---
 
@@ -156,15 +156,15 @@
 
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 13.1 | Add expense | Appears in activity feed | |
+| 13.1 | Add expense | Appears in activity feed | ✅ |
 | 13.2 | Delete expense | Appears in activity feed | |
-| 13.3 | Settle up | Appears in activity feed | |
-| 13.4 | Add group member | Appears in activity feed | |
+| 13.3 | Settle up | Appears in activity feed | ✅ |
+| 13.4 | Add group member | Appears in activity feed | ✅ |
 | 13.5 | Remove group member | Appears in activity feed | |
 | 13.6 | Rename group | Appears in activity feed | |
-| 13.7 | Pull to refresh | Fetches latest activity | |
+| 13.7 | Pull to refresh | Fetches latest activity | ✅ |
 | 13.8 | Scroll to bottom with 30+ items | Load more works correctly | |
-| 13.9 | Date grouping | Shows Today, Yesterday, older dates correctly | |
+| 13.9 | Date grouping | Shows Today, Yesterday, older dates correctly | ✅ |
 
 ---
 
