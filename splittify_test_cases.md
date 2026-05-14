@@ -32,7 +32,7 @@
 ### Forgot Password
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 3.1 | Enter unregistered email in forgot password | Generic success message (email existence not revealed) | |
+| 3.1 | Enter unregistered email in forgot password | Generic success message (email existence not revealed) | ✅ |
 | 3.2 | Enter registered email in forgot password | Reset email received | ✅ |
 | 3.3 | Click reset link in email | Reset password page opens in browser | ✅ |
 | 3.4 | Enter mismatched passwords on reset page | Error shown on page | ✅ |
@@ -127,11 +127,11 @@
 
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 11.1 | Settle full amount | Balance shows zero | |
+| 11.1 | Settle full amount | Balance shows zero | ✅ |
 | 11.2 | Settle partial amount | Balance reduced correctly | ✅ |
 | 11.3 | Settle from Groups screen | Balance updates on groups screen | ✅ |
 | 11.4 | Settle from Friends screen | Friend balance updates | ✅ |
-| 11.5 | Settle | Activity feed shows settlement event | |
+| 11.5 | Settle | Activity feed shows settlement event | ✅ |
 | 11.6 | Try to settle more than owed | Blocked — max amount enforced | ✅ |
 | 11.7 | Edit settlement amount | Balance recalculates correctly | ✅ |
 | 11.8 | Settlement in expense list | Shows as "Settlement" with correct amount | ✅ |
@@ -160,10 +160,10 @@
 | 13.2 | Delete expense | Appears in activity feed | |
 | 13.3 | Settle up | Appears in activity feed | ✅ |
 | 13.4 | Add group member | Appears in activity feed | ✅ |
-| 13.5 | Remove group member | Appears in activity feed | |
-| 13.6 | Rename group | Appears in activity feed | |
+| 13.5 | Remove group member | Appears in activity feed | ✅ |
+| 13.6 | Rename group | Appears in activity feed | ✅ |
 | 13.7 | Pull to refresh | Fetches latest activity | ✅ |
-| 13.8 | Scroll to bottom with 30+ items | Load more works correctly | |
+| 13.8 | Scroll to bottom with 30+ items | Load more works correctly | ✅ |
 | 13.9 | Date grouping | Shows Today, Yesterday, older dates correctly | ✅ |
 
 ---
@@ -172,14 +172,14 @@
 
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
-| 14.1 | Open Groups → switch tabs → return within 5 mins | Instant load, no spinner | |
-| 14.2 | Open Friends → switch tabs → return within 5 mins | Instant load, no spinner | |
-| 14.3 | Open Activity → switch tabs → return within 2 mins | Instant load, no spinner | |
-| 14.4 | Open Group A → open Group B → return to Group A | Instant load from cache | |
-| 14.5 | Add expense → go to Groups screen | Balance updated (cache invalidated correctly) | |
-| 14.6 | Settle up → check Friends screen | Friend balance updated | |
-| 14.7 | Logout → login → all screens | Fresh data fetched (cache cleared on logout) | |
-| 14.8 | Return to Activity after 2+ mins | Silent background refresh (no full spinner) | |
+| 14.1 | Open Groups → switch tabs → return within 5 mins | Instant load, no spinner | ✅ |
+| 14.2 | Open Friends → switch tabs → return within 5 mins | Instant load, no spinner | ✅ |
+| 14.3 | Open Activity → switch tabs → return within 2 mins | Instant load, no spinner | ✅ |
+| 14.4 | Open Group A → open Group B → return to Group A | Instant load from cache | ✅ |
+| 14.5 | Add expense → go to Groups screen | Balance updated (cache invalidated correctly) | ✅ |
+| 14.6 | Settle up → check Friends screen | Friend balance updated | ✅ |
+| 14.7 | Logout → login → all screens | Fresh data fetched (cache cleared on logout) | ✅ |
+| 14.8 | Return to Activity after 2+ mins | Silent background refresh (no full spinner) | ✅ |
 
 ---
 
@@ -191,14 +191,14 @@
 | 15.2 | Turn off internet → cached screens | Previously loaded data still visible | |
 | 15.3 | Slow connection | Loading spinners show on all async operations | |
 | 15.4 | Kill app mid-action → reopen | Data consistent, no corruption | |
-| 15.5 | Very long group name | Displays correctly without overflow | |
+| 15.5 | Very long group name | Displays correctly without overflow | ✅ |
 | 15.6 | Very long expense description | Displays correctly without overflow | |
-| 15.7 | Large amount (e.g. $99,999.99) | Displays correctly | |
-| 15.8 | Zero balance group | Shows "Settled up" correctly | |
+| 15.7 | Large amount (e.g. $99,999.99) | Displays correctly | ✅ |
+| 15.8 | Zero balance group | Shows "Settled up" correctly | ✅ |
 | 15.9 | Group with one member | No broken split options | |
-| 15.10 | Empty groups list | Empty state shown correctly | |
-| 15.11 | Empty friends list | Empty state shown correctly | |
-| 15.12 | Empty activity feed | Empty state shown correctly | |
+| 15.10 | Empty groups list | Empty state shown correctly | ✅ |
+| 15.11 | Empty friends list | Empty state shown correctly | ✅ |
+| 15.12 | Empty activity feed | Empty state shown correctly | ✅ |
 
 ---
 
