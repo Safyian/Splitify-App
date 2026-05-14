@@ -9,16 +9,17 @@ import 'package:splittify/features/groups/totals_view.dart';
 
 import '../../core/theme/app_themes.dart';
 import '../../core/utils/date_helper.dart';
+import '../../shared/widgets/shimmer.dart';
 import '../expenses/add_expense_controller.dart';
 import '../expenses/add_expense_view.dart';
 import '../expenses/charts_view.dart';
 import '../profile/profile_controller.dart';
 import 'balances_view.dart';
+import 'group_expenses_model.dart';
 import 'group_settings_view.dart';
 import 'group_summary_model.dart';
 import 'groups_controller.dart';
 import 'settlement_breakdown_sheet.dart'; // ← NEW
-import '../../shared/widgets/shimmer.dart';
 
 class GroupExpensesView extends StatelessWidget {
   GroupExpensesView({super.key, required this.index});
@@ -129,24 +130,31 @@ class GroupExpensesView extends StatelessWidget {
 }
 
 // ── Group Header ───────────────────────────────────────────────────────────────
-class _GroupHeader extends StatelessWidget {
+class _GroupHeader extends StatefulWidget {
   const _GroupHeader({required this.index, required this.groupCtrl});
   final int index;
   final GroupsController groupCtrl;
 
+  @override
+  State<_GroupHeader> createState() => _GroupHeaderState();
+}
+
+class _GroupHeaderState extends State<_GroupHeader> {
+  OverlayEntry? _overlayEntry;
+
   // ── Trigger the breakdown sheet ──────────────────────────
   void _showBreakdown(BuildContext context) {
-    final groupId = groupCtrl.summaries[index].id;
+    final groupId = widget.groupCtrl.summaries[widget.index].id;
     final myId = Get.find<ProfileController>().user.value.user?.id ?? '';
-    final balances = groupCtrl.balancesFor(groupId);
+    final balances = widget.groupCtrl.balancesFor(groupId);
 
     // Guard: balances not yet loaded for this screen
     if (balances.balances.isEmpty) {
       // Fetch first, then show
-      groupCtrl.fetchGroupBalances(groupId: groupId).then((_) {
+      widget.groupCtrl.fetchGroupBalances(groupId: groupId).then((_) {
         if (!context.mounted) return;
         final data = SettlementBreakdownData.fromBalancesModel(
-          groupCtrl.balancesFor(groupId),
+          widget.groupCtrl.balancesFor(groupId),
           myId,
         );
         showSettlementBreakdown(context, data);
@@ -158,11 +166,50 @@ class _GroupHeader extends StatelessWidget {
     showSettlementBreakdown(context, data);
   }
 
+  void _openPopup(GroupSummary summary) {
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _closePopup,
+              behavior: HitTestBehavior.opaque,
+              child: Container(color: Colors.black.withAlpha(30)),
+            ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 120,
+            left: 16,
+            right: 16,
+            child: _AllBalancesPopup(
+              summary: summary,
+              onClose: _closePopup,
+            ),
+          ),
+        ],
+      ),
+    );
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  void _closePopup() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  @override
+  void dispose() {
+    _overlayEntry?.remove();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (index >= groupCtrl.summaries.length) return const SizedBox.shrink();
-      final summary = groupCtrl.summaries[index];
+      if (widget.index >= widget.groupCtrl.summaries.length) {
+        return const SizedBox.shrink();
+      }
+      final summary = widget.groupCtrl.summaries[widget.index];
       final isSettled = summary.balance.status == BalanceStatus.settled;
 
       return Row(
@@ -189,7 +236,12 @@ class _GroupHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(summary.name, style: AppTheme.headingText),
+                Text(
+                  summary.name,
+                  style: AppTheme.headingText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 2),
                 if (isSettled)
                   Row(
@@ -210,8 +262,14 @@ class _GroupHeader extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ...summary.preview.asMap().entries.map((entry) {
-                        final isLast = entry.key == summary.preview.length - 1;
+                      ...summary.preview
+                          .take(2)
+                          .toList()
+                          .asMap()
+                          .entries
+                          .map((entry) {
+                        final isLast = entry.key ==
+                            summary.preview.take(2).toList().length - 1;
                         final entity = entry.value;
                         final youPay =
                             entity.direction == PreviewDirection.youPay;
@@ -236,20 +294,42 @@ class _GroupHeader extends StatelessWidget {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                // ── +N more › inline on last row ──
+                                // ── +N more chip inline on last row ──
                                 if (isLast && summary.othersCount > 0)
                                   WidgetSpan(
                                     alignment: PlaceholderAlignment.middle,
                                     child: GestureDetector(
-                                      onTap: () => _showBreakdown(context),
+                                      onTap: () => _openPopup(summary),
                                       child: Padding(
                                         padding: const EdgeInsets.only(left: 6),
-                                        child: Text(
-                                          "+${summary.othersCount} more ›",
-                                          style: AppTheme.normalText.copyWith(
-                                            color: Constants.activeColor,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: Constants.bgColor,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                '+${summary.othersCount} more',
+                                                style: AppTheme.normalText
+                                                    .copyWith(
+                                                  color: Colors.grey.shade500,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 2),
+                                              Icon(
+                                                Icons
+                                                    .keyboard_arrow_down_rounded,
+                                                size: 14,
+                                                color: Colors.grey.shade500,
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
@@ -296,6 +376,197 @@ class _GroupHeader extends StatelessWidget {
         ],
       );
     });
+  }
+}
+
+// ── All Balances Popup ─────────────────────────────────────────────────────────
+class _AllBalancesPopup extends StatelessWidget {
+  const _AllBalancesPopup({
+    required this.summary,
+    required this.onClose,
+  });
+  final GroupSummary summary;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = summary.preview;
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Constants.bgColorLight,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.withAlpha(40)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(25),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ── Header ──────────────────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'All balances',
+                  style: AppTheme.headingText.copyWith(fontSize: 14),
+                ),
+                GestureDetector(
+                  onTap: onClose,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: const BoxDecoration(
+                      color: Constants.bgColor,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.close_rounded,
+                      size: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // ── Balance rows ─────────────────────────────────
+            if (items.isNotEmpty)
+              ...items.asMap().entries.map((entry) {
+                final isLast = entry.key == items.length - 1;
+                final item = entry.value;
+
+                final youPay = item.direction == PreviewDirection.youPay;
+                final name = item.name;
+                final amount = item.amount;
+                final initials = name.isNotEmpty ? name[0].toUpperCase() : '?';
+                final avatarBg = youPay
+                    ? Constants.redColor.withAlpha(20)
+                    : Constants.activeColor.withAlpha(20);
+                final avatarTextColor =
+                    youPay ? Constants.redColor : Constants.activeColor;
+                final amountColor =
+                    youPay ? Constants.redColor : Constants.activeColor;
+                final label = youPay
+                    ? 'you owe \$${amount.toStringAsFixed(2)}'
+                    : 'owes you \$${amount.toStringAsFixed(2)}';
+
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: avatarBg,
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              initials,
+                              style: AppTheme.normalText.copyWith(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: avatarTextColor,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              name,
+                              style: AppTheme.normalText.copyWith(fontSize: 13),
+                            ),
+                          ),
+                          Text(
+                            label,
+                            style: AppTheme.normalText.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: amountColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (!isLast)
+                      Divider(
+                        height: 1,
+                        color: Colors.grey.withAlpha(25),
+                      ),
+                  ],
+                );
+              })
+
+            // ── Empty state ──────────────────────────────────
+            else
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  'All settled up',
+                  style: AppTheme.normalText.copyWith(
+                    color: Constants.activeColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+
+            // ── Net balance footer ───────────────────────────
+            if (items.isNotEmpty) ...[
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                padding: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: Colors.grey.withAlpha(40)),
+                  ),
+                ),
+                child: Builder(builder: (_) {
+                  final net = summary.balance.net;
+                  final isPositive = net >= 0;
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Net balance',
+                        style: AppTheme.normalText.copyWith(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Text(
+                        isPositive
+                            ? '+\$${net.toStringAsFixed(2)}'
+                            : '-\$${net.abs().toStringAsFixed(2)}',
+                        style: AppTheme.headingText.copyWith(
+                          fontSize: 14,
+                          color: isPositive
+                              ? Constants.activeColor
+                              : Constants.redColor,
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -509,7 +780,7 @@ class _ExpenseList extends StatelessWidget {
                 );
 
                 return Dismissible(
-                  key: Key(expense.id ?? UniqueKey().toString()),
+                  key: ValueKey(expense.id),
                   direction: DismissDirection.endToStart,
                   confirmDismiss: (_) async {
                     return await Get.dialog<bool>(
@@ -552,10 +823,23 @@ class _ExpenseList extends StatelessWidget {
                         ) ??
                         false;
                   },
-                  onDismissed: (_) {
-                    groupCtrl.deleteExpense(
+                  onDismissed: (direction) async {
+                    final expenseId = expense.id ?? '';
+
+                    // Immediately remove from local cache so Dismissible is satisfied
+                    final currentExpenses =
+                        groupCtrl.expensesFor(groupId).expenses ?? [];
+                    final updatedExpenses = List.of(currentExpenses)
+                      ..removeWhere((e) => e.id == expenseId);
+                    groupCtrl.allGroupExpenses[groupId] = GroupExpenses(
+                      count: updatedExpenses.length,
+                      expenses: updatedExpenses,
+                    );
+
+                    // Then call the API in background
+                    await groupCtrl.deleteExpense(
                       groupId: groupId,
-                      expenseId: expense.id ?? '',
+                      expenseId: expenseId,
                     );
                   },
                   background: Container(
@@ -636,103 +920,238 @@ class _ExpenseCard extends StatelessWidget {
       // ── Food & Dining ─────────────────────────────────────
       (
         <String>{
-          'restaurant', 'food', 'lunch', 'dinner', 'breakfast',
-          'cafe', 'coffee', 'tea', 'pizza', 'burger', 'sushi',
-          'biryani', 'eat', 'meal', 'snack', 'drink', 'drinks',
-          'bar', 'dine', 'takeaway', 'takeout', 'bbq', 'grill',
+          'restaurant',
+          'food',
+          'lunch',
+          'dinner',
+          'breakfast',
+          'cafe',
+          'coffee',
+          'tea',
+          'pizza',
+          'burger',
+          'sushi',
+          'biryani',
+          'eat',
+          'meal',
+          'snack',
+          'drink',
+          'drinks',
+          'bar',
+          'dine',
+          'takeaway',
+          'takeout',
+          'bbq',
+          'grill',
         },
         Icons.restaurant_outlined,
       ),
       (
         <String>{
-          'grocery', 'groceries', 'supermarket', 'market',
-          'vegetable', 'vegetables', 'fruit', 'fruits',
-          'bread', 'milk', 'eggs', 'dairy', 'store',
+          'grocery',
+          'groceries',
+          'supermarket',
+          'market',
+          'vegetable',
+          'vegetables',
+          'fruit',
+          'fruits',
+          'bread',
+          'milk',
+          'eggs',
+          'dairy',
+          'store',
         },
         Icons.local_grocery_store_outlined,
       ),
       (
         <String>{
-          'meat', 'chicken', 'beef', 'pork', 'mutton',
-          'fish', 'seafood', 'prawns', 'shrimp', 'lamb',
+          'meat',
+          'chicken',
+          'beef',
+          'pork',
+          'mutton',
+          'fish',
+          'seafood',
+          'prawns',
+          'shrimp',
+          'lamb',
         },
         Icons.set_meal_outlined,
       ),
       // ── Transport ─────────────────────────────────────────
       (
         <String>{
-          'fuel', 'petrol', 'diesel', 'refuel', 'filling', 'cng',
+          'fuel',
+          'petrol',
+          'diesel',
+          'refuel',
+          'filling',
+          'cng',
         },
         Icons.local_gas_station_outlined,
       ),
       (
         <String>{
-          'uber', 'taxi', 'cab', 'ride', 'bus', 'train', 'metro',
-          'subway', 'ticket', 'toll', 'parking', 'carpool', 'auto',
-          'rickshaw', 'flight', 'airline', 'transport', 'ferry',
+          'uber',
+          'taxi',
+          'cab',
+          'ride',
+          'bus',
+          'train',
+          'metro',
+          'subway',
+          'ticket',
+          'toll',
+          'parking',
+          'carpool',
+          'auto',
+          'rickshaw',
+          'flight',
+          'airline',
+          'transport',
+          'ferry',
         },
         Icons.directions_car_outlined,
       ),
       // ── Home & Accommodation ──────────────────────────────
       (
         <String>{
-          'rent', 'house', 'flat', 'apartment', 'hotel', 'airbnb',
-          'hostel', 'stay', 'lease', 'mortgage', 'room', 'accommodation',
+          'rent',
+          'house',
+          'flat',
+          'apartment',
+          'hotel',
+          'airbnb',
+          'hostel',
+          'stay',
+          'lease',
+          'mortgage',
+          'room',
+          'accommodation',
         },
         Icons.home_outlined,
       ),
       // ── Internet & Phone ──────────────────────────────────
       (
         <String>{
-          'internet', 'wifi', 'broadband', 'fiber', 'data',
-          'phone', 'mobile', 'sim', 'recharge', 'topup', 'postpaid',
-          'prepaid', 'subscription', 'streaming',
+          'internet',
+          'wifi',
+          'broadband',
+          'fiber',
+          'data',
+          'phone',
+          'mobile',
+          'sim',
+          'recharge',
+          'topup',
+          'postpaid',
+          'prepaid',
+          'subscription',
+          'streaming',
         },
         Icons.wifi_outlined,
       ),
       // ── Utilities & Bills ─────────────────────────────────
       (
         <String>{
-          'electricity', 'electric', 'power', 'water', 'gas',
-          'bill', 'bills', 'utility', 'utilities', 'maintenance',
-          'sewage', 'council',
+          'electricity',
+          'electric',
+          'power',
+          'water',
+          'gas',
+          'bill',
+          'bills',
+          'utility',
+          'utilities',
+          'maintenance',
+          'sewage',
+          'council',
         },
         Icons.bolt_outlined,
       ),
       // ── Entertainment ─────────────────────────────────────
       (
         <String>{
-          'movie', 'cinema', 'netflix', 'disney', 'hbo',
-          'spotify', 'music', 'concert', 'show', 'event',
-          'game', 'gaming', 'esports', 'sports', 'gym',
-          'fitness', 'workout', 'yoga', 'cricket', 'football',
+          'movie',
+          'cinema',
+          'netflix',
+          'disney',
+          'hbo',
+          'spotify',
+          'music',
+          'concert',
+          'show',
+          'event',
+          'game',
+          'gaming',
+          'esports',
+          'sports',
+          'gym',
+          'fitness',
+          'workout',
+          'yoga',
+          'cricket',
+          'football',
         },
         Icons.sports_esports_outlined,
       ),
       // ── Shopping ─────────────────────────────────────────
       (
         <String>{
-          'shopping', 'clothes', 'clothing', 'amazon', 'flipkart',
-          'order', 'delivery', 'shop', 'mall', 'fashion', 'shoes',
-          'accessories', 'gadget', 'electronics',
+          'shopping',
+          'clothes',
+          'clothing',
+          'amazon',
+          'flipkart',
+          'order',
+          'delivery',
+          'shop',
+          'mall',
+          'fashion',
+          'shoes',
+          'accessories',
+          'gadget',
+          'electronics',
         },
         Icons.shopping_bag_outlined,
       ),
       // ── Health & Medical ─────────────────────────────────
       (
         <String>{
-          'medicine', 'doctor', 'hospital', 'pharmacy', 'health',
-          'medical', 'dental', 'clinic', 'prescription', 'chemist',
-          'test', 'lab', 'surgery', 'physiotherapy',
+          'medicine',
+          'doctor',
+          'hospital',
+          'pharmacy',
+          'health',
+          'medical',
+          'dental',
+          'clinic',
+          'prescription',
+          'chemist',
+          'test',
+          'lab',
+          'surgery',
+          'physiotherapy',
         },
         Icons.local_hospital_outlined,
       ),
       // ── Education ────────────────────────────────────────
       (
         <String>{
-          'book', 'books', 'course', 'tuition', 'school',
-          'college', 'university', 'education', 'study',
-          'class', 'lesson', 'stationery', 'fees',
+          'book',
+          'books',
+          'course',
+          'tuition',
+          'school',
+          'college',
+          'university',
+          'education',
+          'study',
+          'class',
+          'lesson',
+          'stationery',
+          'fees',
         },
         Icons.menu_book_outlined,
       ),

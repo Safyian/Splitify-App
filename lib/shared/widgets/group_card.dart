@@ -29,8 +29,8 @@ class GroupCard extends StatelessWidget {
 
       return GestureDetector(
         onTap: () {
-          groupCtrl.fetchGroupMembers(groupId: summary.id);
-          groupCtrl.fetchGroupExpenses(groupId: summary.id);
+          groupCtrl.fetchGroupMembers(groupId: summary.id, forceRefresh: true);
+          groupCtrl.fetchGroupExpenses(groupId: summary.id, forceRefresh: true);
           Get.to(() => GroupExpensesView(index: index));
         },
         child: Container(
@@ -130,7 +130,7 @@ class GroupCard extends StatelessWidget {
                   ],
                 ),
               ),
-
+              const SizedBox(width: 4),
               // ── Balance badge ────────────────────────────────
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,

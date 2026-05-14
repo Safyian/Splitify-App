@@ -80,7 +80,9 @@ class GroupSummary {
         balance: Balance.fromJson(json["balance"]),
         preview:
             List<Preview>.from(json["preview"].map((x) => Preview.fromJson(x))),
-        othersCount: json["othersCount"] ?? 0,
+        othersCount: (json['preview'] as List).length > 2
+            ? (json['preview'] as List).length - 2
+            : 0,
       );
 
   Map<String, dynamic> toJson() => {

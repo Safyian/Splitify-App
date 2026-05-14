@@ -53,10 +53,12 @@ class AuthController extends GetxController {
 
   bool _validateLogin() {
     fieldErrors.clear();
-    if (!GetUtils.isEmail(emailCtrl.text.trim()))
+    if (!GetUtils.isEmail(emailCtrl.text.trim())) {
       fieldErrors['email'] = 'Enter a valid email address';
-    if (passCtrl.text.isEmpty)
+    }
+    if (passCtrl.text.isEmpty) {
       fieldErrors['password'] = 'Password cannot be empty';
+    }
     return fieldErrors.isEmpty;
   }
 

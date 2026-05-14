@@ -180,11 +180,16 @@ class _SettingsTile extends StatelessWidget {
             Expanded(
               child: Text(label, style: AppTheme.normalText),
             ),
-            Text(
-              value,
-              style: AppTheme.normalText.copyWith(
-                color: valueColor ?? Colors.grey.shade500,
-                fontWeight: FontWeight.w500,
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 180.w),
+              child: Text(
+                value,
+                style: AppTheme.normalText.copyWith(
+                  color: valueColor ?? Colors.grey.shade500,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
               ),
             ),
             const SizedBox(width: 6),

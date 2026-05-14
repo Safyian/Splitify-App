@@ -1,4 +1,4 @@
-package com.example.splitify
+package com.safyian.splittify
 
 import io.flutter.embedding.android.FlutterActivity
 
