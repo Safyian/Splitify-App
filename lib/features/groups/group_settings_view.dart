@@ -53,7 +53,8 @@ class GroupSettingsView extends StatelessWidget {
         if (index >= groupCtrl.summaries.length) return const SizedBox.shrink();
         final summary = groupCtrl.summaries[index];
         final myId = profileCtrl.user.value.user?.id ?? '';
-        final isCreator = myId == summary.createdBy;
+        final adminId = summary.adminId ?? '';
+        final isAdmin = adminId == myId;
 
         return ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -83,7 +84,7 @@ class GroupSettingsView extends StatelessWidget {
                 index: index,
                 groupCtrl: groupCtrl,
                 myId: myId,
-                isCreator: isCreator),
+                isAdmin: isAdmin),
             const SizedBox(height: 40),
           ],
         );
@@ -625,6 +626,8 @@ class _MembersCard extends StatelessWidget {
 
     return Obx(() {
       final memberList = groupCtrl.membersFor(groupId).members ?? [];
+      final adminId = groupCtrl.summaries[index].adminId ?? '';
+      final isAdmin = adminId == myId;
 
       return Container(
         decoration: BoxDecoration(
@@ -639,6 +642,7 @@ class _MembersCard extends StatelessWidget {
               final member = entry.value;
               final isMe = member.id == myId;
               final isLast = i == memberList.length - 1;
+              final canRemove = isAdmin || member.id == myId;
 
               return Container(
                 padding:
@@ -684,8 +688,7 @@ class _MembersCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // Remove button — only shown to non-self members
-                    if (!isMe)
+                    if (canRemove)
                       GestureDetector(
                         onTap: () => _confirmRemoveMember(
                           context,
@@ -759,12 +762,12 @@ class _DangerCard extends StatelessWidget {
     required this.index,
     required this.groupCtrl,
     required this.myId,
-    required this.isCreator,
+    required this.isAdmin,
   });
   final int index;
   final GroupsController groupCtrl;
   final String myId;
-  final bool isCreator;
+  final bool isAdmin;
 
   void _confirmLeave(BuildContext context) {
     Get.dialog(
@@ -850,8 +853,8 @@ class _DangerCard extends StatelessWidget {
         ),
         const SizedBox(height: 8),
 
-        // Delete group — only visible to the group creator
-        if (isCreator)
+        // Delete group — only visible to the group admin
+        if (isAdmin)
           _DangerTile(
             label: "Delete Group",
             icon: Icons.delete_forever_rounded,

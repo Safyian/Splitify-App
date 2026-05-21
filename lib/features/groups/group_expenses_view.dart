@@ -9,12 +9,14 @@ import 'package:splittify/features/groups/totals_view.dart';
 
 import '../../core/theme/app_themes.dart';
 import '../../core/utils/date_helper.dart';
+import '../../core/utils/expense_icon_helper.dart';
 import '../../shared/widgets/shimmer.dart';
 import '../expenses/add_expense_controller.dart';
 import '../expenses/add_expense_view.dart';
 import '../expenses/charts_view.dart';
 import '../profile/profile_controller.dart';
 import 'balances_view.dart';
+import 'expense_detail_view.dart';
 import 'group_expenses_model.dart';
 import 'group_settings_view.dart';
 import 'group_summary_model.dart';
@@ -739,13 +741,34 @@ class _ExpenseList extends StatelessWidget {
         (e) => e.createdAt,
       );
 
-      return ListView.builder(
-        padding: const EdgeInsets.only(bottom: 100),
-        itemCount: grouped.length,
-        itemBuilder: (context, sectionIndex) {
-          final section = grouped[sectionIndex];
-          final monthLabel = section.key;
-          final monthExpenses = section.value;
+      return Column(
+        children: [
+          Expanded(
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (scroll) {
+                if (scroll.metrics.pixels >=
+                    scroll.metrics.maxScrollExtent - 200) {
+                  final gId = groupCtrl.summaries[index].id;
+                  final hasMore =
+                      groupCtrl.expensesFor(gId).hasMore ?? false;
+                  final isLoadingMore =
+                      groupCtrl.isLoadingMoreExpenses.value;
+                  if (hasMore && !isLoadingMore) {
+                    groupCtrl.fetchGroupExpenses(
+                      groupId: gId,
+                      loadMore: true,
+                    );
+                  }
+                }
+                return false;
+              },
+              child: ListView.builder(
+                padding: const EdgeInsets.only(bottom: 100),
+                itemCount: grouped.length,
+                itemBuilder: (context, sectionIndex) {
+                  final section = grouped[sectionIndex];
+                  final monthLabel = section.key;
+                  final monthExpenses = section.value;
 
           final sectionTotal = monthExpenses
               .where((e) => e.description != 'Settlement')
@@ -777,6 +800,7 @@ class _ExpenseList extends StatelessWidget {
                   amount: amount,
                   myId: myId,
                   isSettlement: isSettlement,
+                  index: index,
                 );
 
                 return Dismissible(
@@ -874,6 +898,24 @@ class _ExpenseList extends StatelessWidget {
             ],
           );
         },
+              ),
+            ),
+          ),
+          Obx(() {
+            if (groupCtrl.isLoadingMoreExpenses.value) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Constants.activeColor,
+                  ),
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          }),
+        ],
       );
     });
   }
@@ -886,281 +928,25 @@ class _ExpenseCard extends StatelessWidget {
     required this.amount,
     required this.myId,
     required this.isSettlement,
+    required this.index,
   });
 
   final dynamic expense;
   final double amount;
   final String? myId;
   final bool isSettlement;
+  final int index;
 
   void _showExpenseDetail(BuildContext context, dynamic expense, String? myId) {
-    Get.bottomSheet(
-      _ExpenseDetailSheet(expense: expense, myId: myId),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+    Get.to(
+      () => ExpenseDetailView(
+        expense: expense,
+        myId: myId,
+        groupIndex: index,
+      ),
+      transition: Transition.cupertino,
+      duration: const Duration(milliseconds: 300),
     );
-  }
-
-  IconData get _expenseIcon {
-    if (isSettlement) return Icons.account_balance_wallet_outlined;
-    return _resolveIcon(expense.description as String? ?? '');
-  }
-
-  /// Tokenises [description] into lowercase words and returns the first
-  /// matching category icon, falling back to a generic receipt icon.
-  static IconData _resolveIcon(String description) {
-    final words = description
-        .toLowerCase()
-        .split(RegExp(r'[^a-z]+'))
-        .where((w) => w.length > 1)
-        .toSet();
-
-    // (keywords, icon) — checked in order, first match wins
-    const rules = [
-      // ── Food & Dining ─────────────────────────────────────
-      (
-        <String>{
-          'restaurant',
-          'food',
-          'lunch',
-          'dinner',
-          'breakfast',
-          'cafe',
-          'coffee',
-          'tea',
-          'pizza',
-          'burger',
-          'sushi',
-          'biryani',
-          'eat',
-          'meal',
-          'snack',
-          'drink',
-          'drinks',
-          'bar',
-          'dine',
-          'takeaway',
-          'takeout',
-          'bbq',
-          'grill',
-        },
-        Icons.restaurant_outlined,
-      ),
-      (
-        <String>{
-          'grocery',
-          'groceries',
-          'supermarket',
-          'market',
-          'vegetable',
-          'vegetables',
-          'fruit',
-          'fruits',
-          'bread',
-          'milk',
-          'eggs',
-          'dairy',
-          'store',
-        },
-        Icons.local_grocery_store_outlined,
-      ),
-      (
-        <String>{
-          'meat',
-          'chicken',
-          'beef',
-          'pork',
-          'mutton',
-          'fish',
-          'seafood',
-          'prawns',
-          'shrimp',
-          'lamb',
-        },
-        Icons.set_meal_outlined,
-      ),
-      // ── Transport ─────────────────────────────────────────
-      (
-        <String>{
-          'fuel',
-          'petrol',
-          'diesel',
-          'refuel',
-          'filling',
-          'cng',
-        },
-        Icons.local_gas_station_outlined,
-      ),
-      (
-        <String>{
-          'uber',
-          'taxi',
-          'cab',
-          'ride',
-          'bus',
-          'train',
-          'metro',
-          'subway',
-          'ticket',
-          'toll',
-          'parking',
-          'carpool',
-          'auto',
-          'rickshaw',
-          'flight',
-          'airline',
-          'transport',
-          'ferry',
-        },
-        Icons.directions_car_outlined,
-      ),
-      // ── Home & Accommodation ──────────────────────────────
-      (
-        <String>{
-          'rent',
-          'house',
-          'flat',
-          'apartment',
-          'hotel',
-          'airbnb',
-          'hostel',
-          'stay',
-          'lease',
-          'mortgage',
-          'room',
-          'accommodation',
-        },
-        Icons.home_outlined,
-      ),
-      // ── Internet & Phone ──────────────────────────────────
-      (
-        <String>{
-          'internet',
-          'wifi',
-          'broadband',
-          'fiber',
-          'data',
-          'phone',
-          'mobile',
-          'sim',
-          'recharge',
-          'topup',
-          'postpaid',
-          'prepaid',
-          'subscription',
-          'streaming',
-        },
-        Icons.wifi_outlined,
-      ),
-      // ── Utilities & Bills ─────────────────────────────────
-      (
-        <String>{
-          'electricity',
-          'electric',
-          'power',
-          'water',
-          'gas',
-          'bill',
-          'bills',
-          'utility',
-          'utilities',
-          'maintenance',
-          'sewage',
-          'council',
-        },
-        Icons.bolt_outlined,
-      ),
-      // ── Entertainment ─────────────────────────────────────
-      (
-        <String>{
-          'movie',
-          'cinema',
-          'netflix',
-          'disney',
-          'hbo',
-          'spotify',
-          'music',
-          'concert',
-          'show',
-          'event',
-          'game',
-          'gaming',
-          'esports',
-          'sports',
-          'gym',
-          'fitness',
-          'workout',
-          'yoga',
-          'cricket',
-          'football',
-        },
-        Icons.sports_esports_outlined,
-      ),
-      // ── Shopping ─────────────────────────────────────────
-      (
-        <String>{
-          'shopping',
-          'clothes',
-          'clothing',
-          'amazon',
-          'flipkart',
-          'order',
-          'delivery',
-          'shop',
-          'mall',
-          'fashion',
-          'shoes',
-          'accessories',
-          'gadget',
-          'electronics',
-        },
-        Icons.shopping_bag_outlined,
-      ),
-      // ── Health & Medical ─────────────────────────────────
-      (
-        <String>{
-          'medicine',
-          'doctor',
-          'hospital',
-          'pharmacy',
-          'health',
-          'medical',
-          'dental',
-          'clinic',
-          'prescription',
-          'chemist',
-          'test',
-          'lab',
-          'surgery',
-          'physiotherapy',
-        },
-        Icons.local_hospital_outlined,
-      ),
-      // ── Education ────────────────────────────────────────
-      (
-        <String>{
-          'book',
-          'books',
-          'course',
-          'tuition',
-          'school',
-          'college',
-          'university',
-          'education',
-          'study',
-          'class',
-          'lesson',
-          'stationery',
-          'fees',
-        },
-        Icons.menu_book_outlined,
-      ),
-    ];
-
-    for (final (keywords, icon) in rules) {
-      if (words.any(keywords.contains)) return icon;
-    }
-    return Icons.receipt_long_outlined;
   }
 
   @override
@@ -1189,7 +975,10 @@ class _ExpenseCard extends StatelessWidget {
               ),
               alignment: Alignment.center,
               child: Icon(
-                _expenseIcon,
+                ExpenseIconHelper.resolve(
+                  expense.description as String?,
+                  isSettlement: expense.description == 'Settlement',
+                ),
                 size: 21.w,
                 color: Constants.activeColor,
               ),
@@ -1225,6 +1014,25 @@ class _ExpenseCard extends StatelessWidget {
                       ),
                     ]),
                   ),
+                  if (isSettlement &&
+                      expense.splits != null &&
+                      expense.splits!.isNotEmpty)
+                    Row(
+                      children: [
+                        Icon(Icons.arrow_forward_rounded,
+                            size: 12, color: Colors.grey.shade400),
+                        const SizedBox(width: 4),
+                        Text(
+                          expense.splits![0].user?.id == myId
+                              ? 'You'
+                              : expense.splits![0].user?.name ?? '',
+                          style: AppTheme.normalText.copyWith(
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -1328,415 +1136,6 @@ class _MonthHeader extends StatelessWidget {
               fontSize: 12,
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Expense Detail Sheet ───────────────────────────────────────────────────────
-class _ExpenseDetailSheet extends StatelessWidget {
-  const _ExpenseDetailSheet({
-    required this.expense,
-    required this.myId,
-  });
-
-  final dynamic expense;
-  final String? myId;
-
-  void _goToEditExpense() {
-    final isSettlement = expense.description == "Settlement";
-    if (isSettlement) {
-      _showEditSettlementDialog();
-    } else {
-      Get.back();
-      final groupCtrl = Get.find<GroupsController>();
-      // Delete stale instance first so Get.put always creates fresh
-      Get.delete<AddExpenseController>(force: true);
-
-      final expenseCtrl = AddExpenseController(editExpense: expense);
-      expenseCtrl.groupId =
-          groupCtrl.membersFor(expense.group ?? '').members != null
-              ? expense.group ?? ''
-              : '';
-      Get.put(expenseCtrl);
-
-      Get.to(
-        () => const AddExpenseView(),
-        transition: Transition.downToUp,
-        duration: const Duration(milliseconds: 300),
-      );
-    }
-  }
-
-  void _showEditSettlementDialog() {
-    final groupCtrl = Get.find<GroupsController>();
-    final amountCtrl = TextEditingController(
-      text: expense.amount?.toStringAsFixed(2) ?? '',
-    );
-    final formKey = GlobalKey<FormState>();
-
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: Constants.bgColorLight,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text("Edit Settlement Amount", style: AppTheme.subHeadingText),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Update the settlement amount",
-                style: AppTheme.normalText.copyWith(color: Colors.grey),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: amountCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                style: AppTheme.headingText.copyWith(fontSize: 24),
-                decoration: InputDecoration(
-                  prefixText: "\$ ",
-                  prefixStyle: AppTheme.subHeadingText,
-                  border: const OutlineInputBorder(),
-                  hintText: "0.00",
-                ),
-                validator: (val) {
-                  if (val == null || val.isEmpty) return 'Enter an amount';
-                  final v = double.tryParse(val);
-                  if (v == null || v <= 0) return 'Invalid amount';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Original: \$${expense.amount?.toStringAsFixed(2)}",
-                style: AppTheme.normalText
-                    .copyWith(color: Colors.grey, fontSize: 12),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text("Cancel",
-                style: AppTheme.normalText.copyWith(color: Colors.grey)),
-          ),
-          TextButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                Get.back();
-                Get.back();
-                await groupCtrl.updateSettlement(
-                  groupId: expense.group,
-                  expenseId: expense.id ?? '',
-                  amount: double.parse(amountCtrl.text.trim()),
-                );
-              }
-            },
-            child: Text(
-              "Update",
-              style: AppTheme.normalText.copyWith(
-                color: Constants.activeColor,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final iPaid = expense.paidBy?.id == myId;
-    final isSettlement = expense.description == "Settlement";
-    final splits = expense.splits ?? [];
-
-    double myAmount = 0.0;
-    for (final split in splits) {
-      final isMe = split.user?.id == myId;
-      if (iPaid && !isMe) {
-        myAmount =
-            double.parse((myAmount + (split.amount ?? 0)).toStringAsFixed(2));
-      } else if (!iPaid && isMe) {
-        myAmount = double.parse((split.amount ?? 0).toStringAsFixed(2));
-      }
-    }
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: Constants.bgColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: Constants.activeColor.withAlpha(20),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.center,
-                child: Icon(
-                  isSettlement
-                      ? Icons.account_balance_wallet_outlined
-                      : Icons.receipt_long_outlined,
-                  color: Constants.activeColor,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isSettlement ? "Settlement" : (expense.description ?? ''),
-                      style: AppTheme.headingText,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      SplitifyDateUtils.formatExpenseDate(expense.createdAt),
-                      style: AppTheme.normalText
-                          .copyWith(color: Colors.grey, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              GestureDetector(
-                onTap: () => _goToEditExpense(),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Constants.activeColor.withAlpha(20),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.edit_outlined,
-                    color: Constants.activeColor,
-                    size: 18,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Constants.bgColorLight,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  "\$${expense.amount?.toStringAsFixed(2) ?? '0.00'}",
-                  style: AppTheme.headingText.copyWith(
-                    fontSize: 32,
-                    color: Constants.activeColor,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                RichText(
-                  text: TextSpan(children: [
-                    TextSpan(
-                      text: "Paid by ",
-                      style: AppTheme.normalText.copyWith(color: Colors.grey),
-                    ),
-                    TextSpan(
-                      text: iPaid ? "You" : expense.paidBy?.name ?? '',
-                      style: AppTheme.normalText.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: Constants.activeColor,
-                      ),
-                    ),
-                  ]),
-                ),
-                if (!isSettlement && myAmount > 0) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: iPaid
-                          ? Constants.activeColor.withAlpha(25)
-                          : Constants.redColor.withAlpha(25),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: RichText(
-                      text: TextSpan(children: [
-                        TextSpan(
-                          text: iPaid ? "You lent " : "You borrowed ",
-                          style: AppTheme.normalText.copyWith(
-                            color: Colors.grey,
-                            fontSize: 12,
-                          ),
-                        ),
-                        TextSpan(
-                          text: "\$$myAmount",
-                          style: AppTheme.normalText.copyWith(
-                            color: iPaid
-                                ? Constants.activeColor
-                                : Constants.redColor,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ]),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (!isSettlement) ...[
-            Text("Split between", style: AppTheme.subHeadingText),
-            const SizedBox(height: 10),
-            ...splits.map<Widget>((split) {
-              final isMe = split.user?.id == myId;
-              final name = isMe ? "You" : (split.user?.name ?? 'Unknown');
-              final amount = split.amount ?? 0.0;
-              final total = expense.amount ?? 1.0;
-              final pct = (amount / total * 100).toStringAsFixed(1);
-
-              return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: Constants.bgColorLight,
-                  borderRadius: BorderRadius.circular(12),
-                  border: isMe
-                      ? Border.all(color: Constants.activeColor.withAlpha(60))
-                      : null,
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundColor: Constants.activeColor.withAlpha(25),
-                      child: Text(
-                        name[0].toUpperCase(),
-                        style: GoogleFonts.inter(
-                          color: Constants.activeColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(name, style: AppTheme.normalText),
-                    ),
-                    SizedBox(
-                      width: 80,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: amount / total,
-                          minHeight: 5,
-                          backgroundColor: Colors.grey.withOpacity(0.15),
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            isMe
-                                ? (iPaid
-                                    ? Constants.activeColor
-                                    : Constants.redColor)
-                                : Colors.grey.shade400,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          "\$${amount.toStringAsFixed(2)}",
-                          style: AppTheme.normalText.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          "$pct%",
-                          style: AppTheme.normalText.copyWith(
-                            color: Colors.grey,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ],
-          if (isSettlement) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Constants.activeColor.withAlpha(15),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Constants.activeColor.withAlpha(40)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.check_circle_outline_rounded,
-                      color: Constants.activeColor),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: RichText(
-                      text: TextSpan(children: [
-                        TextSpan(
-                          text: iPaid
-                              ? "You paid "
-                              : "${expense.paidBy?.name} paid ",
-                          style: AppTheme.normalText,
-                        ),
-                        TextSpan(
-                          text: "\$${expense.amount?.toStringAsFixed(2)} ",
-                          style: AppTheme.normalText.copyWith(
-                            color: Constants.activeColor,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        TextSpan(
-                          text: "to settle their balance",
-                          style: AppTheme.normalText,
-                        ),
-                      ]),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );

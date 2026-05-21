@@ -15,24 +15,10 @@ class ProfileController extends GetxController {
   var isUpdatingName = false.obs;
   var isDeletingAccount = false.obs;
 
-  // Persisted preference — read on init, written on change
-  var defaultSplitType = 'equal'.obs; // 'equal' | 'exact' | 'percentage'
-
   @override
   void onInit() {
     super.onInit();
-    _loadPreferences();
     getUserDetails();
-  }
-
-  Future<void> _loadPreferences() async {
-    final saved = await storage.read(key: 'defaultSplitType');
-    if (saved != null) defaultSplitType.value = saved;
-  }
-
-  Future<void> setDefaultSplitType(String type) async {
-    defaultSplitType.value = type;
-    await storage.write(key: 'defaultSplitType', value: type);
   }
 
   // ── Profile ───────────────────────────────────────────────────────────────
@@ -64,7 +50,6 @@ class ProfileController extends GetxController {
       isDeletingAccount.value = true;
       await _service.deleteAccount();
       await storage.delete(key: 'token');
-      await storage.delete(key: 'defaultSplitType');
       Get.offAll(() => LoginView());
     } catch (e) {
       Get.snackbar('Error', 'Could not delete account. Try again.');
@@ -73,16 +58,4 @@ class ProfileController extends GetxController {
     }
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  String get splitTypeLabel {
-    switch (defaultSplitType.value) {
-      case 'exact':
-        return 'Exact';
-      case 'percentage':
-        return 'Percentage';
-      default:
-        return 'Equal';
-    }
-  }
 }

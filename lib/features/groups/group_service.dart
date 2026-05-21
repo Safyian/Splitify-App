@@ -18,11 +18,15 @@ class GroupService {
     return groupSummary;
   }
 
-  Future<GroupExpenses> getExpenses({required String groupId}) async {
-    final res = await _dio.get("/groups/$groupId/expenses");
-    String jsonString = jsonEncode(res.data);
-    final groupExpenses = groupExpensesFromJson(jsonString);
-    return groupExpenses;
+  Future<GroupExpenses> getExpenses({
+    required String groupId,
+    int page = 1,
+  }) async {
+    final res = await _dio.get(
+      '/groups/$groupId/expenses',
+      queryParameters: {'page': page, 'limit': 25},
+    );
+    return groupExpensesFromJson(jsonEncode(res.data));
   }
 
   Future<void> settleGroup({

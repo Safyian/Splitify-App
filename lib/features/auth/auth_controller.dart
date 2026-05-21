@@ -85,6 +85,8 @@ class AuthController extends GetxController {
       Get.closeAllSnackbars();
 
       Get.offAll(() => NavigationView());
+      emailCtrl.clear();
+      passCtrl.clear();
     } on DioException catch (e) {
       if (e.response?.statusCode == 403) {
         final email = emailCtrl.text.trim();
@@ -118,6 +120,9 @@ class AuthController extends GetxController {
 
       final email = res['email'] as String? ?? emailCtrl.text.trim();
       Get.off(() => VerifyEmailView(email: email));
+      nameCtrl.clear();
+      emailCtrl.clear();
+      passCtrl.clear();
     } on DioException catch (e) {
       final message = e.response?.data['message'] ?? 'Registration failed';
       WidgetsBinding.instance.addPostFrameCallback((_) {

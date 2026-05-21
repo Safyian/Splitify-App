@@ -368,7 +368,7 @@ class FriendsScreen extends StatelessWidget {
 
         return RefreshIndicator(
           color: Constants.activeColor,
-          onRefresh: () => friendsCtrl.fetchFriends(),
+          onRefresh: () => friendsCtrl.fetchFriends(forceRefresh: true),
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(

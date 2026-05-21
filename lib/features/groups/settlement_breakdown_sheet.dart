@@ -112,7 +112,7 @@ class SettlementBreakdownData {
     }
 
     final netBalances = model.balances
-        .map((b) => NetBalance(member: memberMap[b.userId]!, net: b.net))
+        .map((b) => NetBalance(member: memberMap[b.userId]!, net: b.net!))
         .toList();
 
     final pairwise = model.pairwise.asMap().entries.map((e) {
@@ -377,7 +377,8 @@ class _StepTabs extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Text(steps[i]['icon']!, style: GoogleFonts.inter(fontSize: 16)),
+                  Text(steps[i]['icon']!,
+                      style: GoogleFonts.inter(fontSize: 16)),
                   const SizedBox(height: 3),
                   Text(
                     steps[i]['label']!,
@@ -453,7 +454,8 @@ class _Avatar extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: member.color.withValues(alpha: 0.15),
-        border: Border.all(color: member.color.withValues(alpha: 0.4), width: 2),
+        border:
+            Border.all(color: member.color.withValues(alpha: 0.4), width: 2),
       ),
       alignment: Alignment.center,
       child: Text(
@@ -675,9 +677,7 @@ class _BalanceRow extends StatelessWidget {
           Text(
             '${balance.isCreditor ? '+' : ''}\$${balance.net.abs().toStringAsFixed(2)}',
             style: GoogleFonts.inter(
-                color: color,
-                fontSize: 16,
-                fontWeight: FontWeight.w700),
+                color: color, fontSize: 16, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 4),
           _Tag(label: balance.isCreditor ? 'creditor' : 'debtor', color: color),
@@ -764,15 +764,14 @@ class _PairwiseCard extends StatelessWidget {
           Text(
             '\$${debt.amount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
-                color: _T.red,
-                fontSize: 15,
-                fontWeight: FontWeight.w700),
+                color: _T.red, fontSize: 15, fontWeight: FontWeight.w700),
           ),
         ]),
         const SizedBox(height: 8),
         RichText(
           text: TextSpan(
-            style: GoogleFonts.inter(fontSize: 12, color: _T.muted, height: 1.5),
+            style:
+                GoogleFonts.inter(fontSize: 12, color: _T.muted, height: 1.5),
             children: [
               TextSpan(
                   text: debt.from.name,
@@ -843,7 +842,8 @@ class _Step2Simplified extends StatelessWidget {
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: _T.red.withValues(alpha: 0.08),
-                        border: Border.all(color: _T.red.withValues(alpha: 0.2)),
+                        border:
+                            Border.all(color: _T.red.withValues(alpha: 0.2)),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(children: [
@@ -912,7 +912,8 @@ class _Step2Simplified extends StatelessWidget {
                         horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
                       color: _T.green.withValues(alpha: 0.1),
-                      border: Border.all(color: _T.green.withValues(alpha: 0.3)),
+                      border:
+                          Border.all(color: _T.green.withValues(alpha: 0.3)),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(children: [
@@ -924,8 +925,8 @@ class _Step2Simplified extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text('${s.from.name} pays ${s.to.name}',
-                            style:
-                                GoogleFonts.inter(color: _T.muted, fontSize: 12)),
+                            style: GoogleFonts.inter(
+                                color: _T.muted, fontSize: 12)),
                       ),
                       Text('\$${s.amount.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
@@ -980,21 +981,20 @@ class _Step3Result extends StatelessWidget {
                       color: _T.green, borderRadius: BorderRadius.circular(14)),
                   alignment: Alignment.center,
                   child: Text('✓',
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 14)),
+                      style:
+                          GoogleFonts.inter(color: Colors.white, fontSize: 14)),
                 ),
                 const SizedBox(width: 10),
-                Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Final Settlement Plan',
-                          style: GoogleFonts.inter(
-                              color: _T.text,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 2),
-                      Text('Minimum transactions to settle all debts',
-                          style: GoogleFonts.inter(color: _T.muted, fontSize: 12)),
-                    ]),
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('Final Settlement Plan',
+                      style: GoogleFonts.inter(
+                          color: _T.text,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 2),
+                  Text('Minimum transactions to settle all debts',
+                      style: GoogleFonts.inter(color: _T.muted, fontSize: 12)),
+                ]),
               ]),
             ),
 
@@ -1009,7 +1009,8 @@ class _Step3Result extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: _T.green.withValues(alpha: 0.08),
-                      border: Border.all(color: _T.green.withValues(alpha: 0.25)),
+                      border:
+                          Border.all(color: _T.green.withValues(alpha: 0.25)),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Column(children: [
@@ -1097,7 +1098,8 @@ class _Step3Result extends StatelessWidget {
                         children: [
                           TextSpan(text: '${data.afterCount}'),
                           TextSpan(
-                              text: ' txns', style: GoogleFonts.inter(fontSize: 14)),
+                              text: ' txns',
+                              style: GoogleFonts.inter(fontSize: 14)),
                         ],
                       ),
                     ),

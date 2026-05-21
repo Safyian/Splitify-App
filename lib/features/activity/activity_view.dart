@@ -324,6 +324,7 @@ class _TimelineItem extends StatelessWidget {
       case 'member_removed':
       case 'group_left':
       case 'group_deleted':
+      case 'expense_deleted':
         return Constants.redColor;
       case 'group_renamed':
         return const Color(0xFFF59E0B);
@@ -340,6 +341,8 @@ class _TimelineItem extends StatelessWidget {
         return Icons.receipt_long_rounded;
       case 'expense_updated':
         return Icons.edit_rounded;
+      case 'expense_deleted':
+        return Icons.delete_outline_rounded;
       case 'settlement_made':
         return Icons.check_circle_outline_rounded;
       case 'member_added':
@@ -365,6 +368,8 @@ class _TimelineItem extends StatelessWidget {
         return 'EXPENSE';
       case 'expense_updated':
         return 'UPDATED';
+      case 'expense_deleted':
+        return 'DELETED';
       case 'settlement_made':
         return 'SETTLED';
       case 'member_added':
@@ -468,6 +473,23 @@ class _RichDescription extends StatelessWidget {
           if (amt != null) ...[
             TextSpan(text: '  ', style: _verbStyle),
             TextSpan(text: amt, style: _amountStyle),
+          ],
+        ];
+
+      case 'expense_deleted':
+        final delDesc = meta['description']?.toString() ?? 'an expense';
+        final rawDelAmt = meta['amount'];
+        final delAmt = rawDelAmt != null
+            ? '\$${(rawDelAmt as num).toStringAsFixed(2)}'
+            : null;
+        return [
+          TextSpan(text: actor, style: _actorStyle),
+          TextSpan(text: ' deleted ', style: _verbStyle),
+          TextSpan(text: delDesc, style: _labelStyle),
+          if (delAmt != null) ...[
+            TextSpan(text: ' (', style: _verbStyle),
+            TextSpan(text: delAmt, style: _amountStyle),
+            TextSpan(text: ')', style: _verbStyle),
           ],
         ];
 

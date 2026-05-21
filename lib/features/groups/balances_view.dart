@@ -54,8 +54,8 @@ class BalancesView extends StatelessWidget {
               ...balances.map((b) {
                 final isMe = b.userId == myId;
                 final name = isMe ? 'You' : (nameMap[b.userId] ?? b.name);
-                final isPositive = b.net > 0;
-                final isZero = b.net == 0;
+                final isPositive = (b.net ?? 0.0) > 0;
+                final isZero = (b.net ?? 0.0) == 0;
 
                 return Container(
                   padding: const EdgeInsets.symmetric(
@@ -129,7 +129,7 @@ class BalancesView extends StatelessWidget {
                         child: Text(
                           isZero
                               ? 'Settled'
-                              : '${isPositive ? '+' : ''}\$${b.net.toStringAsFixed(2)}',
+                              : '${isPositive ? '+' : ''}\$${(b.net ?? 0.0).toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,

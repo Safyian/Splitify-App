@@ -4,8 +4,8 @@ import 'package:get/get.dart';
 import '../../core/utils/cache_manager.dart';
 import '../../shared/widgets/alert_widgets.dart';
 import '../groups/group_members_model.dart';
+import '../groups/group_summary_model.dart';
 import '../groups/groups_controller.dart';
-import '../profile/profile_controller.dart';
 import 'expense_payload_model.dart';
 import 'expense_service.dart';
 
@@ -166,9 +166,14 @@ class AddExpenseController extends GetxController {
     amountCtrl.clear();
     selectedMember.value = null;
 
-    // Use the user's saved preference instead of always defaulting to equal
-    final profileCtrl = Get.find<ProfileController>();
-    switch (profileCtrl.defaultSplitType.value) {
+    // Read group default split type
+    final groupCtrl = Get.find<GroupsController>();
+    final groupSummary = groupCtrl.summaries
+        .cast<GroupSummary?>()
+        .firstWhere((s) => s?.id == groupId, orElse: () => null);
+    final groupDefault = groupSummary?.defaultSplitType ?? 'equal';
+
+    switch (groupDefault) {
       case 'exact':
         selectedSplitType.value = SplitType.exact;
         break;
@@ -350,9 +355,14 @@ class AddExpenseController extends GetxController {
       isEditMode.value = true;
       editingExpenseId = editExpense.id;
     } else {
-      // Apply user's preferred split type for new expenses
-      final profileCtrl = Get.find<ProfileController>();
-      switch (profileCtrl.defaultSplitType.value) {
+      // Read group default split type
+      final groupCtrl = Get.find<GroupsController>();
+      final groupSummary = groupCtrl.summaries
+          .cast<GroupSummary?>()
+          .firstWhere((s) => s?.id == groupId, orElse: () => null);
+      final groupDefault = groupSummary?.defaultSplitType ?? 'equal';
+
+      switch (groupDefault) {
         case 'exact':
           selectedSplitType.value = SplitType.exact;
           break;

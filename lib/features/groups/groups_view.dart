@@ -44,8 +44,11 @@ class GroupsScreen extends StatelessWidget {
         final netOverall = totalOwed - totalOwe;
         final isPositive = netOverall >= 0;
 
-        return CustomScrollView(
-          slivers: [
+        return RefreshIndicator(
+          color: Constants.activeColor,
+          onRefresh: () => groupCtrl.fetchSummary(forceRefresh: true),
+          child: CustomScrollView(
+            slivers: [
             // ── Overall Balance Banner ─────────────────────────
             SliverToBoxAdapter(
               child: Padding(
@@ -269,7 +272,8 @@ class GroupsScreen extends StatelessWidget {
                 ),
               ),
             ),
-          ],
+            ],
+          ),
         );
       }),
     );

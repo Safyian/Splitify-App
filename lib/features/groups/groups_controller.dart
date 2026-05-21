@@ -18,6 +18,7 @@ class GroupsController extends GetxController {
   RxBool isLoading = false.obs;
   RxBool isSettling = false.obs;
   RxBool isLoadingBalances = false.obs;
+  RxBool isLoadingMoreExpenses = false.obs;
   final GroupService _service = GroupService();
   final ExpenseService _expenseService = ExpenseService();
   final _cache = CacheManager();
@@ -64,9 +65,10 @@ class GroupsController extends GetxController {
     bool forceRefresh = false,
   }) async {
     final key = CacheKeys.groupBalances(groupId);
-    if (!forceRefresh && _cache.isFresh(key)) return;
+    if (!forceRefresh && _cache.isFresh(key, ttl: const Duration(seconds: 120))) return;
     try {
       isLoadingBalances.value = true;
+      print("id = $groupId");
       allGroupBalances[groupId] =
           await _service.getGroupBalances(groupId: groupId);
       _cache.markFetched(key);
@@ -100,30 +102,51 @@ class GroupsController extends GetxController {
   Future<void> fetchGroupExpenses({
     required String groupId,
     bool forceRefresh = false,
+    bool loadMore = false,
   }) async {
     final key = CacheKeys.groupExpenses(groupId);
-    if (!forceRefresh &&
-        _cache.isFresh(key) &&
-        allGroupExpenses[groupId]?.expenses != null) {
-      print("Return Cache Data");
-      return;
-    }
+    if (!loadMore &&
+        !forceRefresh &&
+        _cache.isFresh(key, ttl: const Duration(seconds: 120)) &&
+        allGroupExpenses[groupId]?.expenses != null) return;
+
     try {
-      print("Fetch Data");
-      isLoading.value = true;
-      allGroupExpenses[groupId] = await _service.getExpenses(groupId: groupId);
-      _cache.markFetched(key);
-      // Passive cache-miss: another user may have changed the group.
-      // Refresh summaries in the background so group card stats stay current.
-      // (forceRefresh calls already invoke fetchSummary explicitly, skip here)
-      if (!forceRefresh) {
-        _cache.invalidate(CacheKeys.summaries);
-        fetchSummary();
+      if (loadMore) {
+        isLoadingMoreExpenses.value = true;
+      } else {
+        isLoading.value = true;
+      }
+
+      final current = allGroupExpenses[groupId];
+      final nextPage = loadMore ? ((current?.page ?? 0) + 1) : 1;
+
+      final result = await _service.getExpenses(
+        groupId: groupId,
+        page: nextPage,
+      );
+
+      if (loadMore && current?.expenses != null) {
+        final merged = GroupExpenses(
+          count: result.count,
+          total: result.total,
+          page: result.page,
+          hasMore: result.hasMore,
+          expenses: [...current!.expenses!, ...result.expenses ?? []],
+        );
+        allGroupExpenses[groupId] = merged;
+      } else {
+        allGroupExpenses[groupId] = result;
+        _cache.markFetched(key);
+        if (!forceRefresh) {
+          _cache.invalidate(CacheKeys.summaries);
+          fetchSummary();
+        }
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load expenses');
     } finally {
       isLoading.value = false;
+      isLoadingMoreExpenses.value = false;
     }
   }
 
@@ -135,7 +158,7 @@ class GroupsController extends GetxController {
   }) async {
     final key = CacheKeys.groupMembers(groupId);
     if (!forceRefresh &&
-        _cache.isFresh(key) &&
+        _cache.isFresh(key, ttl: const Duration(seconds: 120)) &&
         allGroupMembers[groupId]?.members != null) return;
     try {
       allGroupMembers[groupId] =
@@ -255,6 +278,7 @@ class GroupsController extends GetxController {
       _cache.invalidateAll([
         CacheKeys.summaries,
         CacheKeys.groupMembers(groupId),
+        CacheKeys.friends,
       ]);
       await Future.wait([
         fetchGroupMembers(groupId: groupId, forceRefresh: true),
@@ -309,6 +333,7 @@ class GroupsController extends GetxController {
         emoji: summaries[index].emoji,
         defaultSplitType: summaries[index].defaultSplitType,
         createdBy: summaries[index].createdBy,
+        adminId: summaries[index].adminId,
         balance: summaries[index].balance,
         preview: summaries[index].preview,
         othersCount: summaries[index].othersCount,
@@ -338,6 +363,7 @@ class GroupsController extends GetxController {
         emoji: emoji,
         defaultSplitType: summaries[index].defaultSplitType,
         createdBy: summaries[index].createdBy,
+        adminId: summaries[index].adminId,
         balance: summaries[index].balance,
         preview: summaries[index].preview,
         othersCount: summaries[index].othersCount,
@@ -365,6 +391,7 @@ class GroupsController extends GetxController {
         emoji: summaries[index].emoji,
         defaultSplitType: splitType,
         createdBy: summaries[index].createdBy,
+        adminId: summaries[index].adminId,
         balance: summaries[index].balance,
         preview: summaries[index].preview,
         othersCount: summaries[index].othersCount,
@@ -435,7 +462,10 @@ class GroupsController extends GetxController {
               groupId: groupId, email: friend.email as String);
         } catch (_) {}
       }
-      _cache.invalidate(CacheKeys.summaries);
+      _cache.invalidateAll([
+        CacheKeys.summaries,
+        CacheKeys.friends,
+      ]);
       await fetchSummary(forceRefresh: true);
     } catch (e) {
       AlertWidgets.showSnackBar(

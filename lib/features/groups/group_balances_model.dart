@@ -27,14 +27,14 @@ class GroupBalancesModel {
 class MemberBalance {
   final String userId;
   final String name;
-  final double net;
+  final double? net;
 
   MemberBalance({required this.userId, required this.name, required this.net});
 
   factory MemberBalance.fromJson(Map<String, dynamic> json) => MemberBalance(
         userId: json['userId'],
         name: json['name'] ?? 'Unknown',
-        net: (json['net'] as num).toDouble(),
+        net: json['net'] != null ? (json['net'] as num).toDouble() : null,
       );
 }
 

@@ -44,6 +44,7 @@ class CacheKeys {
   static const String summaries = 'groups_summaries';
   static const String friends = 'friends';
   static const String activity = 'activity';
+  static const Duration groupExpensesTTL = Duration(seconds: 120);
 
   // Per-group keys — unique per group ID
   static String groupExpenses(String id) => 'expenses_$id';

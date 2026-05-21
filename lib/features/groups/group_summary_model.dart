@@ -56,6 +56,7 @@ class GroupSummary {
   String emoji;
   String defaultSplitType;
   String createdBy;
+  String? adminId;
   Balance balance;
   List<Preview> preview;
   int othersCount;
@@ -66,6 +67,7 @@ class GroupSummary {
     this.emoji = "🏠",
     this.defaultSplitType = "equal",
     this.createdBy = "",
+    this.adminId,
     required this.balance,
     required this.preview,
     required this.othersCount,
@@ -77,6 +79,7 @@ class GroupSummary {
         emoji: json["emoji"] ?? "🏠",
         defaultSplitType: json["defaultSplitType"] ?? "equal",
         createdBy: json["createdBy"] ?? "",
+        adminId: json['adminId'] as String?,
         balance: Balance.fromJson(json["balance"]),
         preview:
             List<Preview>.from(json["preview"].map((x) => Preview.fromJson(x))),

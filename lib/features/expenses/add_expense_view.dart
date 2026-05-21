@@ -108,9 +108,12 @@ class _AddExpenseViewState extends State<AddExpenseView> {
     return Scaffold(
       backgroundColor: Constants.bgColor,
       appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        child: Column(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Amount hero ───────────────────────────
@@ -217,6 +220,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
 
             const SizedBox(height: 100),
           ],
+        ),
         ),
       ),
       bottomNavigationBar: _buildSubmitBar(),
@@ -489,6 +493,8 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                       controller: expenseCtrl.splitInputControllers[member.id],
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
+                      textInputAction: TextInputAction.done,
+                      onEditingComplete: () => FocusScope.of(context).unfocus(),
                       textAlign: TextAlign.center,
                       style: AppTheme.subHeadingText,
                       decoration: InputDecoration(

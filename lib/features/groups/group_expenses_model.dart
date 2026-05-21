@@ -11,15 +11,24 @@ String groupExpensesToJson(GroupExpenses data) => json.encode(data.toJson());
 
 class GroupExpenses {
   int? count;
+  int? total;
+  int? page;
+  bool? hasMore;
   List<Expense>? expenses;
 
   GroupExpenses({
     this.count,
+    this.total,
+    this.page,
+    this.hasMore,
     this.expenses,
   });
 
   factory GroupExpenses.fromJson(Map<String, dynamic> json) => GroupExpenses(
         count: json["count"],
+        total: json['total'] as int?,
+        page: json['page'] as int?,
+        hasMore: json['hasMore'] as bool?,
         expenses: json["expenses"] == null
             ? []
             : List<Expense>.from(
@@ -28,6 +37,9 @@ class GroupExpenses {
 
   Map<String, dynamic> toJson() => {
         "count": count,
+        "total": total,
+        "page": page,
+        "hasMore": hasMore,
         "expenses": expenses == null
             ? []
             : List<dynamic>.from(expenses!.map((x) => x.toJson())),
