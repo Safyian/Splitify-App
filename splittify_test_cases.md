@@ -111,7 +111,7 @@
 |---|-----------|-----------------|--------|
 | 9.1 | Delete expense | Removed from list immediately | ✅ |
 | 9.2 | Delete expense | Group balance recalculates | ✅ |
-| 9.3 | Delete expense | Activity feed shows deletion |  |
+| 9.3 | Delete expense | Activity feed shows deletion | ✅ |
 
 ### Split Calculations
 | # | Test Case | Expected Result | Status |
@@ -157,7 +157,7 @@
 | # | Test Case | Expected Result | Status |
 |---|-----------|-----------------|--------|
 | 13.1 | Add expense | Appears in activity feed | ✅ |
-| 13.2 | Delete expense | Appears in activity feed | |
+| 13.2 | Delete expense | Appears in activity feed | ✅ |
 | 13.3 | Settle up | Appears in activity feed | ✅ |
 | 13.4 | Add group member | Appears in activity feed | ✅ |
 | 13.5 | Remove group member | Appears in activity feed | ✅ |
@@ -192,7 +192,7 @@
 | 15.3 | Slow connection | Loading spinners show on all async operations | |
 | 15.4 | Kill app mid-action → reopen | Data consistent, no corruption | |
 | 15.5 | Very long group name | Displays correctly without overflow | ✅ |
-| 15.6 | Very long expense description | Displays correctly without overflow | |
+| 15.6 | Very long expense description | Displays correctly without overflow | ✅ |
 | 15.7 | Large amount (e.g. $99,999.99) | Displays correctly | ✅ |
 | 15.8 | Zero balance group | Shows "Settled up" correctly | ✅ |
 | 15.9 | Group with one member | No broken split options | |
