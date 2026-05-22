@@ -57,6 +57,7 @@ class GroupSummary {
   String defaultSplitType;
   String createdBy;
   String? adminId;
+  String balanceMode;
   Balance balance;
   List<Preview> preview;
   int othersCount;
@@ -68,6 +69,7 @@ class GroupSummary {
     this.defaultSplitType = "equal",
     this.createdBy = "",
     this.adminId,
+    required this.balanceMode,
     required this.balance,
     required this.preview,
     required this.othersCount,
@@ -80,6 +82,7 @@ class GroupSummary {
         defaultSplitType: json["defaultSplitType"] ?? "equal",
         createdBy: json["createdBy"] ?? "",
         adminId: json['adminId'] as String?,
+        balanceMode: json['balanceMode'] as String? ?? 'pairwise',
         balance: Balance.fromJson(json["balance"]),
         preview:
             List<Preview>.from(json["preview"].map((x) => Preview.fromJson(x))),

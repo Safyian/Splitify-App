@@ -135,6 +135,22 @@ class GroupService {
     }
   }
 
+  Future<void> updateBalanceMode({
+    required String groupId,
+    required String balanceMode,
+  }) async {
+    try {
+      await _dio.patch(
+        '/groups/$groupId/settings/balance-mode',
+        data: {'balanceMode': balanceMode},
+      );
+    } on DioException catch (e) {
+      final message =
+          e.response?.data['message'] ?? 'Failed to update balance mode';
+      throw Exception(message);
+    }
+  }
+
   Future<Map<String, dynamic>> createGroup({required String name}) async {
     try {
       final res = await _dio.post('/groups/new', data: {"name": name});

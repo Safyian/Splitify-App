@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'group_balances_model.dart';
@@ -166,11 +167,10 @@ class _T {
 
 void showSettlementBreakdown(
     BuildContext context, SettlementBreakdownData data) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (_) => _SettlementBreakdownSheet(data: data),
+  Get.to(
+    () => SettlementBreakdownScreen(data: data),
+    transition: Transition.cupertino,
+    duration: const Duration(milliseconds: 300),
   );
 }
 
@@ -178,16 +178,16 @@ void showSettlementBreakdown(
 // MAIN SHEET
 // ─────────────────────────────────────────────────────────────
 
-class _SettlementBreakdownSheet extends StatefulWidget {
+class SettlementBreakdownScreen extends StatefulWidget {
   final SettlementBreakdownData data;
-  const _SettlementBreakdownSheet({required this.data});
+  const SettlementBreakdownScreen({super.key, required this.data});
 
   @override
-  State<_SettlementBreakdownSheet> createState() =>
-      _SettlementBreakdownSheetState();
+  State<SettlementBreakdownScreen> createState() =>
+      _SettlementBreakdownScreenState();
 }
 
-class _SettlementBreakdownSheetState extends State<_SettlementBreakdownSheet>
+class _SettlementBreakdownScreenState extends State<SettlementBreakdownScreen>
     with SingleTickerProviderStateMixin {
   int _step = 0;
   late AnimationController _animCtrl;
@@ -228,47 +228,39 @@ class _SettlementBreakdownSheetState extends State<_SettlementBreakdownSheet>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: _T.bg,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    return Scaffold(
+      backgroundColor: _T.bg,
+      appBar: AppBar(
+        backgroundColor: _T.bg,
+        elevation: 0,
+        centerTitle: true,
+        leading: GestureDetector(
+          onTap: () => Get.back(),
+          child: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.black87, size: 20),
+        ),
+        title: Text(
+          'Settlement Breakdown',
+          style: GoogleFonts.inter(
+            color: _T.text,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 12,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 32,
-      ),
-      child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag handle
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: _T.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Header
             _Header(
                 debtorName: widget.data.netBalances
                     .firstWhere((b) => !b.isCreditor)
                     .member
                     .name),
             const SizedBox(height: 20),
-
-            // Step selector tabs
             _StepTabs(steps: _steps, current: _step, onTap: _goTo),
             const SizedBox(height: 16),
-
-            // Animated content
             FadeTransition(
               opacity: _fadeAnim,
               child: SlideTransition(
@@ -277,8 +269,6 @@ class _SettlementBreakdownSheetState extends State<_SettlementBreakdownSheet>
               ),
             ),
             const SizedBox(height: 20),
-
-            // Progress dots
             _ProgressDots(count: _steps.length, current: _step, onTap: _goTo),
           ],
         ),
@@ -327,13 +317,7 @@ class _Header extends StatelessWidget {
                 color: _T.accent, fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ),
-        const SizedBox(height: 12),
-        Text(
-          'Settlement Breakdown',
-          style: GoogleFonts.inter(
-              color: _T.text, fontSize: 22, fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Text(
           "Tap through each step to see how $debtorName's debt is calculated",
           textAlign: TextAlign.center,

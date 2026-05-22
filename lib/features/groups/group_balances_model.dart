@@ -2,11 +2,13 @@ class GroupBalancesModel {
   final List<MemberBalance> balances;
   final List<SettlementDebt> settlements;
   final List<PairwiseDebt> pairwise;
+  final String? balanceMode;
 
   GroupBalancesModel({
     required this.balances,
     required this.settlements,
     required this.pairwise,
+    this.balanceMode,
   });
 
   factory GroupBalancesModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class GroupBalancesModel {
       pairwise: (json['pairwise'] as List)
           .map((e) => PairwiseDebt.fromJson(e))
           .toList(),
+      balanceMode: json['balanceMode'] as String?,
     );
   }
 }

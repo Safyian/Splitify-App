@@ -9,6 +9,7 @@ import 'group_expenses_model.dart';
 import 'group_members_model.dart';
 import 'group_service.dart';
 import 'group_summary_model.dart';
+import '../friends/friends_controller.dart';
 
 class GroupsController extends GetxController {
   /// Register this from FriendsScreen to refresh friends after settlement
@@ -38,7 +39,7 @@ class GroupsController extends GetxController {
       allGroupMembers[groupId] ?? GroupMembersModel();
   GroupBalancesModel balancesFor(String groupId) =>
       allGroupBalances[groupId] ??
-      GroupBalancesModel(balances: [], settlements: [], pairwise: []);
+      GroupBalancesModel(balances: [], settlements: [], pairwise: [], balanceMode: null);
 
   /// Removes map entries whose cache TTL has expired.
   void pruneExpensesCache() {
@@ -334,6 +335,7 @@ class GroupsController extends GetxController {
         defaultSplitType: summaries[index].defaultSplitType,
         createdBy: summaries[index].createdBy,
         adminId: summaries[index].adminId,
+        balanceMode: summaries[index].balanceMode,
         balance: summaries[index].balance,
         preview: summaries[index].preview,
         othersCount: summaries[index].othersCount,
@@ -364,6 +366,7 @@ class GroupsController extends GetxController {
         defaultSplitType: summaries[index].defaultSplitType,
         createdBy: summaries[index].createdBy,
         adminId: summaries[index].adminId,
+        balanceMode: summaries[index].balanceMode,
         balance: summaries[index].balance,
         preview: summaries[index].preview,
         othersCount: summaries[index].othersCount,
@@ -392,12 +395,56 @@ class GroupsController extends GetxController {
         defaultSplitType: splitType,
         createdBy: summaries[index].createdBy,
         adminId: summaries[index].adminId,
+        balanceMode: summaries[index].balanceMode,
         balance: summaries[index].balance,
         preview: summaries[index].preview,
         othersCount: summaries[index].othersCount,
       );
       summaries.refresh();
       AlertWidgets.showSnackBar(message: 'Default split type updated');
+    } catch (e) {
+      AlertWidgets.showSnackBar(
+          message: e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  // ── Update balance mode ───────────────────────────────────────────────────
+
+  Future<void> updateBalanceMode({
+    required String groupId,
+    required String balanceMode,
+    required int index,
+  }) async {
+    try {
+      await _service.updateBalanceMode(
+        groupId: groupId,
+        balanceMode: balanceMode,
+      );
+      final current = summaries[index];
+      summaries[index] = GroupSummary(
+        id: current.id,
+        name: current.name,
+        emoji: current.emoji,
+        defaultSplitType: current.defaultSplitType,
+        createdBy: current.createdBy,
+        adminId: current.adminId,
+        balanceMode: balanceMode,
+        balance: current.balance,
+        preview: current.preview,
+        othersCount: current.othersCount,
+      );
+      summaries.refresh();
+      _cache.invalidateAll([
+        CacheKeys.groupBalances(groupId),
+        CacheKeys.summaries,
+        CacheKeys.friends,
+      ]);
+      await Future.wait([
+        fetchSummary(forceRefresh: true),
+        fetchGroupBalances(groupId: groupId, forceRefresh: true),
+        Get.find<FriendsController>(tag: 'friends').fetchFriends(forceRefresh: true),
+      ]);
+      AlertWidgets.showSnackBar(message: 'Balance mode updated');
     } catch (e) {
       AlertWidgets.showSnackBar(
           message: e.toString().replaceAll('Exception: ', ''));

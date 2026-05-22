@@ -351,7 +351,7 @@ class _GroupHeaderState extends State<_GroupHeader> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Icon(
-                                Icons.north_east_rounded,
+                                Icons.call_split_rounded,
                                 size: 12,
                                 color: Constants.activeColor,
                               ),
@@ -749,10 +749,8 @@ class _ExpenseList extends StatelessWidget {
                 if (scroll.metrics.pixels >=
                     scroll.metrics.maxScrollExtent - 200) {
                   final gId = groupCtrl.summaries[index].id;
-                  final hasMore =
-                      groupCtrl.expensesFor(gId).hasMore ?? false;
-                  final isLoadingMore =
-                      groupCtrl.isLoadingMoreExpenses.value;
+                  final hasMore = groupCtrl.expensesFor(gId).hasMore ?? false;
+                  final isLoadingMore = groupCtrl.isLoadingMoreExpenses.value;
                   if (hasMore && !isLoadingMore) {
                     groupCtrl.fetchGroupExpenses(
                       groupId: gId,
@@ -770,134 +768,137 @@ class _ExpenseList extends StatelessWidget {
                   final monthLabel = section.key;
                   final monthExpenses = section.value;
 
-          final sectionTotal = monthExpenses
-              .where((e) => e.description != 'Settlement')
-              .fold(0.0, (sum, e) => sum + (e.amount ?? 0));
+                  final sectionTotal = monthExpenses
+                      .where((e) => e.description != 'Settlement')
+                      .fold(0.0, (sum, e) => sum + (e.amount ?? 0));
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _MonthHeader(label: monthLabel, total: sectionTotal),
-              const SizedBox(height: 8),
-              ...monthExpenses.map((expense) {
-                final myId = profileCtrl.user.value.user?.id;
-                final isSettlement = expense.description == "Settlement";
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _MonthHeader(label: monthLabel, total: sectionTotal),
+                      const SizedBox(height: 8),
+                      ...monthExpenses.map((expense) {
+                        final myId = profileCtrl.user.value.user?.id;
+                        final isSettlement =
+                            expense.description == "Settlement";
 
-                double amount = 0.0;
-                expense.splits?.forEach((split) {
-                  final iPaid = expense.paidBy?.id == myId;
-                  final isMe = split.user?.id == myId;
+                        double amount = 0.0;
+                        expense.splits?.forEach((split) {
+                          final iPaid = expense.paidBy?.id == myId;
+                          final isMe = split.user?.id == myId;
 
-                  if (iPaid && !isMe) {
-                    amount = (amount + (split.amount ?? 0)).toPrecision(2);
-                  } else if (!iPaid && isMe) {
-                    amount = (split.amount ?? 0).toPrecision(2);
-                  }
-                });
+                          if (iPaid && !isMe) {
+                            amount =
+                                (amount + (split.amount ?? 0)).toPrecision(2);
+                          } else if (!iPaid && isMe) {
+                            amount = (split.amount ?? 0).toPrecision(2);
+                          }
+                        });
 
-                final card = _ExpenseCard(
-                  expense: expense,
-                  amount: amount,
-                  myId: myId,
-                  isSettlement: isSettlement,
-                  index: index,
-                );
+                        final card = _ExpenseCard(
+                          expense: expense,
+                          amount: amount,
+                          myId: myId,
+                          isSettlement: isSettlement,
+                          index: index,
+                        );
 
-                return Dismissible(
-                  key: ValueKey(expense.id),
-                  direction: DismissDirection.endToStart,
-                  confirmDismiss: (_) async {
-                    return await Get.dialog<bool>(
-                          AlertDialog(
-                            backgroundColor: Constants.bgColorLight,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                        return Dismissible(
+                          key: ValueKey(expense.id),
+                          direction: DismissDirection.endToStart,
+                          confirmDismiss: (_) async {
+                            return await Get.dialog<bool>(
+                                  AlertDialog(
+                                    backgroundColor: Constants.bgColorLight,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    title: Text(
+                                      isSettlement
+                                          ? "Delete Settlement"
+                                          : "Delete Expense",
+                                      style: AppTheme.subHeadingText,
+                                    ),
+                                    content: Text(
+                                      isSettlement
+                                          ? "Are you sure you want to delete this settlement? This cannot be undone."
+                                          : "Are you sure you want to delete \"${expense.description}\"? This cannot be undone.",
+                                      style: AppTheme.normalText,
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Get.back(result: false),
+                                        child: Text("Cancel",
+                                            style: AppTheme.normalText
+                                                .copyWith(color: Colors.grey)),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Get.back(result: true),
+                                        child: Text(
+                                          "Delete",
+                                          style: AppTheme.normalText.copyWith(
+                                            color: Constants.redColor,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ) ??
+                                false;
+                          },
+                          onDismissed: (direction) async {
+                            final expenseId = expense.id ?? '';
+
+                            // Immediately remove from local cache so Dismissible is satisfied
+                            final currentExpenses =
+                                groupCtrl.expensesFor(groupId).expenses ?? [];
+                            final updatedExpenses = List.of(currentExpenses)
+                              ..removeWhere((e) => e.id == expenseId);
+                            groupCtrl.allGroupExpenses[groupId] = GroupExpenses(
+                              count: updatedExpenses.length,
+                              expenses: updatedExpenses,
+                            );
+
+                            // Then call the API in background
+                            await groupCtrl.deleteExpense(
+                              groupId: groupId,
+                              expenseId: expenseId,
+                            );
+                          },
+                          background: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              color: Constants.redColor,
+                              borderRadius: BorderRadius.circular(14),
                             ),
-                            title: Text(
-                              isSettlement
-                                  ? "Delete Settlement"
-                                  : "Delete Expense",
-                              style: AppTheme.subHeadingText,
-                            ),
-                            content: Text(
-                              isSettlement
-                                  ? "Are you sure you want to delete this settlement? This cannot be undone."
-                                  : "Are you sure you want to delete \"${expense.description}\"? This cannot be undone.",
-                              style: AppTheme.normalText,
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Get.back(result: false),
-                                child: Text("Cancel",
-                                    style: AppTheme.normalText
-                                        .copyWith(color: Colors.grey)),
-                              ),
-                              TextButton(
-                                onPressed: () => Get.back(result: true),
-                                child: Text(
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 20),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.delete_outline,
+                                    color: Colors.white, size: 24),
+                                const SizedBox(height: 4),
+                                Text(
                                   "Delete",
-                                  style: AppTheme.normalText.copyWith(
-                                    color: Constants.redColor,
-                                    fontWeight: FontWeight.w700,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ) ??
-                        false;
-                  },
-                  onDismissed: (direction) async {
-                    final expenseId = expense.id ?? '';
-
-                    // Immediately remove from local cache so Dismissible is satisfied
-                    final currentExpenses =
-                        groupCtrl.expensesFor(groupId).expenses ?? [];
-                    final updatedExpenses = List.of(currentExpenses)
-                      ..removeWhere((e) => e.id == expenseId);
-                    groupCtrl.allGroupExpenses[groupId] = GroupExpenses(
-                      count: updatedExpenses.length,
-                      expenses: updatedExpenses,
-                    );
-
-                    // Then call the API in background
-                    await groupCtrl.deleteExpense(
-                      groupId: groupId,
-                      expenseId: expenseId,
-                    );
-                  },
-                  background: Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
-                      color: Constants.redColor,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.delete_outline,
-                            color: Colors.white, size: 24),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Delete",
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  child: card,
-                );
-              }),
-              const SizedBox(height: 4),
-            ],
-          );
-        },
+                          child: card,
+                        );
+                      }),
+                      const SizedBox(height: 4),
+                    ],
+                  );
+                },
               ),
             ),
           ),
@@ -964,133 +965,193 @@ class _ExpenseCard extends StatelessWidget {
           color: Constants.bgColorLight,
           borderRadius: BorderRadius.circular(14),
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 44.w,
-              height: 44.w,
-              decoration: BoxDecoration(
-                color: Constants.activeColor.withAlpha(25),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                ExpenseIconHelper.resolve(
-                  expense.description as String?,
-                  isSettlement: expense.description == 'Settlement',
-                ),
-                size: 21.w,
-                color: Constants.activeColor,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        child: isSettlement
+            ? _buildSettlementContent(iPaid)
+            : _buildExpenseContent(iPaid, isZero),
+      ),
+    );
+  }
+
+  Widget _buildSettlementContent(bool iPaid) {
+    final payerName = iPaid ? 'You' : expense.paidBy?.name ?? '';
+    final recipientName = (expense.splits != null && expense.splits!.isNotEmpty)
+        ? (expense.splits![0].user?.id == myId
+            ? 'You'
+            : expense.splits![0].user?.name ?? '')
+        : '';
+    final amountStr = expense.amount?.toStringAsFixed(2) ?? '0.00';
+    final date = SplitifyDateUtils.formatExpenseDate(expense.createdAt);
+
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Constants.activeColor.withAlpha(20),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          alignment: Alignment.center,
+          child: const Icon(
+            Icons.account_balance_wallet_outlined,
+            size: 18,
+            color: Constants.activeColor,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  if (!isSettlement)
-                    Text(
-                      expense.description ?? '',
-                      style: AppTheme.normalText
-                          .copyWith(fontWeight: FontWeight.w600),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  const SizedBox(height: 2),
-                  RichText(
-                    text: TextSpan(children: [
-                      TextSpan(
-                        text: iPaid
-                            ? 'You paid '
-                            : '${expense.paidBy?.name} paid ',
-                        style: AppTheme.normalText.copyWith(color: Colors.grey),
-                      ),
-                      TextSpan(
-                        text: "\$${expense.amount}",
-                        style: AppTheme.normalText.copyWith(
-                          color: Constants.activeColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ]),
+                  Text(
+                    payerName,
+                    style: AppTheme.normalText
+                        .copyWith(fontWeight: FontWeight.w500),
                   ),
-                  if (isSettlement &&
-                      expense.splits != null &&
-                      expense.splits!.isNotEmpty)
-                    Row(
-                      children: [
-                        Icon(Icons.arrow_forward_rounded,
-                            size: 12, color: Colors.grey.shade400),
-                        const SizedBox(width: 4),
-                        Text(
-                          expense.splits![0].user?.id == myId
-                              ? 'You'
-                              : expense.splits![0].user?.name ?? '',
-                          style: AppTheme.normalText.copyWith(
-                            fontSize: 12,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
-                      ],
+                  const SizedBox(width: 6),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 13,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    recipientName,
+                    style: AppTheme.normalText.copyWith(
+                      color: Constants.activeColor,
+                      fontWeight: FontWeight.w500,
                     ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '·',
+                    style: AppTheme.normalText.copyWith(color: Colors.grey),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '\$$amountStr',
+                    style: AppTheme.normalText.copyWith(
+                      color: Constants.activeColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
+              const SizedBox(height: 3),
+              Text(
+                'Settled up · $date',
+                style: AppTheme.normalText
+                    .copyWith(fontSize: 11, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: Constants.activeColor.withAlpha(25),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            "Settlement",
+            style: AppTheme.normalText.copyWith(
+              color: Constants.activeColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (isSettlement)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Constants.activeColor.withAlpha(25),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      "Settlement",
-                      style: AppTheme.normalText.copyWith(
-                        color: Constants.activeColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                else if (isZero)
-                  Text(
-                    "not involved",
-                    style: AppTheme.normalText
-                        .copyWith(color: Colors.grey, fontSize: 11),
-                  )
-                else
-                  RichText(
-                    text: TextSpan(children: [
-                      TextSpan(
-                        text: iPaid ? 'lent ' : 'borrowed ',
-                        style: AppTheme.normalText.copyWith(color: Colors.grey),
-                      ),
-                      TextSpan(
-                        text: "\$$amount",
-                        style: AppTheme.normalText.copyWith(
-                          color: iPaid
-                              ? Constants.activeColor
-                              : Constants.redColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ]),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExpenseContent(bool iPaid, bool isZero) {
+    return Row(
+      children: [
+        Container(
+          width: 44.w,
+          height: 44.w,
+          decoration: BoxDecoration(
+            color: Constants.activeColor.withAlpha(25),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          alignment: Alignment.center,
+          child: Icon(
+            ExpenseIconHelper.resolve(
+              expense.description as String?,
+              isSettlement: expense.description == 'Settlement',
+            ),
+            size: 21.w,
+            color: Constants.activeColor,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                expense.description ?? '',
+                style:
+                    AppTheme.normalText.copyWith(fontWeight: FontWeight.w600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              RichText(
+                text: TextSpan(children: [
+                  TextSpan(
+                    text: iPaid ? 'You paid ' : '${expense.paidBy?.name} paid ',
+                    style: AppTheme.normalText.copyWith(color: Colors.grey),
                   ),
-                const SizedBox(height: 4),
-                Text(
-                  SplitifyDateUtils.formatExpenseDate(expense.createdAt),
-                  style: AppTheme.normalText
-                      .copyWith(color: Colors.grey, fontSize: 11),
-                ),
-              ],
+                  TextSpan(
+                    text: "\$${expense.amount}",
+                    style: AppTheme.normalText.copyWith(
+                      color: Constants.activeColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ]),
+              ),
+            ],
+          ),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (isZero)
+              Text(
+                "not involved",
+                style: AppTheme.normalText
+                    .copyWith(color: Colors.grey, fontSize: 11),
+              )
+            else
+              RichText(
+                text: TextSpan(children: [
+                  TextSpan(
+                    text: iPaid ? 'lent ' : 'borrowed ',
+                    style: AppTheme.normalText.copyWith(color: Colors.grey),
+                  ),
+                  TextSpan(
+                    text: "\$$amount",
+                    style: AppTheme.normalText.copyWith(
+                      color: iPaid ? Constants.activeColor : Constants.redColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ]),
+              ),
+            const SizedBox(height: 4),
+            Text(
+              SplitifyDateUtils.formatExpenseDate(expense.createdAt),
+              style: AppTheme.normalText
+                  .copyWith(color: Colors.grey, fontSize: 11),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 }

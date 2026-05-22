@@ -42,6 +42,29 @@ class BalancesView extends StatelessWidget {
 
         final balances = groupCtrl.balancesFor(groupId).balances;
         final settlements = groupCtrl.balancesFor(groupId).settlements;
+        final pairwise = groupCtrl.balancesFor(groupId).pairwise;
+        final balanceMode =
+            groupCtrl.balancesFor(groupId).balanceMode ?? 'pairwise';
+        final isPairwise = balanceMode == 'pairwise';
+        final debtItems = isPairwise
+            ? pairwise
+                .map((p) => (
+                      from: p.from,
+                      fromName: p.fromName,
+                      to: p.to,
+                      toName: p.toName,
+                      amount: p.amount
+                    ))
+                .toList()
+            : settlements
+                .map((s) => (
+                      from: s.from,
+                      fromName: s.fromName,
+                      to: s.to,
+                      toName: s.toName,
+                      amount: s.amount
+                    ))
+                .toList();
 
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
@@ -148,10 +171,28 @@ class BalancesView extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // ── Suggested Settlements ──────────────────────
+              // ── Debt Section (pairwise or simplified) ──────
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const _SectionHeader(label: 'Suggested Settlements'),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _SectionHeader(
+                          label: isPairwise
+                              ? 'Direct Debts'
+                              : 'Suggested Settlements'),
+                      Text(
+                        isPairwise
+                            ? 'Based on actual expenses'
+                            : 'Optimised to reduce transactions',
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    ],
+                  ),
                   const Spacer(),
                   if (settlements.isNotEmpty)
                     GestureDetector(
@@ -198,9 +239,26 @@ class BalancesView extends StatelessWidget {
                     ),
                 ],
               ),
+              const SizedBox(height: 6),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Constants.activeColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  isPairwise ? 'Pairwise mode' : 'Simplified mode',
+                  style: AppTheme.normalText.copyWith(
+                    fontSize: 11,
+                    color: Constants.activeColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
               const SizedBox(height: 10),
 
-              settlements.isEmpty
+              debtItems.isEmpty
                   ? Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(24),
@@ -238,18 +296,18 @@ class BalancesView extends StatelessWidget {
                       ),
                     )
                   : Column(
-                      children: settlements.map((s) {
-                        final members =
+                      children: debtItems.map((item) {
+                        final debtMembers =
                             groupCtrl.membersFor(groupId).members ?? [];
-                        final nameMap = {
-                          for (final m in members) m.id!: m.name!
+                        final debtNameMap = {
+                          for (final m in debtMembers) m.id!: m.name!
                         };
-                        final fromName = s.from == myId
+                        final fromName = item.from == myId
                             ? 'You'
-                            : (nameMap[s.from] ?? s.fromName);
-                        final toName = s.to == myId
+                            : (debtNameMap[item.from] ?? item.fromName);
+                        final toName = item.to == myId
                             ? 'you'
-                            : (nameMap[s.to] ?? s.toName);
+                            : (debtNameMap[item.to] ?? item.toName);
 
                         return Container(
                           padding: const EdgeInsets.symmetric(
@@ -301,7 +359,7 @@ class BalancesView extends StatelessWidget {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                '\$${s.amount.toStringAsFixed(2)}',
+                                '\$${item.amount.toStringAsFixed(2)}',
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:splittify/core/constants/constants.dart';
 
 import '../../core/theme/app_themes.dart';
+import '../../shared/widgets/alert_widgets.dart';
 import '../profile/profile_controller.dart';
 import 'groups_controller.dart';
 
@@ -474,6 +475,83 @@ class _SplitTypeCard extends StatelessWidget {
     );
   }
 
+  void _showBalanceModeSheet(
+    BuildContext context,
+    GroupsController groupCtrl,
+    int index,
+  ) {
+    final groupId = groupCtrl.summaries[index].id;
+    final current = groupCtrl.summaries[index].balanceMode;
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 36),
+        decoration: const BoxDecoration(
+          color: Constants.bgColorLight,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text('Balance Mode',
+                style: AppTheme.headingText.copyWith(fontSize: 17)),
+            const SizedBox(height: 4),
+            Text(
+              'Choose how balances are calculated and displayed',
+              style: AppTheme.normalText
+                  .copyWith(color: Colors.grey.shade400, fontSize: 13),
+            ),
+            const SizedBox(height: 20),
+            _BalanceModeOption(
+              title: 'Pairwise',
+              subtitle:
+                  'Shows direct debts between each pair of members based on actual expenses',
+              icon: Icons.people_outline_rounded,
+              isSelected: current == 'pairwise',
+              onTap: () async {
+                Get.back();
+                await groupCtrl.updateBalanceMode(
+                  groupId: groupId,
+                  balanceMode: 'pairwise',
+                  index: index,
+                );
+              },
+            ),
+            const SizedBox(height: 10),
+            _BalanceModeOption(
+              title: 'Simplified',
+              subtitle:
+                  'Reduces transactions to the minimum needed to settle all debts',
+              icon: Icons.account_tree_outlined,
+              isSelected: current == 'simplified',
+              onTap: () async {
+                Get.back();
+                await groupCtrl.updateBalanceMode(
+                  groupId: groupId,
+                  balanceMode: 'simplified',
+                  index: index,
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
   String _label(String val) {
     switch (val) {
       case "exact":
@@ -487,14 +565,40 @@ class _SplitTypeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => _SettingsTile(
-          label: "Default Split",
-          value: _label(groupCtrl.summaries[index].defaultSplitType),
-          icon: Icons.call_split_rounded,
-          onTap: () => _showPicker(context),
-          isFirst: true,
-          isLast: true,
-        ));
+    return Obx(() {
+      final myId = Get.find<ProfileController>().user.value.user?.id ?? '';
+      final isAdmin = (groupCtrl.summaries[index].adminId ?? '') == myId;
+      final balanceMode = groupCtrl.summaries[index].balanceMode;
+
+      return Column(
+        children: [
+          _SettingsTile(
+            label: "Default Split",
+            value: _label(groupCtrl.summaries[index].defaultSplitType),
+            icon: Icons.call_split_rounded,
+            onTap: () => _showPicker(context),
+            isFirst: true,
+            isLast: false,
+          ),
+          _SettingsTile(
+            label: "Split Mode",
+            // label: "Balance Mode",
+            value: balanceMode == 'pairwise' ? 'Pairwise' : 'Simplified',
+            icon: Icons.account_tree_outlined,
+            onTap: () {
+              if (isAdmin) {
+                _showBalanceModeSheet(context, groupCtrl, index);
+              } else {
+                AlertWidgets.showSnackBar(
+                    message: 'Only Admin can change Split mode');
+              }
+            },
+            isFirst: false,
+            isLast: true,
+          ),
+        ],
+      );
+    });
   }
 }
 
@@ -863,6 +967,93 @@ class _DangerCard extends StatelessWidget {
             isLast: true,
           ),
       ],
+    );
+  }
+}
+
+// ── Balance Mode Option ────────────────────────────────────────────────────────
+class _BalanceModeOption extends StatelessWidget {
+  const _BalanceModeOption({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Constants.activeColor.withAlpha(12)
+              : Constants.bgColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? Constants.activeColor.withAlpha(80)
+                : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Constants.activeColor.withAlpha(20)
+                    : Colors.grey.withAlpha(15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon,
+                  size: 18,
+                  color: isSelected
+                      ? Constants.activeColor
+                      : Colors.grey.shade400),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTheme.normalText.copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: isSelected
+                          ? Constants.activeColor
+                          : const Color(0xFF1C1C1E),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppTheme.normalText.copyWith(
+                      fontSize: 12,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle_rounded,
+                  size: 20, color: Constants.activeColor),
+          ],
+        ),
+      ),
     );
   }
 }

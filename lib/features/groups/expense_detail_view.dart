@@ -420,6 +420,110 @@ class ExpenseDetailView extends StatelessWidget {
                                 ],
                               ),
                             ),
+                            if (isSettlement) ...[
+                              const SizedBox(height: 10),
+                              Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12.w, vertical: 10.h),
+                                decoration: BoxDecoration(
+                                  color: Constants.bgColor,
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 14.r,
+                                      backgroundColor:
+                                          Constants.activeColor.withAlpha(25),
+                                      child: Text(
+                                        (iPaid
+                                                ? 'You'
+                                                : (expense.paidBy?.name ??
+                                                    'U'))[0]
+                                            .toUpperCase(),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: Constants.activeColor,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 8.w),
+                                    Text(
+                                      iPaid
+                                          ? 'You'
+                                          : (expense.paidBy?.name ?? ''),
+                                      style: AppTheme.normalText.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13.sp,
+                                      ),
+                                    ),
+                                    SizedBox(width: 10.w),
+                                    Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: 16.sp,
+                                      color: Constants.activeColor,
+                                    ),
+                                    SizedBox(width: 10.w),
+                                    Builder(builder: (context) {
+                                      final splits = expense.splits ?? [];
+                                      final recipientSplit =
+                                          splits.isNotEmpty ? splits[0] : null;
+                                      final recipientId =
+                                          recipientSplit?.user?.id ?? '';
+                                      final recipientName = recipientId == myId
+                                          ? 'You'
+                                          : (recipientSplit?.user?.name ??
+                                              'Unknown');
+                                      final initial =
+                                          recipientName[0].toUpperCase();
+                                      final recipientColor =
+                                          recipientId == myId
+                                              ? Constants.redColor
+                                              : Constants.activeColor;
+
+                                      return Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 14.r,
+                                            backgroundColor:
+                                                recipientColor.withAlpha(25),
+                                            child: Text(
+                                              initial,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 11.sp,
+                                                fontWeight: FontWeight.w700,
+                                                color: recipientColor,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 8.w),
+                                          Text(
+                                            recipientName,
+                                            style:
+                                                AppTheme.normalText.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 13.sp,
+                                              color: recipientColor,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }),
+                                    const Spacer(),
+                                    Text(
+                                      '\$${(expense.amount ?? 0.0).toStringAsFixed(2)}',
+                                      style: AppTheme.headingText.copyWith(
+                                        fontSize: 14.sp,
+                                        color: Constants.activeColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -462,8 +566,10 @@ class ExpenseDetailView extends StatelessWidget {
                                   color: Constants.activeColor.withAlpha(25),
                                   borderRadius: BorderRadius.circular(10.r),
                                 ),
-                                child: const Icon(
-                                  Icons.group_outlined,
+                                child: Icon(
+                                  isSettlement
+                                      ? Icons.swap_horiz_rounded
+                                      : Icons.group_outlined,
                                   color: Constants.activeColor,
                                   size: 20,
                                 ),
@@ -473,7 +579,9 @@ class ExpenseDetailView extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Split $splitTypeLabel',
+                                    isSettlement
+                                        ? 'Transferred'
+                                        : 'Split $splitTypeLabel',
                                     style: AppTheme.normalText.copyWith(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 12.sp,
@@ -481,7 +589,9 @@ class ExpenseDetailView extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    '${splits.length} people',
+                                    isSettlement
+                                        ? ''
+                                        : '${splits.length} people',
                                     style: AppTheme.normalText.copyWith(
                                       color: Colors.grey,
                                       fontSize: 10.sp,
