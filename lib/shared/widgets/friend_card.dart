@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -12,14 +13,71 @@ class FriendCard extends StatelessWidget {
     required this.friend,
     this.onRemove,
     this.onTap,
+    this.isPending = false,
   });
 
   final Friend friend;
   final VoidCallback? onRemove;
   final VoidCallback? onTap;
+  final bool isPending;
 
   @override
   Widget build(BuildContext context) {
+    if (isPending) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 19,
+              backgroundColor: Colors.grey.withAlpha(20),
+              child: Text(
+                friend.name[0].toUpperCase(),
+                style: AppTheme.normalText.copyWith(
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    friend.name,
+                    style: AppTheme.normalText
+                        .copyWith(fontWeight: FontWeight.w600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text('Invited · Pending',
+                      style: AppTheme.normalText.copyWith(
+                          color: Colors.grey.shade400, fontSize: 11.sp)),
+                ],
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.w),
+              decoration: BoxDecoration(
+                color: Colors.orange.withAlpha(20),
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: Colors.orange.withAlpha(60)),
+              ),
+              child: Text(
+                'User not registered',
+                style: AppTheme.normalText.copyWith(
+                  color: Colors.orange.shade600,
+                  fontSize: 8.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final net = friend.balance.net;
     final status = friend.balance.status;
     final isSettled = status == FriendBalanceStatus.settled;
@@ -28,7 +86,7 @@ class FriendCard extends StatelessWidget {
     final card = GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: Constants.bgColorLight,
           border: Border(
@@ -43,10 +101,10 @@ class FriendCard extends StatelessWidget {
               backgroundColor: Constants.activeColor.withAlpha(28),
               child: Text(
                 friend.name[0].toUpperCase(),
-                style: GoogleFonts.inter(
+                style: AppTheme.normalText.copyWith(
                   color: Constants.activeColor,
                   fontWeight: FontWeight.w700,
-                  fontSize: 14,
+                  // fontSize: 14,
                 ),
               ),
             ),
@@ -144,7 +202,8 @@ class FriendCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.person_remove_outlined, color: Colors.white, size: 22),
+            const Icon(Icons.person_remove_outlined,
+                color: Colors.white, size: 22),
             const SizedBox(height: 4),
             Text(
               "Remove",

@@ -85,10 +85,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
   List<Friend> get _filteredFriends {
     final q = _searchQuery.value.toLowerCase();
     return friendsCtrl.friends
+        .where((f) => !f.isPending)
         .where((f) =>
             q.isEmpty ||
             f.name.toLowerCase().contains(q) ||
-            f.email.toLowerCase().contains(q))
+            (f.email ?? '').toLowerCase().contains(q))
         .toList();
   }
 
@@ -342,7 +343,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Constants.redColor),
+                            borderSide:
+                                const BorderSide(color: Constants.redColor),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 18, vertical: 18),
@@ -598,7 +600,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                           fontWeight: FontWeight.w600,
                                         )),
                                     const SizedBox(height: 1),
-                                    Text(friend.email,
+                                    Text(friend.email ?? '',
                                         style: AppTheme.normalText.copyWith(
                                           color: Colors.grey.shade400,
                                           fontSize: 11,

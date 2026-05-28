@@ -10,6 +10,7 @@ import '../groups/create_group_view.dart';
 import '../groups/group_summary_model.dart';
 import '../groups/groups_controller.dart'; // already imported
 import '../groups/settle_up_view.dart'; // SettleAmountView lives here
+import 'add_friend_view.dart' show AddFriendView;
 import 'friends_controller.dart';
 import 'friends_model.dart';
 
@@ -30,68 +31,12 @@ class FriendsScreen extends StatelessWidget {
   final RxString _searchQuery = ''.obs;
   final RxString _activeFilter = 'all'.obs;
 
-  // ── Add friend dialog ──────────────────────────────────────────────────────
-  void _showAddFriendDialog(BuildContext context) {
-    final emailCtrl = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: Constants.bgColorLight,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text("Add Friend", style: AppTheme.subHeadingText),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Enter the email of a registered Splittify user",
-                style: AppTheme.normalText
-                    .copyWith(color: Colors.grey.shade500, fontSize: 12),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: emailCtrl,
-                autofocus: true,
-                keyboardType: TextInputType.emailAddress,
-                style: AppTheme.normalText,
-                decoration: InputDecoration(
-                  hintText: "email@example.com",
-                  hintStyle: AppTheme.normalText.copyWith(color: Colors.grey),
-                  border: const OutlineInputBorder(),
-                ),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Enter an email';
-                  if (!v.contains('@')) return 'Enter a valid email';
-                  return null;
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text("Cancel",
-                style: AppTheme.normalText.copyWith(color: Colors.grey)),
-          ),
-          TextButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                Get.back();
-                await friendsCtrl.addFriend(email: emailCtrl.text.trim());
-              }
-            },
-            child: Text("Add",
-                style: AppTheme.normalText.copyWith(
-                  color: Constants.activeColor,
-                  fontWeight: FontWeight.w700,
-                )),
-          ),
-        ],
-      ),
+  // ── Add friend ────────────────────────────────────────────────────────────
+  void _addFriendView(BuildContext context) {
+    Get.to(
+      () => const AddFriendView(),
+      transition: Transition.cupertino,
+      duration: const Duration(milliseconds: 300),
     );
   }
 
@@ -103,7 +48,7 @@ class FriendsScreen extends StatelessWidget {
     return all.where((f) {
       final matchesSearch = query.isEmpty ||
           f.name.toLowerCase().contains(query) ||
-          f.email.toLowerCase().contains(query);
+          (f.email ?? '').toLowerCase().contains(query);
 
       final matchesFilter = switch (filter) {
         "friends" => f.isExplicitFriend,
@@ -266,7 +211,7 @@ class FriendsScreen extends StatelessWidget {
         title: Text('Friends', style: AppTheme.headingText),
         actions: [
           GestureDetector(
-            onTap: () => _showAddFriendDialog(context),
+            onTap: () => _addFriendView(context),
             child: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
@@ -294,7 +239,7 @@ class FriendsScreen extends StatelessWidget {
             // ── Add Friend ───────────────────────────────
             Expanded(
               child: GestureDetector(
-                onTap: () => _showAddFriendDialog(context),
+                onTap: () => _addFriendView(context),
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 13),
                   decoration: BoxDecoration(
@@ -403,7 +348,7 @@ class FriendsScreen extends StatelessWidget {
                   child: _EmptyState(
                     isFiltered: _searchQuery.value.isNotEmpty ||
                         _activeFilter.value != 'all',
-                    onAdd: () => _showAddFriendDialog(context),
+                    onAdd: () => _addFriendView(context),
                   ),
                 )
               else
@@ -417,6 +362,9 @@ class FriendsScreen extends StatelessWidget {
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: filtered.map((friend) {
+                        if (friend.isPending) {
+                          return FriendCard(friend: friend, isPending: true);
+                        }
                         return FriendCard(
                           friend: friend,
                           onTap: () => _showGroupPicker(context, friend),

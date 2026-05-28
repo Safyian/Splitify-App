@@ -22,6 +22,7 @@ import 'group_settings_view.dart';
 import 'group_summary_model.dart';
 import 'groups_controller.dart';
 import 'settlement_breakdown_sheet.dart'; // ← NEW
+import '../../shared/widgets/app_dialogs.dart';
 
 class GroupExpensesView extends StatelessWidget {
   GroupExpensesView({super.key, required this.index});
@@ -158,13 +159,19 @@ class _GroupHeaderState extends State<_GroupHeader> {
         final data = SettlementBreakdownData.fromBalancesModel(
           widget.groupCtrl.balancesFor(groupId),
           myId,
+          balanceMode:
+              widget.groupCtrl.balancesFor(groupId).balanceMode ?? 'pairwise',
         );
         showSettlementBreakdown(context, data);
       });
       return;
     }
 
-    final data = SettlementBreakdownData.fromBalancesModel(balances, myId);
+    final data = SettlementBreakdownData.fromBalancesModel(
+      balances,
+      myId,
+      balanceMode: balances.balanceMode ?? 'pairwise',
+    );
     showSettlementBreakdown(context, data);
   }
 
@@ -342,8 +349,9 @@ class _GroupHeaderState extends State<_GroupHeader> {
                           ),
                         );
                       }),
-                      // ── See breakdown (only when nothing hidden) ──
-                      if (summary.othersCount == 0) ...[
+                      // ── See breakdown (only when nothing hidden and simplified mode) ──
+                      if (summary.othersCount == 0 &&
+                          summary.balanceMode == 'simplified') ...[
                         const SizedBox(height: 4),
                         GestureDetector(
                           onTap: () => _showBreakdown(context),
@@ -806,48 +814,16 @@ class _ExpenseList extends StatelessWidget {
                         return Dismissible(
                           key: ValueKey(expense.id),
                           direction: DismissDirection.endToStart,
-                          confirmDismiss: (_) async {
-                            return await Get.dialog<bool>(
-                                  AlertDialog(
-                                    backgroundColor: Constants.bgColorLight,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    title: Text(
-                                      isSettlement
-                                          ? "Delete Settlement"
-                                          : "Delete Expense",
-                                      style: AppTheme.subHeadingText,
-                                    ),
-                                    content: Text(
-                                      isSettlement
-                                          ? "Are you sure you want to delete this settlement? This cannot be undone."
-                                          : "Are you sure you want to delete \"${expense.description}\"? This cannot be undone.",
-                                      style: AppTheme.normalText,
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Get.back(result: false),
-                                        child: Text("Cancel",
-                                            style: AppTheme.normalText
-                                                .copyWith(color: Colors.grey)),
-                                      ),
-                                      TextButton(
-                                        onPressed: () => Get.back(result: true),
-                                        child: Text(
-                                          "Delete",
-                                          style: AppTheme.normalText.copyWith(
-                                            color: Constants.redColor,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ) ??
-                                false;
-                          },
+                          confirmDismiss: (_) => AppDialogs.confirm(
+                            title: isSettlement
+                                ? 'Delete Settlement'
+                                : 'Delete Expense',
+                            message: isSettlement
+                                ? 'Are you sure you want to delete this settlement? This cannot be undone.'
+                                : 'Are you sure you want to delete "${expense.description}"? This cannot be undone.',
+                            confirmLabel: 'Delete',
+                            confirmColor: Constants.redColor,
+                          ),
                           onDismissed: (direction) async {
                             final expenseId = expense.id ?? '';
 

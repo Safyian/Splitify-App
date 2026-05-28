@@ -74,8 +74,9 @@ class SettlementBreakdownData {
   // ── Bridge: converts API model → UI model ──────────────────
   factory SettlementBreakdownData.fromBalancesModel(
     GroupBalancesModel model,
-    String currentUserId,
-  ) {
+    String currentUserId, {
+    String balanceMode = 'pairwise',
+  }) {
     const colors = [
       Color(0xFF6366F1), // indigo
       Color(0xFFEC4899), // pink
@@ -116,17 +117,36 @@ class SettlementBreakdownData {
         .map((b) => NetBalance(member: memberMap[b.userId]!, net: b.net!))
         .toList();
 
-    final pairwise = model.pairwise.asMap().entries.map((e) {
-      final p = e.value;
-      final from = resolve(p.from, p.fromName, e.key);
-      final to = resolve(p.to, p.toName, e.key + 1);
-      return PairwiseDebt(
-        from: from,
-        to: to,
-        amount: p.amount,
-        reason: '${p.fromName} owes ${p.toName} from shared expenses.',
-      );
-    }).toList();
+    final bool isPairwise = balanceMode == 'pairwise';
+
+    // Build pairwise list: use model.pairwise when available, else fall back to
+    // model.settlements (which carries the same fields under a different type).
+    final List<PairwiseDebt> pairwise;
+    if (model.pairwise.isNotEmpty) {
+      pairwise = model.pairwise.asMap().entries.map((e) {
+        final p = e.value;
+        final from = resolve(p.from, p.fromName, e.key);
+        final to = resolve(p.to, p.toName, e.key + 1);
+        return PairwiseDebt(
+          from: from,
+          to: to,
+          amount: p.amount,
+          reason: '${from.name} owes ${to.name} from shared expenses.',
+        );
+      }).toList();
+    } else {
+      pairwise = model.settlements.asMap().entries.map((e) {
+        final s = e.value;
+        final from = resolve(s.from, s.fromName, e.key);
+        final to = resolve(s.to, s.toName, e.key + 1);
+        return PairwiseDebt(
+          from: from,
+          to: to,
+          amount: s.amount,
+          reason: '${from.name} owes ${to.name} from shared expenses.',
+        );
+      }).toList();
+    }
 
     final simplified = model.settlements.asMap().entries.map((e) {
       final s = e.value;
@@ -135,12 +155,16 @@ class SettlementBreakdownData {
       return SimplifiedDebt(from: from, to: to, amount: s.amount);
     }).toList();
 
+    final beforeCount =
+        isPairwise ? model.pairwise.length : model.settlements.length;
+    final afterCount = model.settlements.length;
+
     return SettlementBreakdownData(
       netBalances: netBalances,
       pairwise: pairwise,
       simplified: simplified,
-      beforeCount: model.pairwise.length,
-      afterCount: model.settlements.length,
+      beforeCount: beforeCount,
+      afterCount: afterCount,
     );
   }
 }
@@ -586,6 +610,11 @@ class _Step0NetBalances extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final debtors = data.netBalances.where((b) => !b.isCreditor).toList();
+    final debtorNames = debtors.map((b) => b.member.name).join(' and ');
+    final infoText = debtors.length == 1
+        ? '💡 Only $debtorNames has a negative balance — they\'re the only one who owes money.'
+        : '💡 $debtorNames have negative balances — they owe money to the creditors above.';
     return Column(
       children: [
         _sectionCard(
@@ -611,10 +640,7 @@ class _Step0NetBalances extends StatelessWidget {
               children: [
                 ...data.netBalances.map((b) => _BalanceRow(balance: b)),
                 const SizedBox(height: 6),
-                _InfoBox(
-                  text:
-                      '💡 Only ${data.netBalances.firstWhere((b) => !b.isCreditor).member.name} has a negative balance — they\'re the only one who owes money.',
-                ),
+                _InfoBox(text: infoText),
               ],
             ),
           ),
@@ -691,14 +717,22 @@ class _Step1Pairwise extends StatelessWidget {
               const _StepBadge(label: '2'),
               const SizedBox(width: 10),
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Direct Pairwise Debts',
-                    style: GoogleFonts.inter(
-                        color: _T.text,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700)),
+                Text(
+                  data.beforeCount == data.afterCount
+                      ? 'Simplified Debts'
+                      : 'Direct Pairwise Debts',
+                  style: GoogleFonts.inter(
+                      color: _T.text,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 2),
-                Text('How much each pair owes each other directly',
-                    style: GoogleFonts.inter(color: _T.muted, fontSize: 12)),
+                Text(
+                  data.beforeCount == data.afterCount
+                      ? 'Optimised transactions to settle all debts'
+                      : 'How much each pair owes each other directly',
+                  style: GoogleFonts.inter(color: _T.muted, fontSize: 12),
+                ),
               ]),
             ]),
           ),
@@ -710,7 +744,7 @@ class _Step1Pairwise extends StatelessWidget {
                 const SizedBox(height: 6),
                 _InfoBox(
                   text:
-                      '💡 This would need ${data.beforeCount} separate payments. We can simplify!',
+                      '💡 ${data.beforeCount == data.afterCount ? "These are the optimised settlements after simplification." : "This would need ${data.beforeCount} separate payments. We can simplify!"}',
                 ),
               ],
             ),

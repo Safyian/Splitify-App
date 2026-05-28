@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 
+import '../../shared/widgets/alert_widgets.dart';
 import '../activity/activity_controller.dart';
 import '../expenses/add_expense_controller.dart';
 import '../friends/friends_controller.dart';
@@ -13,6 +14,7 @@ import '../profile/profile_controller.dart';
 import 'auth_services.dart';
 import 'login_view.dart';
 import 'verify_email_view.dart';
+import 'verify_phone_view.dart';
 
 class AuthController extends GetxController {
   final AuthService _service = AuthService();
@@ -22,9 +24,13 @@ class AuthController extends GetxController {
   final passCtrl = TextEditingController();
   final nameCtrl = TextEditingController();
   final forgotEmailCtrl = TextEditingController();
+  final phoneCtrl = TextEditingController();
 
   RxBool isLoggedIn = false.obs;
   var isLoading = false.obs;
+  RxBool isPhoneLogin = false.obs;
+  RxString pendingPhone = ''.obs;
+  RxString completePhone = ''.obs;
 
   // Field-level validation errors
   final RxMap<String, String> fieldErrors = <String, String>{}.obs;
@@ -65,6 +71,7 @@ class AuthController extends GetxController {
   // ✅ Just reads token, NO navigation
   Future<void> checkLogin() async {
     final token = await storage.read(key: "token");
+    print("token = $token");
     isLoggedIn.value = token != null;
   }
 
@@ -191,6 +198,102 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<void> registerWithPhone() async {
+    final name = nameCtrl.text.trim();
+    final phone = completePhone.value.trim();
+    final password = passCtrl.text.trim();
+
+    if (name.isEmpty || phone.isEmpty || password.isEmpty) {
+      AlertWidgets.showSnackBar(message: 'Please fill all fields');
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+      final res = await _service.registerWithPhone(
+        name: name,
+        phone: phone,
+        password: password,
+      );
+      if (res['requiresPhoneVerification'] == true) {
+        pendingPhone.value = phone;
+        nameCtrl.clear();
+        passCtrl.clear();
+        completePhone.value = '';
+        Get.to(
+          () => VerifyPhoneView(phone: phone, otpAlreadySent: true),
+          transition: Transition.cupertino,
+        );
+      }
+    } catch (e) {
+      String message = 'Something went wrong. Please try again.';
+      if (e is DioException && e.response != null) {
+        final data = e.response!.data;
+        if (data is Map && data['message'] != null) {
+          message = data['message'] as String;
+        } else if (e.response!.statusCode == 401) {
+          message = 'Invalid phone number or password';
+        } else if (e.response!.statusCode == 404) {
+          message = 'No account found with this phone number';
+        }
+      }
+      AlertWidgets.showSnackBar(message: message);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> loginWithPhone() async {
+    final phone = completePhone.value.trim();
+    final password = passCtrl.text.trim();
+
+    if (phone.isEmpty || password.isEmpty) {
+      AlertWidgets.showSnackBar(message: 'Please fill all fields');
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+      final res = await _service.loginWithPhone(
+        phone: phone,
+        password: password,
+      );
+      if (res['requiresPhoneVerification'] == true) {
+        final verifyPhone = res['phone'] as String? ?? phone;
+        pendingPhone.value = verifyPhone;
+        phoneCtrl.clear();
+        passCtrl.clear();
+        AlertWidgets.showSnackBar(
+          message: res['message'] ?? 'Please verify your phone number',
+        );
+        Get.to(
+          () => VerifyPhoneView(phone: verifyPhone, otpAlreadySent: false),
+          transition: Transition.cupertino,
+        );
+        return;
+      }
+      await storage.write(key: 'token', value: res['token']);
+      completePhone.value = '';
+      passCtrl.clear();
+      Get.offAll(() => NavigationView());
+    } catch (e) {
+      String message = 'Something went wrong. Please try again.';
+      if (e is DioException && e.response != null) {
+        final data = e.response!.data;
+        if (data is Map && data['message'] != null) {
+          message = data['message'] as String;
+        } else if (e.response!.statusCode == 401) {
+          message = 'Invalid phone number or password';
+        } else if (e.response!.statusCode == 404) {
+          message = 'No account found with this phone number';
+        }
+      }
+      AlertWidgets.showSnackBar(message: message);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future logout() async {
     _clearErrors();
     if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
@@ -220,6 +323,7 @@ class AuthController extends GetxController {
     passCtrl.dispose();
     nameCtrl.dispose();
     forgotEmailCtrl.dispose();
+    phoneCtrl.dispose();
     super.onClose();
   }
 }

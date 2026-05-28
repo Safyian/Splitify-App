@@ -10,6 +10,7 @@ import 'package:splittify/features/auth/auth_controller.dart';
 import 'package:splittify/features/groups/groups_controller.dart';
 
 import '../../core/theme/app_themes.dart';
+import '../../shared/widgets/app_dialogs.dart';
 import 'profile_controller.dart';
 
 class ProfileView extends StatelessWidget {
@@ -137,7 +138,15 @@ class ProfileView extends StatelessWidget {
                   label: 'Delete account',
                   value: '',
                   danger: true,
-                  onTap: () => _showDeleteAccountSheet(profileCtrl),
+                  onTap: () async {
+                    final confirmed = await AppDialogs.confirm(
+                      title: 'Delete Account',
+                      message: 'Are you sure? This cannot be undone.',
+                      confirmLabel: 'Delete',
+                      confirmColor: Constants.redColor,
+                    );
+                    if (confirmed) await profileCtrl.deleteAccount();
+                  },
                 ),
               ]),
 
@@ -322,108 +331,6 @@ class ProfileView extends StatelessWidget {
     );
   }
 
-  // ── Delete account confirmation sheet ───────────────────────────────────
-  void _showDeleteAccountSheet(ProfileController ctrl) {
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 36),
-        decoration: const BoxDecoration(
-          color: Constants.bgColorLight,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Warning icon
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: Constants.redColor.withAlpha(15),
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: const Icon(Icons.delete_forever_rounded,
-                  size: 28, color: Constants.redColor),
-            ),
-            const SizedBox(height: 16),
-
-            Text('Delete account?',
-                style: AppTheme.headingText.copyWith(fontSize: 18)),
-            const SizedBox(height: 8),
-            Text(
-              'This is permanent and cannot be undone.\nYou must settle all balances before deleting.',
-              style: AppTheme.normalText.copyWith(
-                color: Colors.grey.shade400,
-                fontSize: 13,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 28),
-
-            // Confirm delete
-            Obx(() => GestureDetector(
-                  onTap: ctrl.isDeletingAccount.value
-                      ? null
-                      : () => ctrl.deleteAccount(),
-                  child: Container(
-                    width: double.infinity,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: ctrl.isDeletingAccount.value
-                          ? Constants.redColor.withAlpha(120)
-                          : Constants.redColor,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    alignment: Alignment.center,
-                    child: ctrl.isDeletingAccount.value
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
-                          )
-                        : Text('Yes, delete my account',
-                            style: AppTheme.headingText
-                                .copyWith(color: Colors.white, fontSize: 15)),
-                  ),
-                )),
-            const SizedBox(height: 12),
-
-            // Cancel
-            GestureDetector(
-              onTap: () => Get.back(),
-              child: Container(
-                width: double.infinity,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withAlpha(18),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                alignment: Alignment.center,
-                child: Text('Cancel',
-                    style: AppTheme.headingText
-                        .copyWith(color: Colors.grey.shade500, fontSize: 15)),
-              ),
-            ),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
-    );
-  }
 }
 
 // ── Avatar card ───────────────────────────────────────────────────────────────

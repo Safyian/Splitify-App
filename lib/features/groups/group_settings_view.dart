@@ -7,6 +7,7 @@ import 'package:splittify/core/constants/constants.dart';
 
 import '../../core/theme/app_themes.dart';
 import '../../shared/widgets/alert_widgets.dart';
+import '../../shared/widgets/app_dialogs.dart';
 import '../profile/profile_controller.dart';
 import 'groups_controller.dart';
 
@@ -681,41 +682,22 @@ class _MembersCard extends StatelessWidget {
     );
   }
 
-  void _confirmRemoveMember(
-      BuildContext context, String memberId, String memberName) {
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: Constants.bgColorLight,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text("Remove Member", style: AppTheme.subHeadingText),
-        content: Text(
-          "Remove $memberName from the group? They must have no unsettled balances.",
-          style: AppTheme.normalText,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text("Cancel",
-                style: AppTheme.normalText.copyWith(color: Colors.grey)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Get.back();
-              await groupCtrl.removeMember(
-                groupId: groupCtrl.summaries[index].id,
-                memberId: memberId,
-                index: index,
-              );
-            },
-            child: Text("Remove",
-                style: AppTheme.normalText.copyWith(
-                  color: Constants.redColor,
-                  fontWeight: FontWeight.w700,
-                )),
-          ),
-        ],
-      ),
+  Future<void> _confirmRemoveMember(
+      BuildContext context, String memberId, String memberName) async {
+    final confirmed = await AppDialogs.confirm(
+      title: 'Remove Member',
+      message:
+          'Remove $memberName from the group? They must have no unsettled balances.',
+      confirmLabel: 'Remove',
+      confirmColor: Constants.redColor,
     );
+    if (confirmed) {
+      await groupCtrl.removeMember(
+        groupId: groupCtrl.summaries[index].id,
+        memberId: memberId,
+        index: index,
+      );
+    }
   }
 
   @override
@@ -873,74 +855,36 @@ class _DangerCard extends StatelessWidget {
   final String myId;
   final bool isAdmin;
 
-  void _confirmLeave(BuildContext context) {
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: Constants.bgColorLight,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text("Leave Group", style: AppTheme.subHeadingText),
-        content: Text(
+  Future<void> _confirmLeave(BuildContext context) async {
+    final confirmed = await AppDialogs.confirm(
+      title: 'Leave Group',
+      message:
           "You'll be removed from this group. You must have no unsettled balances.",
-          style: AppTheme.normalText,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text("Cancel",
-                style: AppTheme.normalText.copyWith(color: Colors.grey)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Get.back();
-              await groupCtrl.leaveGroup(
-                groupId: groupCtrl.summaries[index].id,
-                index: index,
-              );
-            },
-            child: Text("Leave",
-                style: AppTheme.normalText.copyWith(
-                  color: Constants.redColor,
-                  fontWeight: FontWeight.w700,
-                )),
-          ),
-        ],
-      ),
+      confirmLabel: 'Leave',
+      confirmColor: Constants.redColor,
     );
+    if (confirmed) {
+      await groupCtrl.leaveGroup(
+        groupId: groupCtrl.summaries[index].id,
+        index: index,
+      );
+    }
   }
 
-  void _confirmDelete(BuildContext context) {
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: Constants.bgColorLight,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text("Delete Group", style: AppTheme.subHeadingText),
-        content: Text(
-          "This will permanently delete the group and all its expenses. All balances must be settled first. This cannot be undone.",
-          style: AppTheme.normalText,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text("Cancel",
-                style: AppTheme.normalText.copyWith(color: Colors.grey)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Get.back();
-              await groupCtrl.deleteGroup(
-                groupId: groupCtrl.summaries[index].id,
-                index: index,
-              );
-            },
-            child: Text("Delete",
-                style: AppTheme.normalText.copyWith(
-                  color: Constants.redColor,
-                  fontWeight: FontWeight.w700,
-                )),
-          ),
-        ],
-      ),
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await AppDialogs.confirm(
+      title: 'Delete Group',
+      message:
+          'This will permanently delete the group and all its expenses. All balances must be settled first. This cannot be undone.',
+      confirmLabel: 'Delete',
+      confirmColor: Constants.redColor,
     );
+    if (confirmed) {
+      await groupCtrl.deleteGroup(
+        groupId: groupCtrl.summaries[index].id,
+        index: index,
+      );
+    }
   }
 
   @override

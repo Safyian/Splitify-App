@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/constants.dart';
@@ -123,6 +125,93 @@ class AuthPrimaryButton extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class AuthSegmentedToggle extends StatelessWidget {
+  const AuthSegmentedToggle({
+    super.key,
+    required this.value,
+    required this.onEmail,
+    required this.onPhone,
+  });
+
+  final RxBool value;
+  final VoidCallback onEmail;
+  final VoidCallback onPhone;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Constants.bgColor,
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: onEmail,
+              child: Obx(() => AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(vertical: 9.h),
+                decoration: BoxDecoration(
+                  color: !value.value
+                      ? Constants.bgColorLight
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10.r),
+                  border: !value.value
+                      ? Border.all(color: Constants.activeColor.withAlpha(80))
+                      : null,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Email',
+                  style: AppTheme.normalText.copyWith(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                    color: !value.value
+                        ? Constants.activeColor
+                        : Colors.grey.shade500,
+                  ),
+                ),
+              )),
+            ),
+          ),
+          SizedBox(width: 4.w),
+          Expanded(
+            child: GestureDetector(
+              onTap: onPhone,
+              child: Obx(() => AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(vertical: 9.h),
+                decoration: BoxDecoration(
+                  color: value.value
+                      ? Constants.bgColorLight
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10.r),
+                  border: value.value
+                      ? Border.all(color: Constants.activeColor.withAlpha(80))
+                      : null,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Phone',
+                  style: AppTheme.normalText.copyWith(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                    color: value.value
+                        ? Constants.activeColor
+                        : Colors.grey.shade500,
+                  ),
+                ),
+              )),
+            ),
+          ),
+        ],
       ),
     );
   }

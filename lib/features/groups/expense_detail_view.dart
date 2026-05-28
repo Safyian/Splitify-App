@@ -9,6 +9,7 @@ import 'package:splittify/core/utils/expense_icon_helper.dart';
 import 'package:splittify/features/expenses/add_expense_controller.dart';
 import 'package:splittify/features/expenses/add_expense_view.dart';
 import 'package:splittify/features/groups/groups_controller.dart';
+import 'package:splittify/shared/widgets/app_dialogs.dart';
 
 class ExpenseDetailView extends StatelessWidget {
   const ExpenseDetailView({
@@ -148,42 +149,14 @@ class ExpenseDetailView extends StatelessWidget {
 
   Future<void> _confirmDelete(BuildContext context) async {
     final groupCtrl = Get.find<GroupsController>();
-    final confirmed = await Get.dialog<bool>(
-          AlertDialog(
-            backgroundColor: Constants.bgColorLight,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Text(
-              _isSettlement ? "Delete Settlement" : "Delete Expense",
-              style: AppTheme.subHeadingText,
-            ),
-            content: Text(
-              _isSettlement
-                  ? "Are you sure you want to delete this settlement? This cannot be undone."
-                  : "Are you sure you want to delete \"${expense.description}\"? This cannot be undone.",
-              style: AppTheme.normalText,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Get.back(result: false),
-                child: Text("Cancel",
-                    style: AppTheme.normalText.copyWith(color: Colors.grey)),
-              ),
-              TextButton(
-                onPressed: () => Get.back(result: true),
-                child: Text(
-                  "Delete",
-                  style: AppTheme.normalText.copyWith(
-                    color: Constants.redColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+    final confirmed = await AppDialogs.confirm(
+      title: _isSettlement ? 'Delete Settlement' : 'Delete Expense',
+      message: _isSettlement
+          ? 'Are you sure you want to delete this settlement? This cannot be undone.'
+          : 'Are you sure you want to delete "${expense.description}"? This cannot be undone.',
+      confirmLabel: 'Delete',
+      confirmColor: Constants.redColor,
+    );
 
     if (confirmed) {
       await groupCtrl.deleteExpense(

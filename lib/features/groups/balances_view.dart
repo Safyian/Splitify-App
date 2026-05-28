@@ -194,7 +194,7 @@ class BalancesView extends StatelessWidget {
                     ],
                   ),
                   const Spacer(),
-                  if (settlements.isNotEmpty)
+                  if (balanceMode == 'simplified')
                     GestureDetector(
                       onTap: () {
                         final gId = groupCtrl.summaries[index].id;
@@ -204,6 +204,9 @@ class BalancesView extends StatelessWidget {
                             SettlementBreakdownData.fromBalancesModel(
                           groupCtrl.balancesFor(gId),
                           myId,
+                          balanceMode:
+                              groupCtrl.balancesFor(gId).balanceMode ??
+                                  'pairwise',
                         );
                         showSettlementBreakdown(context, breakdownData);
                       },

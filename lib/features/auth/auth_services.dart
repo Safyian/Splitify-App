@@ -46,4 +46,48 @@ class AuthService {
     );
     return res.data;
   }
+
+  Future<Map<String, dynamic>> registerWithPhone({
+    required String name,
+    required String phone,
+    required String password,
+  }) async {
+    final res = await _dio.post('/auth/register', data: {
+      'name': name,
+      'phone': phone,
+      'password': password,
+    });
+    return res.data;
+  }
+
+  Future<Map<String, dynamic>> sendPhoneOtp({
+    required String phone,
+  }) async {
+    final res = await _dio.post('/auth/send-phone-otp', data: {
+      'phone': phone,
+    });
+    return res.data;
+  }
+
+  Future<Map<String, dynamic>> verifyPhoneOtp({
+    required String phone,
+    required String otp,
+  }) async {
+    final res = await _dio.post('/auth/verify-phone-otp', data: {
+      'phone': phone,
+      'otp': otp,
+    });
+    return res.data;
+  }
+
+  Future<Map<String, dynamic>> loginWithPhone({
+    required String phone,
+    required String password,
+  }) async {
+    final res = await _dio.post('/auth/login-phone', data: {
+      'phone': phone,
+      'password': password,
+    });
+    return res.data;
+  }
 }

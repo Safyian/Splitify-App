@@ -22,7 +22,9 @@ class FriendsController extends GetxController {
   Future<void> fetchFriends({bool forceRefresh = false}) async {
     if (!forceRefresh &&
         _cache.isFresh(CacheKeys.friends) &&
-        friends.isNotEmpty) return;
+        friends.isNotEmpty) {
+      return;
+    }
     try {
       isLoading.value = true;
       friends.value = await _service.getFriends();
@@ -42,10 +44,34 @@ class FriendsController extends GetxController {
       await _service.addFriend(email: email);
       _cache.invalidate(CacheKeys.friends);
       await fetchFriends(forceRefresh: true);
-      AlertWidgets.showSnackBar(message: 'Friend added successfully');
     } catch (e) {
-      AlertWidgets.showSnackBar(
-          message: e.toString().replaceAll('Exception: ', ''));
+      rethrow; // let caller handle error message
+    }
+  }
+
+  Future<void> inviteFriend({
+    required String name,
+    String? phone,
+    String? email,
+  }) async {
+    try {
+      await _service.inviteFriend(name: name, phone: phone, email: email);
+      await fetchFriends(forceRefresh: true);
+    } catch (e) {
+      // final msg = e.toString().replaceAll('Exception: ', '');
+      // AlertWidgets.showSnackBar(message: msg);
+      rethrow;
+    }
+  }
+
+  Future<void> addFriendById(String userId) async {
+    try {
+      await _service.addFriendById(userId: userId);
+      _cache.invalidate(CacheKeys.friends);
+      await fetchFriends(forceRefresh: true);
+      // AlertWidgets.showSnackBar(message: 'Friend added successfully');
+    } catch (e) {
+      rethrow; // let _addContact catch block handle UI + dialog dismissal
     }
   }
 
@@ -64,6 +90,7 @@ class FriendsController extends GetxController {
         email: original.email,
         isExplicitFriend: false,
         isGroupContact: true,
+        isPending: original.isPending,
         balance: original.balance,
       );
     } else {
