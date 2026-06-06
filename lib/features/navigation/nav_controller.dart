@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 
 import '../activity/activity_controller.dart';
 import '../friends/friends_controller.dart';
-import '../groups/groups_controller.dart';
+import '../groups/Controllers/groups_controller.dart';
 
 class NavigationController extends GetxController {
   var currentIndex = 0.obs;

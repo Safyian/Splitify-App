@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import '../../core/constants/constants.dart';
-import '../../core/theme/app_themes.dart';
-import '../friends/friends_controller.dart';
-import '../friends/friends_model.dart';
-import '../groups/groups_controller.dart';
-import '../navigation/nav_controller.dart';
+import '../../../core/constants/constants.dart';
+import '../../../core/theme/app_themes.dart';
+import '../../friends/friends_controller.dart';
+import '../../friends/friends_model.dart';
+import '../../navigation/nav_controller.dart';
+import '../Controllers/groups_controller.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -193,7 +193,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                 ],
                         ),
                         alignment: Alignment.center,
-                        child: Text(e, style: GoogleFonts.inter(fontSize: 26)),
+                        child: Text(e,
+                            style:
+                                AppTheme.normalText.copyWith(fontSize: 26.sp)),
                       ),
                     );
                   }).toList(),
@@ -278,7 +280,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(_selectedEmoji.value,
-                                      style: GoogleFonts.inter(fontSize: 46)),
+                                      style: AppTheme.normalText
+                                          .copyWith(fontSize: 46.sp)),
                                 ),
                               )),
                           const SizedBox(height: 10),
@@ -358,19 +361,19 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                           .copyWith(color: Colors.grey.shade400, fontSize: 12)),
                   const SizedBox(height: 10),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 8.w,
+                    runSpacing: 8.w,
                     children: [
-                      "🏠  Flatmates",
-                      "✈️  Trip",
-                      "🍕  Dinner",
-                      "💼  Work",
-                      "🎉  Party",
-                      "🛒  Groceries",
+                      "🏠 Flatmates",
+                      "✈️ Trip",
+                      "🍕 Dinner",
+                      "💼 Work",
+                      "🎉 Party",
+                      "🛒 Groceries",
                     ].map((label) {
                       return GestureDetector(
                         onTap: () {
-                          final name = label.split("  ")[1];
+                          final name = label.split(" ")[1];
                           _nameCtrl.text = name;
                           _nameError.value = false;
                           HapticFeedback.selectionClick();
@@ -385,8 +388,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                 color: Colors.grey.withOpacity(0.15)),
                           ),
                           child: Text(label,
-                              style:
-                                  AppTheme.normalText.copyWith(fontSize: 13)),
+                              style: AppTheme.normalText
+                                  .copyWith(fontSize: 12.sp)),
                         ),
                       );
                     }).toList(),
@@ -466,7 +469,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(_selectedEmoji.value,
-                                style: GoogleFonts.inter(fontSize: 16)),
+                                style: AppTheme.normalText
+                                    .copyWith(fontSize: 16.sp)),
                             const SizedBox(width: 8),
                             Text(_nameCtrl.text.trim(),
                                 style: AppTheme.normalText.copyWith(
@@ -581,12 +585,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                 alignment: Alignment.center,
                                 child: Text(
                                   friend.name[0].toUpperCase(),
-                                  style: GoogleFonts.inter(
+                                  style: AppTheme.subHeadingText.copyWith(
                                     color: isSel
                                         ? Colors.white
                                         : Constants.activeColor,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
@@ -664,10 +667,10 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text("$count",
-                          style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12)),
+                          style: AppTheme.normalText.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          )),
                     ),
                     const SizedBox(width: 10),
                     Text(

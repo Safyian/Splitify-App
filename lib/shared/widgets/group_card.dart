@@ -5,9 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
-import '../../features/groups/group_expenses_view.dart';
-import '../../features/groups/group_summary_model.dart';
-import '../../features/groups/groups_controller.dart';
+import '../../features/groups/Controllers/groups_controller.dart';
+import '../../features/groups/Models/group_summary_model.dart';
+import '../../features/groups/Views/group_expenses_view.dart';
 
 class GroupCard extends StatelessWidget {
   GroupCard({super.key, required this.index});

@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:splittify/core/constants/constants.dart';
-import 'package:splittify/features/auth/auth_controller.dart';
-import 'package:splittify/features/groups/groups_controller.dart';
+import 'package:splittify/features/auth/Controllers/auth_controller.dart';
+import 'package:splittify/features/groups/Controllers/groups_controller.dart';
 
 import '../../core/theme/app_themes.dart';
 import '../../shared/widgets/app_dialogs.dart';
@@ -317,7 +317,8 @@ class ProfileView extends StatelessWidget {
     // Share.share('Join me on Splitify — the easiest way to split bills with friends!\nhttps://apps.apple.com/your-app-link');
 
     // Fallback: copy to clipboard until share_plus is added
-    const appLink = 'https://your-app-link-here.com'; // TODO: replace with your real Play Store / App Store link
+    const appLink =
+        'https://your-app-link-here.com'; // TODO: replace with your real Play Store / App Store link
     Clipboard.setData(const ClipboardData(text: appLink));
     Get.snackbar(
       'Link copied! 🎉',
@@ -330,7 +331,6 @@ class ProfileView extends StatelessWidget {
       duration: const Duration(seconds: 3),
     );
   }
-
 }
 
 // ── Avatar card ───────────────────────────────────────────────────────────────
@@ -361,8 +361,8 @@ class _AvatarCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 62,
-            height: 62,
+            width: 42.w,
+            height: 42.w,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Constants.activeColor, Color(0xFF0B9472)],
@@ -374,8 +374,7 @@ class _AvatarCard extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               initials,
-              style: GoogleFonts.inter(
-                fontSize: 22,
+              style: AppTheme.subHeadingText.copyWith(
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 letterSpacing: -0.5,
@@ -471,9 +470,8 @@ class _BalanceSummaryCard extends StatelessWidget {
         children: [
           Text(
             'Overall balance',
-            style: AppTheme.normalText.copyWith(
-              color: Colors.white.withAlpha(180),
-              fontSize: 12,
+            style: AppTheme.subHeadingText.copyWith(
+              color: Colors.white.withAlpha(200),
               letterSpacing: 0.3,
             ),
           ),
@@ -482,8 +480,8 @@ class _BalanceSummaryCard extends StatelessWidget {
             netBalance == 0
                 ? 'All settled up 🎉'
                 : '${isPositive ? '+' : '-'}\$${netBalance.abs().toStringAsFixed(2)}',
-            style: GoogleFonts.inter(
-              fontSize: 28,
+            style: AppTheme.headingText.copyWith(
+              fontSize: 18.sp,
               fontWeight: FontWeight.w700,
               color: Colors.white,
               letterSpacing: -0.8,
@@ -526,16 +524,14 @@ class _StatPill extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(value,
-                style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white)),
+                style: AppTheme.subHeadingText.copyWith(
+                    fontWeight: FontWeight.w700, color: Colors.white)),
             const SizedBox(height: 2),
             Text(label,
-                style: GoogleFonts.inter(
-                    fontSize: 10,
-                    color: Colors.white.withAlpha(170),
-                    fontWeight: FontWeight.w500)),
+                style: AppTheme.normalText.copyWith(
+                  fontSize: 11.sp,
+                  color: Colors.white.withAlpha(170),
+                )),
           ],
         ),
       ),

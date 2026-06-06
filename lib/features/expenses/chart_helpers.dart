@@ -1,6 +1,6 @@
 // lib/features/expenses/chart_helpers.dart
 
-import '../groups/group_expenses_model.dart'; // your existing model
+import '../groups/Models/group_expenses_model.dart'; // your existing model
 
 class MemberSpending {
   final String name;

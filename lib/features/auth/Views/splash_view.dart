@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:splittify/core/theme/app_themes.dart';
 
-import '../../core/constants/constants.dart';
-import '../navigation/navigation_view.dart';
-import '../profile/profile_controller.dart';
-import 'auth_controller.dart';
+import '../../../core/constants/constants.dart';
+import '../../navigation/navigation_view.dart';
+import '../../profile/profile_controller.dart';
+import '../Controllers/auth_controller.dart';
 import 'login_view.dart';
 
 class SplashView extends StatefulWidget {
@@ -122,8 +123,8 @@ class _SplashViewState extends State<SplashView>
                   // App name
                   Text(
                     'Splittify',
-                    style: GoogleFonts.inter(
-                      fontSize: 34,
+                    style: AppTheme.headingText.copyWith(
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.w800,
                       color: Constants.textDark,
                       letterSpacing: -0.5,
@@ -135,8 +136,7 @@ class _SplashViewState extends State<SplashView>
                   // Tagline
                   Text(
                     'Split smart. Settle fast.',
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
+                    style: AppTheme.subHeadingText.copyWith(
                       fontWeight: FontWeight.w400,
                       color: Colors.grey.shade500,
                       letterSpacing: 0.1,
@@ -167,8 +167,7 @@ class _SplashViewState extends State<SplashView>
                   const SizedBox(height: 12),
                   Text(
                     'Getting things ready…',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
+                    style: AppTheme.normalText.copyWith(
                       color: Colors.grey.shade400,
                     ),
                   ),

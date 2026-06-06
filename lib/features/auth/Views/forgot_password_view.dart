@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import '../../core/constants/constants.dart';
-import '../../core/theme/app_themes.dart';
-import 'auth_controller.dart';
-import 'auth_widgets.dart';
+import '../../../core/constants/constants.dart';
+import '../../../core/theme/app_themes.dart';
+import '../Controllers/auth_controller.dart';
+import '../auth_widgets.dart';
 import 'login_view.dart';
 
 class ForgotPasswordView extends StatelessWidget {
@@ -70,8 +70,8 @@ class ForgotPasswordView extends StatelessWidget {
           // ── Heading ───────────────────────────────────────────
           Text(
             'Forgot password?',
-            style: GoogleFonts.inter(
-              fontSize: 28,
+            style: AppTheme.headingText.copyWith(
+              fontSize: 18.sp,
               fontWeight: FontWeight.w700,
               color: Constants.textDark,
             ),
@@ -103,8 +103,8 @@ class ForgotPasswordView extends StatelessWidget {
           // ── Submit button ─────────────────────────────────────
           Obx(() => c.isLoading.value
               ? const Center(
-                  child: CircularProgressIndicator(
-                      color: Constants.activeColor),
+                  child:
+                      CircularProgressIndicator(color: Constants.activeColor),
                 )
               : AuthPrimaryButton(
                   label: 'Send reset link',
@@ -147,9 +147,7 @@ class ForgotPasswordView extends StatelessWidget {
           Text(
             'Check your email',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 26,
-              fontWeight: FontWeight.w700,
+            style: AppTheme.headingText.copyWith(
               color: Constants.textDark,
             ),
           ),
@@ -163,8 +161,7 @@ class ForgotPasswordView extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
@@ -195,8 +192,8 @@ class ForgotPasswordView extends StatelessWidget {
           // ── Resend button ─────────────────────────────────────
           Obx(() => c.isLoading.value
               ? const Center(
-                  child: CircularProgressIndicator(
-                      color: Constants.activeColor),
+                  child:
+                      CircularProgressIndicator(color: Constants.activeColor),
                 )
               : AuthPrimaryButton(
                   label: 'Resend reset email',

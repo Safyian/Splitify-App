@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
+import '../../shared/contacts/add_by_email_field.dart';
 import '../../shared/widgets/alert_widgets.dart';
 import '../../shared/widgets/app_dialogs.dart';
 import 'contact_picker_view.dart';
@@ -18,33 +18,16 @@ class AddFriendView extends StatefulWidget {
 }
 
 class _AddFriendViewState extends State<AddFriendView> {
-  final _emailCtrl = TextEditingController();
-  final friendsCtrl = Get.find<FriendsController>(tag: 'friends');
+  final _friendsCtrl = Get.find<FriendsController>(tag: 'friends');
 
-  @override
-  void dispose() {
-    _emailCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _addByEmail() async {
-    final email = _emailCtrl.text.trim();
-    if (email.isEmpty || !email.contains('@')) {
-      AlertWidgets.showSnackBar(message: 'Enter a valid email address');
-      return;
-    }
-
-    final ctx = context; // capture before any async gap
+  Future<void> _addByEmail(String email) async {
     AppDialogs.loading(
       message: 'Finding friend...',
       subtitle: 'Looking up on Splittify...',
       icon: Icons.person_search_outlined,
     );
-
     try {
-      await friendsCtrl.addFriend(email: email);
-      _emailCtrl.clear();
-      if (!mounted) return;
+      await _friendsCtrl.addFriend(email: email);
       await AppDialogs.closeLoading();
       AppDialogs.success(
         title: 'Friend Added!',
@@ -52,87 +35,31 @@ class _AddFriendViewState extends State<AddFriendView> {
         closePop: 2,
       );
     } catch (e) {
-      if (mounted) {
-        await AppDialogs.closeLoading();
-        final msg = e.toString().replaceAll('Exception: ', '');
-        if (msg.toLowerCase().contains('no splitify account') ||
-            msg.toLowerCase().contains('no splittify account') ||
-            msg.toLowerCase().contains('not found') ||
-            msg.toLowerCase().contains('no account')) {
-          final email = _emailCtrl.text.trim();
-          AppDialogs.invite(
-            name: email,
-            inviteMessage:
-                'Hey! I\'m using Splittify to split bills with friends. '
-                'Join me here: splittify.app/download',
-            // ignore: use_build_context_synchronously
-            context: ctx,
-            closePop: 1,
-            onInviteConfirmed: () async {
-              await friendsCtrl.inviteFriend(
-                name: email,
-                email: email,
-              );
-            },
-          );
-        } else {
-          AlertWidgets.showSnackBar(message: msg);
-        }
+      await AppDialogs.closeLoading();
+      if (!mounted) return;
+      final msg = e.toString().replaceAll('Exception: ', '');
+      if (msg.toLowerCase().contains('no splitify account') ||
+          msg.toLowerCase().contains('no splittify account') ||
+          msg.toLowerCase().contains('not found') ||
+          msg.toLowerCase().contains('no account')) {
+        // ignore: use_build_context_synchronously
+        AppDialogs.invite(
+          name: email,
+          inviteMessage:
+              'Hey! I\'m using Splittify to split bills with friends. '
+              'Join me here: splittify.app/download',
+          context: context,
+          closePop: 1,
+          onInviteConfirmed: () async {
+            await _friendsCtrl.inviteFriend(name: email, email: email);
+          },
+        );
+      } else {
+        AlertWidgets.showSnackBar(message: msg);
       }
+      // Rethrow so AddByEmailField keeps the field populated.
+      rethrow;
     }
-  }
-
-  Future<void> _findFromContacts() async {
-    final permStatus =
-        await FlutterContacts.permissions.request(PermissionType.readWrite);
-    if (!mounted) return;
-
-    if (permStatus == PermissionStatus.permanentlyDenied ||
-        permStatus == PermissionStatus.restricted) {
-      final openSettings = await showDialog<bool>(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              backgroundColor: Constants.bgColorLight,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              title: Text('Contacts Access Required',
-                  style: AppTheme.subHeadingText),
-              content: Text(
-                'Please enable contacts access in Settings to find friends on Splittify.',
-                style:
-                    AppTheme.normalText.copyWith(color: Colors.grey.shade600),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: Text('Cancel',
-                      style: AppTheme.normalText.copyWith(color: Colors.grey)),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: Text('Open Settings',
-                      style: AppTheme.normalText.copyWith(
-                          color: Constants.activeColor,
-                          fontWeight: FontWeight.w700)),
-                ),
-              ],
-            ),
-          ) ??
-          false;
-      if (openSettings) await FlutterContacts.permissions.openSettings();
-      return;
-    } else if (permStatus != PermissionStatus.granted &&
-        permStatus != PermissionStatus.limited) {
-      AlertWidgets.showSnackBar(message: 'Contacts permission is required');
-      return;
-    }
-
-    // Step 3: Navigate to contact picker
-    Get.to(
-      () => const ContactPickerView(),
-      transition: Transition.cupertino,
-      duration: const Duration(milliseconds: 300),
-    );
   }
 
   @override
@@ -158,7 +85,7 @@ class _AddFriendViewState extends State<AddFriendView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Subtitle ─────────────────────────────────────
+              // ── Subtitle ─────────────────────────────────────────
               Text(
                 'Find friends by email or from your contacts',
                 style:
@@ -166,9 +93,14 @@ class _AddFriendViewState extends State<AddFriendView> {
               ),
               SizedBox(height: 24.h),
 
-              // ── From Contacts button ──────────────────────────
+              // ── From Contacts button ──────────────────────────────
+              // ContactPickerView handles all permission logic internally.
               GestureDetector(
-                onTap: _findFromContacts,
+                onTap: () => Get.to(
+                  () => const ContactPickerView(),
+                  transition: Transition.cupertino,
+                  duration: const Duration(milliseconds: 300),
+                ),
                 child: Container(
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -196,7 +128,7 @@ class _AddFriendViewState extends State<AddFriendView> {
                 ),
               ),
 
-              // ── Divider ───────────────────────────────────────
+              // ── Divider ───────────────────────────────────────────
               SizedBox(height: 16.h),
               Row(
                 children: [
@@ -214,59 +146,10 @@ class _AddFriendViewState extends State<AddFriendView> {
               ),
               SizedBox(height: 16.h),
 
-              // ── Email field ───────────────────────────────────
-              TextField(
-                controller: _emailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.done,
-                onEditingComplete: () => FocusScope.of(context).unfocus(),
-                style: AppTheme.normalText,
-                decoration: InputDecoration(
-                  hintText: 'email@example.com',
-                  hintStyle:
-                      AppTheme.normalText.copyWith(color: Colors.grey.shade400),
-                  prefixIcon: const Icon(Icons.mail_outline_rounded,
-                      size: 18, color: Colors.grey),
-                  filled: true,
-                  fillColor: Constants.bgColorLight,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                        color: Constants.activeColor, width: 1.5),
-                  ),
-                ),
-              ),
-              SizedBox(height: 12.h),
-
-              // ── Add by email button ───────────────────────────
-              GestureDetector(
-                onTap: _addByEmail,
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  decoration: BoxDecoration(
-                    color: Constants.activeColor,
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'Add Friend',
-                    style: AppTheme.normalText.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+              // ── Add by email ──────────────────────────────────────
+              AddByEmailField(
+                buttonLabel: 'Add Friend',
+                onSubmit: _addByEmail,
               ),
             ],
           ),

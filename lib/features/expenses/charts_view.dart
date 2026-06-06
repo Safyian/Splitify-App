@@ -8,7 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:splittify/core/constants/constants.dart';
 import 'package:splittify/core/theme/app_themes.dart';
 
-import '../groups/groups_controller.dart';
+import '../groups/Controllers/groups_controller.dart';
 import '../profile/profile_controller.dart';
 import 'chart_helpers.dart';
 
@@ -70,15 +70,15 @@ class _ChartsViewState extends State<ChartsView> {
               expenseCount:
                   expenses.where((e) => e.description != "Settlement").length,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // ── Donut ────────────────────────────────────────
             const _SectionTitle(title: "Spending by Member"),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             memberData.isEmpty
                 ? const _EmptyChart(message: "No expense data yet")
                 : _DonutChart(data: memberData, colors: _colors),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
 
             // ── Bar with toggle ───────────────────────────────
             Row(
@@ -112,7 +112,7 @@ class _ChartsViewState extends State<ChartsView> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
             // ── Animated chart swap ───────────────────────────
             AnimatedSwitcher(
@@ -205,9 +205,10 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(value, style: AppTheme.headingText),
-        const SizedBox(height: 4),
-        Text(label, style: AppTheme.normalText),
+        Text(value, style: AppTheme.normalText.copyWith(fontSize: 12.sp)),
+        const SizedBox(height: 2),
+        Text(label,
+            style: AppTheme.normalText.copyWith(fontWeight: FontWeight.w600)),
       ],
     );
   }

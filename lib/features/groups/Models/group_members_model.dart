@@ -36,12 +36,17 @@ class Member {
   final String? id;
   final String? name;
   final String? email;
+  final String? phone;
+  final bool isPlaceholder;
 
   Member({
     this.id,
     this.name,
     this.email,
+    this.phone,
+    this.isPlaceholder = false,
   });
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) || other is Member && other.id == id;
@@ -50,14 +55,18 @@ class Member {
   int get hashCode => id.hashCode;
 
   factory Member.fromJson(Map<String, dynamic> json) => Member(
-        id: json["id"],
+        id: json["id"] ?? json["_id"] ?? json["memberId"],
         name: json["name"],
         email: json["email"],
+        phone: json["phone"],
+        isPlaceholder: json["isPlaceholder"] as bool? ?? false,
       );
 
   Map<String, dynamic> toJson() => {
         "id": id,
         "name": name,
         "email": email,
+        "phone": phone,
+        "isPlaceholder": isPlaceholder,
       };
 }

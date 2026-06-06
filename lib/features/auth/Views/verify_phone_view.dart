@@ -1,16 +1,16 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
 
-import '../../core/constants/constants.dart';
-import '../../core/theme/app_themes.dart';
-import '../../shared/widgets/alert_widgets.dart';
-import '../navigation/navigation_view.dart';
-import 'auth_services.dart';
+import '../../../core/constants/constants.dart';
+import '../../../core/theme/app_themes.dart';
+import '../../../shared/widgets/alert_widgets.dart';
+import '../../navigation/navigation_view.dart';
+import '../auth_services.dart';
 
 class VerifyPhoneView extends StatefulWidget {
   final String phone;
@@ -217,8 +217,8 @@ class _VerifyPhoneViewState extends State<VerifyPhoneView> {
                 ),
                 SizedBox(height: 20.h),
                 Text('Verify your number',
-                    style: GoogleFonts.inter(
-                      fontSize: 22.sp,
+                    style: AppTheme.headingText.copyWith(
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w700,
                       color: Constants.textDark,
                     )),
@@ -227,15 +227,14 @@ class _VerifyPhoneViewState extends State<VerifyPhoneView> {
                   text: TextSpan(children: [
                     TextSpan(
                       text: 'Enter the 6-digit code sent to ',
-                      style: AppTheme.normalText
-                          .copyWith(color: Colors.grey, fontSize: 14.sp),
+                      style:
+                          AppTheme.subHeadingText.copyWith(color: Colors.grey),
                     ),
                     TextSpan(
                       text: widget.phone,
-                      style: AppTheme.normalText.copyWith(
+                      style: AppTheme.subHeadingText.copyWith(
                         color: Colors.black87,
                         fontWeight: FontWeight.w600,
-                        fontSize: 14.sp,
                       ),
                     ),
                   ]),

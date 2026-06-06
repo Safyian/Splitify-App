@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:splittify/shared/widgets/friend_card.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
 import '../../shared/widgets/shimmer.dart';
-import '../groups/create_group_view.dart';
-import '../groups/group_summary_model.dart';
-import '../groups/groups_controller.dart'; // already imported
-import '../groups/settle_up_view.dart'; // SettleAmountView lives here
+import '../groups/Controllers/groups_controller.dart'; // already imported
+import '../groups/Models/group_summary_model.dart';
+import '../groups/Views/create_group_view.dart';
+import '../groups/Views/settle_up_view.dart'; // SettleAmountView lives here
 import 'add_friend_view.dart' show AddFriendView;
 import 'friends_controller.dart';
 import 'friends_model.dart';
@@ -176,7 +176,7 @@ class FriendsScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(g['emoji'] as String,
-                          style: GoogleFonts.inter(fontSize: 22)),
+                          style: AppTheme.normalText.copyWith(fontSize: 22.sp)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(g['name'] as String,

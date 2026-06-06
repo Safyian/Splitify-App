@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:splittify/core/constants/constants.dart';
+import 'package:splittify/features/groups/Views/settle_up_view.dart';
 
-import '../../core/theme/app_themes.dart';
-import '../../shared/widgets/alert_widgets.dart';
-import '../../shared/widgets/app_dialogs.dart';
-import '../profile/profile_controller.dart';
-import 'groups_controller.dart';
+import '../../../core/theme/app_themes.dart';
+import '../../../shared/widgets/alert_widgets.dart';
+import '../../../shared/widgets/app_dialogs.dart';
+import '../../profile/profile_controller.dart';
+import '../Controllers/groups_controller.dart';
+import '../Models/group_summary_model.dart';
+import 'add_member_sheet.dart';
 
 // ── Emoji presets ─────────────────────────────────────────────────────────────
 const _emojis = [
@@ -323,7 +325,8 @@ class _EmojiAndNameCard extends StatelessWidget {
                           : null,
                     ),
                     alignment: Alignment.center,
-                    child: Text(emoji, style: GoogleFonts.inter(fontSize: 22)),
+                    child: Text(emoji,
+                        style: AppTheme.normalText.copyWith(fontSize: 22.sp)),
                   ),
                 );
               },
@@ -523,11 +526,17 @@ class _SplitTypeCard extends StatelessWidget {
               isSelected: current == 'pairwise',
               onTap: () async {
                 Get.back();
+                AppDialogs.loading(
+                  message: 'Performing action ...',
+                  subtitle: 'Converting to Pairwise mode...',
+                  icon: Icons.person_search_outlined,
+                );
                 await groupCtrl.updateBalanceMode(
                   groupId: groupId,
                   balanceMode: 'pairwise',
                   index: index,
                 );
+                await AppDialogs.closeLoading();
               },
             ),
             const SizedBox(height: 10),
@@ -539,11 +548,17 @@ class _SplitTypeCard extends StatelessWidget {
               isSelected: current == 'simplified',
               onTap: () async {
                 Get.back();
+                AppDialogs.loading(
+                  message: 'Performing action ...',
+                  subtitle: 'Converting to Simplified mode...',
+                  icon: Icons.person_search_outlined,
+                );
                 await groupCtrl.updateBalanceMode(
                   groupId: groupId,
                   balanceMode: 'simplified',
                   index: index,
                 );
+                await AppDialogs.closeLoading();
               },
             ),
           ],
@@ -615,70 +630,10 @@ class _MembersCard extends StatelessWidget {
   final String myId;
 
   void _showAddMemberDialog(BuildContext context) {
-    final ctrl = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: Constants.bgColorLight,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text("Add Member", style: AppTheme.subHeadingText),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Enter the email of a registered Splittify user",
-                style: AppTheme.normalText
-                    .copyWith(color: Colors.grey, fontSize: 12),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: ctrl,
-                autofocus: true,
-                keyboardType: TextInputType.emailAddress,
-                style: AppTheme.normalText,
-                decoration: InputDecoration(
-                  hintText: "email@example.com",
-                  hintStyle: AppTheme.normalText.copyWith(color: Colors.grey),
-                  border: const OutlineInputBorder(),
-                ),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Enter an email';
-                  if (!v.contains('@')) return 'Enter a valid email';
-                  return null;
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text("Cancel",
-                style: AppTheme.normalText.copyWith(color: Colors.grey)),
-          ),
-          TextButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                Get.back();
-                await groupCtrl.addMember(
-                  groupId: groupCtrl.summaries[index].id,
-                  email: ctrl.text.trim(),
-                  index: index,
-                );
-              }
-            },
-            child: Text("Add",
-                style: AppTheme.normalText.copyWith(
-                  color: Constants.activeColor,
-                  fontWeight: FontWeight.w700,
-                )),
-          ),
-        ],
-      ),
+    showAddMemberSheet(
+      context,
+      groupId: groupCtrl.summaries[index].id,
+      groupIndex: index,
     );
   }
 
@@ -692,11 +647,16 @@ class _MembersCard extends StatelessWidget {
       confirmColor: Constants.redColor,
     );
     if (confirmed) {
+      AppDialogs.loading(
+        message: 'Removing $memberName...',
+        icon: Icons.person_remove_outlined,
+      );
       await groupCtrl.removeMember(
         groupId: groupCtrl.summaries[index].id,
         memberId: memberId,
         index: index,
       );
+      await AppDialogs.closeLoading();
     }
   }
 
@@ -746,13 +706,16 @@ class _MembersCard extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 18,
-                      backgroundColor: Constants.activeColor.withAlpha(25),
+                      backgroundColor: member.isPlaceholder
+                          ? Colors.grey.withAlpha(30)
+                          : Constants.activeColor.withAlpha(25),
                       child: Text(
                         (member.name ?? '?')[0].toUpperCase(),
-                        style: GoogleFonts.inter(
-                          color: Constants.activeColor,
+                        style: AppTheme.normalText.copyWith(
+                          color: member.isPlaceholder
+                              ? Colors.grey.shade400
+                              : Constants.activeColor,
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
                         ),
                       ),
                     ),
@@ -761,16 +724,50 @@ class _MembersCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            isMe ? "${member.name} (You)" : member.name ?? '',
-                            style: AppTheme.normalText
-                                .copyWith(fontWeight: FontWeight.w600),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  isMe
+                                      ? "${member.name} (You)"
+                                      : member.name ?? '',
+                                  style: AppTheme.normalText.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: member.isPlaceholder
+                                        ? Colors.grey.shade500
+                                        : null,
+                                  ),
+                                ),
+                              ),
+                              if (member.isPlaceholder) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withAlpha(25),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                        color: Colors.orange.withAlpha(60)),
+                                  ),
+                                  child: Text(
+                                    'Invited',
+                                    style: AppTheme.normalText.copyWith(
+                                      color: Colors.orange.shade700,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                          Text(
-                            member.email ?? '',
-                            style: AppTheme.normalText.copyWith(
-                                color: Colors.grey.shade500, fontSize: 11),
-                          ),
+                          if ((member.email ?? member.phone ?? '').isNotEmpty)
+                            Text(
+                              member.email ?? member.phone ?? '',
+                              style: AppTheme.normalText.copyWith(
+                                  color: Colors.grey.shade500, fontSize: 11),
+                            ),
                         ],
                       ),
                     ),
@@ -855,7 +852,44 @@ class _DangerCard extends StatelessWidget {
   final String myId;
   final bool isAdmin;
 
+  // Future<void> _confirmLeave(BuildContext context) async {
+  //   final confirmed = await AppDialogs.confirm(
+  //     title: 'Leave Group',
+  //     message:
+  //         "You'll be removed from this group. You must have no unsettled balances.",
+  //     confirmLabel: 'Leave',
+  //     confirmColor: Constants.redColor,
+  //   );
+  //   if (confirmed) {
+  //     await groupCtrl.leaveGroup(
+  //       groupId: groupCtrl.summaries[index].id,
+  //       index: index,
+  //     );
+  //   }
+  // }
+
   Future<void> _confirmLeave(BuildContext context) async {
+    // Guard: block leaving with unsettled balances before the confirm dialog,
+    // and offer a shortcut to Settle Up instead of a wasted API rejection.
+    final status = groupCtrl.summaries[index].balance.status;
+    if (status != BalanceStatus.settled) {
+      final goSettle = await AppDialogs.confirm(
+        title: 'Settle Up First',
+        message:
+            "You have unsettled balances in this group. Settle up before leaving.",
+        confirmLabel: 'Settle Up',
+        confirmColor: Constants.activeColor,
+      );
+      if (goSettle) {
+        Get.to(() => SettleUpView(
+              // groupId: groupCtrl.summaries[index].id,
+              index: index,
+              // match the params SettleUpView actually requires
+            ));
+      }
+      return; // do NOT show the leave dialog
+    }
+
     final confirmed = await AppDialogs.confirm(
       title: 'Leave Group',
       message:

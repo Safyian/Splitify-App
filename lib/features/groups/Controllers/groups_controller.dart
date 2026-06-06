@@ -2,14 +2,14 @@ import 'package:get/get.dart';
 import 'package:splittify/core/utils/cache_manager.dart';
 import 'package:splittify/features/expenses/expense_service.dart';
 
-import '../../core/utils/snackbar_helper.dart';
-import '../../shared/widgets/alert_widgets.dart';
-import 'group_balances_model.dart';
-import 'group_expenses_model.dart';
-import 'group_members_model.dart';
-import 'group_service.dart';
-import 'group_summary_model.dart';
-import '../friends/friends_controller.dart';
+import '../../../core/utils/snackbar_helper.dart';
+import '../../../shared/widgets/alert_widgets.dart';
+import '../../friends/friends_controller.dart';
+import '../Models/group_balances_model.dart';
+import '../Models/group_expenses_model.dart';
+import '../Models/group_members_model.dart';
+import '../Models/group_summary_model.dart';
+import '../group_service.dart';
 
 class GroupsController extends GetxController {
   /// Register this from FriendsScreen to refresh friends after settlement
@@ -39,7 +39,8 @@ class GroupsController extends GetxController {
       allGroupMembers[groupId] ?? GroupMembersModel();
   GroupBalancesModel balancesFor(String groupId) =>
       allGroupBalances[groupId] ??
-      GroupBalancesModel(balances: [], settlements: [], pairwise: [], balanceMode: null);
+      GroupBalancesModel(
+          balances: [], settlements: [], pairwise: [], balanceMode: null);
 
   /// Removes map entries whose cache TTL has expired.
   void pruneExpensesCache() {
@@ -66,7 +67,8 @@ class GroupsController extends GetxController {
     bool forceRefresh = false,
   }) async {
     final key = CacheKeys.groupBalances(groupId);
-    if (!forceRefresh && _cache.isFresh(key, ttl: const Duration(seconds: 120))) return;
+    if (!forceRefresh && _cache.isFresh(key, ttl: const Duration(seconds: 120)))
+      return;
     try {
       isLoadingBalances.value = true;
       print("id = $groupId");
@@ -269,27 +271,66 @@ class GroupsController extends GetxController {
 
   // ── NEW: Settings methods ────────────────────────────────────────────────────
 
-  Future<void> addMember({
+  Future<Member?> addMember({
     required String groupId,
     required String email,
     required int index,
   }) async {
-    try {
-      await _service.addMember(groupId: groupId, email: email);
-      _cache.invalidateAll([
-        CacheKeys.summaries,
-        CacheKeys.groupMembers(groupId),
-        CacheKeys.friends,
-      ]);
-      await Future.wait([
-        fetchGroupMembers(groupId: groupId, forceRefresh: true),
-        fetchSummary(forceRefresh: true),
-      ]);
-      AlertWidgets.showSnackBar(message: 'Member added successfully');
-    } catch (e) {
-      AlertWidgets.showSnackBar(
-          message: e.toString().replaceAll('Exception: ', ''));
-    }
+    final member = await _service.addMember(groupId: groupId, email: email);
+    _cache.invalidateAll([
+      CacheKeys.summaries,
+      CacheKeys.groupMembers(groupId),
+      CacheKeys.friends,
+    ]);
+    await Future.wait([
+      fetchGroupMembers(groupId: groupId, forceRefresh: true),
+      fetchSummary(forceRefresh: true),
+    ]);
+    return member;
+  }
+
+  Future<Member?> addMemberById({
+    required String groupId,
+    required String userId,
+    required int index,
+  }) async {
+    final member =
+        await _service.addMemberById(groupId: groupId, userId: userId);
+    _cache.invalidateAll([
+      CacheKeys.summaries,
+      CacheKeys.groupMembers(groupId),
+      CacheKeys.friends,
+    ]);
+    await Future.wait([
+      fetchGroupMembers(groupId: groupId, forceRefresh: true),
+      fetchSummary(forceRefresh: true),
+    ]);
+    return member;
+  }
+
+  Future<Member?> addMemberByContact({
+    required String groupId,
+    required String name,
+    String? email,
+    String? phone,
+    required int index,
+  }) async {
+    final member = await _service.addMemberByContact(
+      groupId: groupId,
+      name: name,
+      email: email,
+      phone: phone,
+    );
+    _cache.invalidateAll([
+      CacheKeys.summaries,
+      CacheKeys.groupMembers(groupId),
+      CacheKeys.friends,
+    ]);
+    await Future.wait([
+      fetchGroupMembers(groupId: groupId, forceRefresh: true),
+      fetchSummary(forceRefresh: true),
+    ]);
+    return member;
   }
 
   // ── Remove member ─────────────────────────────────────────────────────────
@@ -304,6 +345,7 @@ class GroupsController extends GetxController {
       _cache.invalidateAll([
         CacheKeys.summaries,
         CacheKeys.groupMembers(groupId),
+        CacheKeys.friends,
       ]);
       await Future.wait([
         fetchGroupMembers(groupId: groupId, forceRefresh: true),
@@ -442,7 +484,8 @@ class GroupsController extends GetxController {
       await Future.wait([
         fetchSummary(forceRefresh: true),
         fetchGroupBalances(groupId: groupId, forceRefresh: true),
-        Get.find<FriendsController>(tag: 'friends').fetchFriends(forceRefresh: true),
+        Get.find<FriendsController>(tag: 'friends')
+            .fetchFriends(forceRefresh: true),
       ]);
       AlertWidgets.showSnackBar(message: 'Balance mode updated');
     } catch (e) {

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:splittify/core/constants/constants.dart';
 import 'package:splittify/core/theme/app_themes.dart';
 import 'package:splittify/core/utils/date_helper.dart';
 import 'package:splittify/core/utils/expense_icon_helper.dart';
 import 'package:splittify/features/expenses/add_expense_controller.dart';
 import 'package:splittify/features/expenses/add_expense_view.dart';
-import 'package:splittify/features/groups/groups_controller.dart';
+import 'package:splittify/features/groups/Controllers/groups_controller.dart';
 import 'package:splittify/shared/widgets/app_dialogs.dart';
 
 class ExpenseDetailView extends StatelessWidget {
@@ -45,7 +44,6 @@ class ExpenseDetailView extends StatelessWidget {
     if (_isSettlement) {
       _showEditSettlementDialog();
     } else {
-      Get.back();
       final groupCtrl = Get.find<GroupsController>();
       Get.delete<AddExpenseController>(force: true);
 
@@ -324,19 +322,18 @@ class ExpenseDetailView extends StatelessWidget {
                               'Total Amount',
                               style: AppTheme.normalText.copyWith(
                                 color: Colors.grey.shade600,
-                                fontSize: 12.sp,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 4),
                             Text(
                               '\$${(expense.amount ?? 0.0).toStringAsFixed(2)}',
                               style: AppTheme.headingText.copyWith(
-                                fontSize: 26.sp,
+                                fontSize: 20.sp,
                                 color: Constants.activeColor,
-                                letterSpacing: -2,
+                                letterSpacing: -1.5,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 4),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -416,9 +413,9 @@ class ExpenseDetailView extends StatelessWidget {
                                                 : (expense.paidBy?.name ??
                                                     'U'))[0]
                                             .toUpperCase(),
-                                        style: GoogleFonts.inter(
+                                        style: AppTheme.normalText.copyWith(
                                           fontSize: 11.sp,
-                                          fontWeight: FontWeight.w700,
+                                          fontWeight: FontWeight.w600,
                                           color: Constants.activeColor,
                                         ),
                                       ),
@@ -452,10 +449,9 @@ class ExpenseDetailView extends StatelessWidget {
                                               'Unknown');
                                       final initial =
                                           recipientName[0].toUpperCase();
-                                      final recipientColor =
-                                          recipientId == myId
-                                              ? Constants.redColor
-                                              : Constants.activeColor;
+                                      final recipientColor = recipientId == myId
+                                          ? Constants.redColor
+                                          : Constants.activeColor;
 
                                       return Row(
                                         children: [
@@ -465,9 +461,10 @@ class ExpenseDetailView extends StatelessWidget {
                                                 recipientColor.withAlpha(25),
                                             child: Text(
                                               initial,
-                                              style: GoogleFonts.inter(
+                                              style:
+                                                  AppTheme.normalText.copyWith(
                                                 fontSize: 11.sp,
-                                                fontWeight: FontWeight.w700,
+                                                fontWeight: FontWeight.w600,
                                                 color: recipientColor,
                                               ),
                                             ),
@@ -475,8 +472,7 @@ class ExpenseDetailView extends StatelessWidget {
                                           SizedBox(width: 8.w),
                                           Text(
                                             recipientName,
-                                            style:
-                                                AppTheme.normalText.copyWith(
+                                            style: AppTheme.normalText.copyWith(
                                               fontWeight: FontWeight.w600,
                                               fontSize: 13.sp,
                                               color: recipientColor,
@@ -696,8 +692,8 @@ class ExpenseDetailView extends StatelessWidget {
                         backgroundColor: Constants.activeColor.withAlpha(25),
                         child: Text(
                           initial,
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
+                          style: AppTheme.normalText.copyWith(
+                            fontWeight: FontWeight.w600,
                             fontSize: 12.sp,
                             color: Constants.activeColor,
                           ),

@@ -13,6 +13,7 @@ class Friend {
   final String? phone;
   final bool isExplicitFriend;
   final bool isGroupContact;
+  final bool isPlaceholder;
   final bool isPending;
   final FriendBalance balance;
 
@@ -24,19 +25,24 @@ class Friend {
     required this.balance,
     this.email,
     this.phone,
+    this.isPlaceholder = false,
     this.isPending = false,
   });
 
-  factory Friend.fromJson(Map<String, dynamic> json) => Friend(
-        id: json["id"],
-        name: json["name"],
-        email: json["email"] as String?,
-        phone: json["phone"] as String?,
-        isExplicitFriend: json["isExplicitFriend"] ?? false,
-        isGroupContact: json["isGroupContact"] ?? false,
-        isPending: json["isPending"] as bool? ?? false,
-        balance: FriendBalance.fromJson(json["balance"]),
-      );
+  factory Friend.fromJson(Map<String, dynamic> json) {
+    final placeholder = json['isPlaceholder'] as bool? ?? false;
+    return Friend(
+      id: json["id"],
+      name: json["name"],
+      email: json["email"] as String?,
+      phone: json["phone"] as String?,
+      isExplicitFriend: json["isExplicitFriend"] ?? false,
+      isGroupContact: json["isGroupContact"] ?? false,
+      isPlaceholder: placeholder,
+      isPending: placeholder || (json['isPending'] as bool? ?? false),
+      balance: FriendBalance.fromJson(json["balance"]),
+    );
+  }
 }
 
 enum FriendBalanceStatus { youOwe, youAreOwed, settled }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import '../../core/constants/constants.dart';
-import '../../core/theme/app_themes.dart';
-import 'auth_controller.dart';
-import 'auth_widgets.dart';
+import '../../../core/constants/constants.dart';
+import '../../../core/theme/app_themes.dart';
+import '../Controllers/auth_controller.dart';
+import '../auth_widgets.dart';
 import 'login_view.dart';
 
 class VerifyEmailView extends StatelessWidget {
@@ -48,8 +48,8 @@ class VerifyEmailView extends StatelessWidget {
               Text(
                 'Verify your email',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 26,
+                style: AppTheme.headingText.copyWith(
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
                   color: Constants.textDark,
                 ),
@@ -61,11 +61,13 @@ class VerifyEmailView extends StatelessWidget {
               Text(
                 "We've sent a verification link to",
                 textAlign: TextAlign.center,
-                style: AppTheme.normalText.copyWith(color: Colors.grey.shade500),
+                style:
+                    AppTheme.normalText.copyWith(color: Colors.grey.shade500),
               ),
               const SizedBox(height: 6),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),

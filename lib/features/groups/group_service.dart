@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 
 import '../../core/api/api_client.dart';
-import 'group_balances_model.dart';
-import 'group_expenses_model.dart';
-import 'group_members_model.dart';
-import 'group_summary_model.dart';
+import 'Models/group_balances_model.dart';
+import 'Models/group_expenses_model.dart';
+import 'Models/group_members_model.dart';
+import 'Models/group_summary_model.dart';
 
 class GroupService {
   final Dio _dio = ApiClient().dio;
@@ -62,19 +62,65 @@ class GroupService {
 
   // ── NEW: Settings ────────────────────────────────────────────────────────────
 
-  Future<void> addMember({
+  Future<Member> addMember({
     required String groupId,
     required String email,
   }) async {
     try {
-      await _dio.post(
+      final res = await _dio.post(
         '/groups/$groupId/members',
         data: {"email": email},
       );
+      return _parseMemberResponse(res.data);
     } on DioException catch (e) {
       final message = e.response?.data['message'] ?? 'Failed to add member';
       throw Exception(message);
     }
+  }
+
+  Future<Member> addMemberById({
+    required String groupId,
+    required String userId,
+  }) async {
+    try {
+      final res = await _dio.post(
+        '/groups/$groupId/members',
+        data: {"userId": userId},
+      );
+      return _parseMemberResponse(res.data);
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Failed to add member';
+      throw Exception(message);
+    }
+  }
+
+  Future<Member> addMemberByContact({
+    required String groupId,
+    required String name,
+    String? email,
+    String? phone,
+  }) async {
+    try {
+      final res = await _dio.post(
+        '/groups/$groupId/members',
+        data: {
+          "name": name,
+          if (email != null) "email": email,
+          if (phone != null) "phone": phone,
+        },
+      );
+      return _parseMemberResponse(res.data);
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Failed to add member';
+      throw Exception(message);
+    }
+  }
+
+  static Member _parseMemberResponse(dynamic data) {
+    if (data is Map<String, dynamic>) {
+      return Member.fromJson(data);
+    }
+    throw Exception('Unexpected member response shape: $data');
   }
 
   Future<void> removeMember({

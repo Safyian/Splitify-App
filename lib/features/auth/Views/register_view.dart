@@ -4,9 +4,9 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
-import '../../core/constants/constants.dart';
-import '../../core/theme/app_themes.dart';
-import 'auth_controller.dart';
+import '../../../core/constants/constants.dart';
+import '../../../core/theme/app_themes.dart';
+import '../Controllers/auth_controller.dart';
 
 class RegisterView extends StatelessWidget {
   RegisterView({super.key});

@@ -3,9 +3,9 @@ import 'package:get/get.dart';
 
 import '../../core/utils/cache_manager.dart';
 import '../../shared/widgets/alert_widgets.dart';
-import '../groups/group_members_model.dart';
-import '../groups/group_summary_model.dart';
-import '../groups/groups_controller.dart';
+import '../groups/Controllers/groups_controller.dart';
+import '../groups/Models/group_members_model.dart';
+import '../groups/Models/group_summary_model.dart';
 import 'expense_payload_model.dart';
 import 'expense_service.dart';
 

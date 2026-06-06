@@ -2,27 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:splittify/core/constants/constants.dart';
-import 'package:splittify/features/groups/settle_up_view.dart';
-import 'package:splittify/features/groups/totals_view.dart';
+import 'package:splittify/features/groups/Views/settle_up_view.dart';
+import 'package:splittify/features/groups/Views/totals_view.dart';
 
-import '../../core/theme/app_themes.dart';
-import '../../core/utils/date_helper.dart';
-import '../../core/utils/expense_icon_helper.dart';
-import '../../shared/widgets/shimmer.dart';
-import '../expenses/add_expense_controller.dart';
-import '../expenses/add_expense_view.dart';
-import '../expenses/charts_view.dart';
-import '../profile/profile_controller.dart';
+import '../../../core/theme/app_themes.dart';
+import '../../../core/utils/date_helper.dart';
+import '../../../core/utils/expense_icon_helper.dart';
+import '../../../shared/widgets/app_dialogs.dart';
+import '../../../shared/widgets/shimmer.dart';
+import '../../expenses/add_expense_controller.dart';
+import '../../expenses/add_expense_view.dart';
+import '../../expenses/charts_view.dart';
+import '../../profile/profile_controller.dart';
+import '../Controllers/groups_controller.dart';
+import '../Models/group_expenses_model.dart';
+import '../Models/group_summary_model.dart';
 import 'balances_view.dart';
 import 'expense_detail_view.dart';
-import 'group_expenses_model.dart';
-import 'group_settings_view.dart';
-import 'group_summary_model.dart';
-import 'groups_controller.dart';
-import 'settlement_breakdown_sheet.dart'; // ← NEW
-import '../../shared/widgets/app_dialogs.dart';
+import 'group_settings_view.dart'; // ← NEW
+import 'settlement_breakdown_sheet.dart';
 
 class GroupExpensesView extends StatelessWidget {
   GroupExpensesView({super.key, required this.index});
@@ -859,9 +858,9 @@ class _ExpenseList extends StatelessWidget {
                                 const SizedBox(height: 4),
                                 Text(
                                   "Delete",
-                                  style: GoogleFonts.inter(
+                                  style: AppTheme.normalText.copyWith(
                                     color: Colors.white,
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),

@@ -7,8 +7,8 @@ import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
 import '../../features/expenses/add_expense_controller.dart';
 import '../../features/expenses/add_expense_view.dart';
-import '../../features/groups/group_summary_model.dart';
-import '../../features/groups/groups_controller.dart';
+import '../../features/groups/Controllers/groups_controller.dart';
+import '../../features/groups/Models/group_summary_model.dart';
 import '../../features/navigation/nav_controller.dart';
 import 'alert_widgets.dart';
 

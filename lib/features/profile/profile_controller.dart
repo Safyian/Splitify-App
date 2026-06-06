@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:splittify/features/profile/profile_service.dart';
 import 'package:splittify/features/profile/user_model.dart';
 
-import '../auth/login_view.dart';
+import '../auth/Views/login_view.dart';
 
 class ProfileController extends GetxController {
   final _service = ProfileService();
@@ -57,5 +57,4 @@ class ProfileController extends GetxController {
       isDeletingAccount.value = false;
     }
   }
-
 }

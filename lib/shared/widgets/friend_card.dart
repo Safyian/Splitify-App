@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
 import '../../features/friends/friends_model.dart';
+import 'app_dialogs.dart';
 
 class FriendCard extends StatelessWidget {
   const FriendCard({
@@ -23,6 +23,7 @@ class FriendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ----------- When friend is pending meaning not registered on App
     if (isPending) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -51,9 +52,13 @@ class FriendCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Text('Invited · Pending',
-                      style: AppTheme.normalText.copyWith(
-                          color: Colors.grey.shade400, fontSize: 11.sp)),
+                  Text(
+                    friend.email ?? friend.phone ?? 'Invited · Pending',
+                    style: AppTheme.normalText.copyWith(
+                        color: Colors.grey.shade400, fontSize: 11.sp),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),
@@ -163,37 +168,11 @@ class FriendCard extends StatelessWidget {
     return Dismissible(
       key: Key(friend.id),
       direction: DismissDirection.endToStart,
-      confirmDismiss: (_) async {
-        return await Get.dialog<bool>(
-              AlertDialog(
-                backgroundColor: Constants.bgColorLight,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                title: Text("Remove Friend", style: AppTheme.subHeadingText),
-                content: Text(
-                  "Remove ${friend.name} from your friends list?",
-                  style: AppTheme.normalText,
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Get.back(result: false),
-                    child: Text("Cancel",
-                        style:
-                            AppTheme.normalText.copyWith(color: Colors.grey)),
-                  ),
-                  TextButton(
-                    onPressed: () => Get.back(result: true),
-                    child: Text("Remove",
-                        style: AppTheme.normalText.copyWith(
-                          color: Constants.redColor,
-                          fontWeight: FontWeight.w700,
-                        )),
-                  ),
-                ],
-              ),
-            ) ??
-            false;
-      },
+      confirmDismiss: (_) => AppDialogs.confirm(
+        title: 'Are you Sure?',
+        message: "Confirm to remove ${friend.name} from your friends list.",
+        confirmColor: Constants.redColor,
+      ),
       onDismissed: (_) => onRemove?.call(),
       background: Container(
         color: Constants.redColor,

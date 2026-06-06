@@ -41,8 +41,7 @@ class AppDialogs {
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
-                  child: Icon(icon,
-                      color: Constants.activeColor, size: 28.sp),
+                  child: Icon(icon, color: Constants.activeColor, size: 28.sp),
                 ),
                 SizedBox(height: 16.h),
                 Text(
@@ -100,8 +99,8 @@ class AppDialogs {
     Get.dialog(
       AlertDialog(
         backgroundColor: Constants.bgColorLight,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -117,14 +116,13 @@ class AppDialogs {
             ),
             SizedBox(height: 16.h),
             Text(title,
-                style: AppTheme.subHeadingText,
-                textAlign: TextAlign.center),
+                style: AppTheme.subHeadingText, textAlign: TextAlign.center),
             if (message != null) ...[
               SizedBox(height: 6.h),
               Text(
                 message,
-                style: AppTheme.normalText
-                    .copyWith(color: Colors.grey.shade500),
+                style:
+                    AppTheme.normalText.copyWith(color: Colors.grey.shade500),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -142,8 +140,7 @@ class AppDialogs {
             child: Text(
               buttonLabel,
               style: AppTheme.normalText.copyWith(
-                  color: Constants.activeColor,
-                  fontWeight: FontWeight.w600),
+                  color: Constants.activeColor, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -164,8 +161,8 @@ class AppDialogs {
     Get.dialog(
       AlertDialog(
         backgroundColor: Constants.bgColorLight,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text(title, style: AppTheme.subHeadingText),
         content: Text(message, style: AppTheme.normalText),
         actions: [
@@ -175,8 +172,8 @@ class AppDialogs {
               onDone?.call();
             },
             child: Text(buttonLabel,
-                style: AppTheme.normalText.copyWith(
-                    color: color, fontWeight: FontWeight.w600)),
+                style: AppTheme.normalText
+                    .copyWith(color: color, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -194,24 +191,26 @@ class AppDialogs {
     final result = await Get.dialog<bool>(
       AlertDialog(
         backgroundColor: Constants.bgColorLight,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
-        title: Text(title, style: AppTheme.subHeadingText),
-        content: Text(message, style: AppTheme.normalText),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text(title,
+            style:
+                AppTheme.subHeadingText.copyWith(fontWeight: FontWeight.w600)),
+        content: Text(message,
+            style: AppTheme.normalText.copyWith(color: Colors.grey.shade600)),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
             child: Text(cancelLabel,
-                style: AppTheme.normalText
-                    .copyWith(color: Colors.grey)),
+                style:
+                    AppTheme.normalText.copyWith(color: Colors.grey.shade600)),
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
             child: Text(
               confirmLabel,
-              style: AppTheme.normalText.copyWith(
-                  color: confirmColor,
-                  fontWeight: FontWeight.w700),
+              style: AppTheme.normalText
+                  .copyWith(color: confirmColor, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -225,6 +224,14 @@ class AppDialogs {
     required String name,
     required String inviteMessage,
     required BuildContext context,
+    /// Descriptive body text shown below the name. Defaults to the friend
+    /// wording; pass a different string for non-friend contexts (e.g. group).
+    String description =
+        'Add them to your friends list and send an invitation to join Splittify.',
+    /// Loading message shown while [onInviteConfirmed] is in-flight.
+    /// Pass null to skip the loading dialog (e.g. when the member is already
+    /// added before the invite dialog is shown).
+    String? loadingMessage = 'Adding friend...',
     VoidCallback? onSkip,
     Future<void> Function()? onInviteConfirmed,
     int closePop = 2,
@@ -232,8 +239,8 @@ class AppDialogs {
     Get.dialog(
       AlertDialog(
         backgroundColor: Constants.bgColorLight,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         contentPadding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 16.h),
         actionsPadding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
         content: Column(
@@ -258,7 +265,7 @@ class AppDialogs {
             ),
             SizedBox(height: 8.h),
             Text(
-              'Add them to your friends list and send an invitation to join Splittify.',
+              description,
               style: AppTheme.normalText.copyWith(
                 color: Colors.grey.shade400,
                 fontSize: 13.sp,
@@ -280,8 +287,7 @@ class AppDialogs {
                       decoration: BoxDecoration(
                         color: Constants.bgColor,
                         borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                            color: Colors.grey.withAlpha(40)),
+                        border: Border.all(color: Colors.grey.withAlpha(40)),
                       ),
                       alignment: Alignment.center,
                       child: Text(
@@ -299,39 +305,38 @@ class AppDialogs {
                 Expanded(
                   child: GestureDetector(
                     onTap: () async {
-                      final box =
-                          context.findRenderObject() as RenderBox?;
-                      Navigator.of(Get.overlayContext!,
-                              rootNavigator: true)
+                      final box = context.findRenderObject() as RenderBox?;
+                      Navigator.of(Get.overlayContext!, rootNavigator: true)
                           .pop();
-                      AppDialogs.loading(
-                        message: 'Adding friend...',
-                        icon: Icons.person_add_outlined,
-                      );
+                      if (loadingMessage != null) {
+                        AppDialogs.loading(
+                          message: loadingMessage,
+                          icon: Icons.person_add_outlined,
+                        );
+                      }
                       try {
                         if (onInviteConfirmed != null) {
                           await onInviteConfirmed();
                         }
-                        await AppDialogs.closeLoading();
-                        await Future.delayed(
-                            const Duration(milliseconds: 300));
+                        if (loadingMessage != null) {
+                          await AppDialogs.closeLoading();
+                        }
+                        await Future.delayed(const Duration(milliseconds: 300));
                         await SharePlus.instance.share(
                           ShareParams(
                             text: inviteMessage,
                             sharePositionOrigin: box != null
-                                ? box.localToGlobal(Offset.zero) &
-                                    box.size
-                                : const Rect.fromLTWH(
-                                    0, 0, 100, 100),
+                                ? box.localToGlobal(Offset.zero) & box.size
+                                : const Rect.fromLTWH(0, 0, 100, 100),
                           ),
                         );
                         Get.close(closePop - 1);
                       } catch (e) {
-                        await AppDialogs.closeLoading();
+                        if (loadingMessage != null) {
+                          await AppDialogs.closeLoading();
+                        }
                         AlertWidgets.showSnackBar(
-                          message: e
-                              .toString()
-                              .replaceAll('Exception: ', ''),
+                          message: e.toString().replaceAll('Exception: ', ''),
                         );
                       }
                     },

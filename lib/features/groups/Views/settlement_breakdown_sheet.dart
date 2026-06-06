@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:splittify/core/theme/app_themes.dart';
 
-import 'group_balances_model.dart';
+import '../Models/group_balances_model.dart';
 
 // ─────────────────────────────────────────────────────────────
 // DATA MODELS
@@ -117,36 +118,18 @@ class SettlementBreakdownData {
         .map((b) => NetBalance(member: memberMap[b.userId]!, net: b.net!))
         .toList();
 
-    final bool isPairwise = balanceMode == 'pairwise';
-
-    // Build pairwise list: use model.pairwise when available, else fall back to
-    // model.settlements (which carries the same fields under a different type).
-    final List<PairwiseDebt> pairwise;
-    if (model.pairwise.isNotEmpty) {
-      pairwise = model.pairwise.asMap().entries.map((e) {
-        final p = e.value;
-        final from = resolve(p.from, p.fromName, e.key);
-        final to = resolve(p.to, p.toName, e.key + 1);
-        return PairwiseDebt(
-          from: from,
-          to: to,
-          amount: p.amount,
-          reason: '${from.name} owes ${to.name} from shared expenses.',
-        );
-      }).toList();
-    } else {
-      pairwise = model.settlements.asMap().entries.map((e) {
-        final s = e.value;
-        final from = resolve(s.from, s.fromName, e.key);
-        final to = resolve(s.to, s.toName, e.key + 1);
-        return PairwiseDebt(
-          from: from,
-          to: to,
-          amount: s.amount,
-          reason: '${from.name} owes ${to.name} from shared expenses.',
-        );
-      }).toList();
-    }
+    // Backend always populates both arrays — build pairwise directly from model.pairwise.
+    final pairwise = model.pairwise.asMap().entries.map((e) {
+      final p = e.value;
+      final from = resolve(p.from, p.fromName, e.key);
+      final to = resolve(p.to, p.toName, e.key + 1);
+      return PairwiseDebt(
+        from: from,
+        to: to,
+        amount: p.amount,
+        reason: '${from.name} owes ${to.name} from shared expenses.',
+      );
+    }).toList();
 
     final simplified = model.settlements.asMap().entries.map((e) {
       final s = e.value;
@@ -155,8 +138,7 @@ class SettlementBreakdownData {
       return SimplifiedDebt(from: from, to: to, amount: s.amount);
     }).toList();
 
-    final beforeCount =
-        isPairwise ? model.pairwise.length : model.settlements.length;
+    final beforeCount = model.pairwise.length;
     final afterCount = model.settlements.length;
 
     return SettlementBreakdownData(
@@ -265,10 +247,9 @@ class _SettlementBreakdownScreenState extends State<SettlementBreakdownScreen>
         ),
         title: Text(
           'Settlement Breakdown',
-          style: GoogleFonts.inter(
+          style: AppTheme.subHeadingText.copyWith(
             color: _T.text,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -337,15 +318,15 @@ class _Header extends StatelessWidget {
           ),
           child: Text(
             'How is this calculated?',
-            style: GoogleFonts.inter(
-                color: _T.accent, fontSize: 12, fontWeight: FontWeight.w600),
+            style: AppTheme.normalText.copyWith(
+                color: _T.accent, fontSize: 12.sp, fontWeight: FontWeight.w600),
           ),
         ),
         const SizedBox(height: 8),
         Text(
           "Tap through each step to see how $debtorName's debt is calculated",
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(color: _T.muted, fontSize: 13),
+          style: AppTheme.normalText.copyWith(color: _T.muted, fontSize: 11.sp),
         ),
       ],
     );
@@ -386,14 +367,13 @@ class _StepTabs extends StatelessWidget {
               child: Column(
                 children: [
                   Text(steps[i]['icon']!,
-                      style: GoogleFonts.inter(fontSize: 16)),
+                      style: AppTheme.normalText.copyWith(fontSize: 16.sp)),
                   const SizedBox(height: 3),
                   Text(
                     steps[i]['label']!,
-                    style: GoogleFonts.inter(
+                    style: AppTheme.normalText.copyWith(
                       color: isActive ? _T.accent : _T.muted,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 10.sp,
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 1,
@@ -468,10 +448,10 @@ class _Avatar extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         member.initials,
-        style: GoogleFonts.inter(
+        style: AppTheme.normalText.copyWith(
           color: member.color,
-          fontSize: size * 0.3,
-          fontWeight: FontWeight.w800,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -485,14 +465,17 @@ class _StepBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 28,
-      height: 28,
+      width: 24.w,
+      height: 24.w,
       decoration: BoxDecoration(
           color: _T.accent, borderRadius: BorderRadius.circular(14)),
       alignment: Alignment.center,
       child: Text(label,
-          style: GoogleFonts.inter(
-              color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800)),
+          textAlign: TextAlign.center,
+          style: AppTheme.normalText.copyWith(
+              color: Colors.white,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w700)),
     );
   }
 }
@@ -512,8 +495,8 @@ class _Tag extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(label,
-          style: GoogleFonts.inter(
-              color: color, fontSize: 10, fontWeight: FontWeight.w600)),
+          style: AppTheme.normalText.copyWith(
+              color: color, fontSize: 10.sp, fontWeight: FontWeight.w600)),
     );
   }
 }
@@ -548,8 +531,10 @@ class _NextButton extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: Text(label,
-            style: GoogleFonts.inter(
-                color: _T.text, fontSize: 14, fontWeight: FontWeight.w600)),
+            style: AppTheme.normalText.copyWith(
+              color: _T.text,
+              fontWeight: FontWeight.w600,
+            )),
       ),
     );
   }
@@ -570,7 +555,11 @@ class _InfoBox extends StatelessWidget {
       ),
       child: Text.rich(
         TextSpan(text: text),
-        style: GoogleFonts.inter(color: _T.muted, fontSize: 12, height: 1.6),
+        style: AppTheme.normalText.copyWith(
+          color: _T.muted,
+          fontSize: 11.sp,
+          height: 1.5,
+        ),
       ),
     );
   }
@@ -624,13 +613,12 @@ class _Step0NetBalances extends StatelessWidget {
               const SizedBox(width: 10),
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('Calculate Net Balances',
-                    style: GoogleFonts.inter(
-                        color: _T.text,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700)),
+                    style: AppTheme.subHeadingText
+                        .copyWith(color: _T.text, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text('Total paid − Total owed across all expenses',
-                    style: GoogleFonts.inter(color: _T.muted, fontSize: 12)),
+                    style: AppTheme.normalText
+                        .copyWith(color: _T.muted, fontSize: 11.sp)),
               ]),
             ]),
           ),
@@ -674,20 +662,21 @@ class _BalanceRow extends StatelessWidget {
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(balance.member.name,
-                style: GoogleFonts.inter(
-                    color: _T.text, fontSize: 14, fontWeight: FontWeight.w600)),
+                style: AppTheme.normalText
+                    .copyWith(color: _T.text, fontWeight: FontWeight.w600)),
             const SizedBox(height: 2),
             Text(
               balance.isCreditor ? 'Is owed by others' : 'Owes others',
-              style: GoogleFonts.inter(color: _T.muted, fontSize: 12),
+              style: AppTheme.normalText
+                  .copyWith(color: _T.muted, fontSize: 11.sp),
             ),
           ]),
         ),
         Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
           Text(
-            '${balance.isCreditor ? '+' : ''}\$${balance.net.abs().toStringAsFixed(2)}',
-            style: GoogleFonts.inter(
-                color: color, fontSize: 16, fontWeight: FontWeight.w700),
+            '${balance.isCreditor ? '+' : '-'}\$${balance.net.abs().toStringAsFixed(2)}',
+            style: AppTheme.normalText
+                .copyWith(color: color, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           _Tag(label: balance.isCreditor ? 'creditor' : 'debtor', color: color),
@@ -721,17 +710,16 @@ class _Step1Pairwise extends StatelessWidget {
                   data.beforeCount == data.afterCount
                       ? 'Simplified Debts'
                       : 'Direct Pairwise Debts',
-                  style: GoogleFonts.inter(
-                      color: _T.text,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700),
+                  style: AppTheme.subHeadingText
+                      .copyWith(color: _T.text, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   data.beforeCount == data.afterCount
                       ? 'Optimised transactions to settle all debts'
                       : 'How much each pair owes each other directly',
-                  style: GoogleFonts.inter(color: _T.muted, fontSize: 12),
+                  style: AppTheme.normalText
+                      .copyWith(color: _T.muted, fontSize: 11.sp),
                 ),
               ]),
             ]),
@@ -781,25 +769,29 @@ class _PairwiseCard extends StatelessWidget {
           const Spacer(),
           Text(
             '\$${debt.amount.toStringAsFixed(2)}',
-            style: GoogleFonts.inter(
-                color: _T.red, fontSize: 15, fontWeight: FontWeight.w700),
+            style: AppTheme.subHeadingText
+                .copyWith(color: _T.red, fontWeight: FontWeight.w600),
           ),
         ]),
         const SizedBox(height: 8),
         RichText(
           text: TextSpan(
-            style:
-                GoogleFonts.inter(fontSize: 12, color: _T.muted, height: 1.5),
+            style: AppTheme.normalText
+                .copyWith(fontSize: 12.sp, color: _T.muted, height: 1.5),
             children: [
               TextSpan(
                   text: debt.from.name,
-                  style: GoogleFonts.inter(
-                      color: debt.from.color, fontWeight: FontWeight.w600)),
+                  style: AppTheme.normalText.copyWith(
+                      color: debt.from.color,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600)),
               const TextSpan(text: ' owes '),
               TextSpan(
                   text: debt.to.name,
-                  style: GoogleFonts.inter(
-                      color: debt.to.color, fontWeight: FontWeight.w600)),
+                  style: AppTheme.normalText.copyWith(
+                      color: debt.to.color,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600)),
               TextSpan(text: ' — ${debt.reason}'),
             ],
           ),
@@ -830,13 +822,12 @@ class _Step2Simplified extends StatelessWidget {
               const SizedBox(width: 10),
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('Simplify Debts',
-                    style: GoogleFonts.inter(
-                        color: _T.text,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700)),
+                    style: AppTheme.subHeadingText
+                        .copyWith(color: _T.text, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text('Reduce to fewest possible transactions',
-                    style: GoogleFonts.inter(color: _T.muted, fontSize: 12)),
+                    style: AppTheme.normalText
+                        .copyWith(color: _T.muted, fontSize: 11.sp)),
               ]),
             ]),
           ),
@@ -846,9 +837,9 @@ class _Step2Simplified extends StatelessWidget {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               // BEFORE
               Text('BEFORE (${data.beforeCount} transactions)',
-                  style: GoogleFonts.inter(
+                  style: AppTheme.normalText.copyWith(
                       color: _T.muted,
-                      fontSize: 11,
+                      fontSize: 11.sp,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.8)),
               const SizedBox(height: 8),
@@ -866,24 +857,22 @@ class _Step2Simplified extends StatelessWidget {
                       ),
                       child: Row(children: [
                         Text(p.from.name,
-                            style: GoogleFonts.inter(
+                            style: AppTheme.normalText.copyWith(
                                 color: p.from.color,
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 fontWeight: FontWeight.w600)),
                         const SizedBox(width: 6),
                         const _ArrowIcon(color: _T.red),
                         const SizedBox(width: 6),
                         Text(p.to.name,
-                            style: GoogleFonts.inter(
+                            style: AppTheme.normalText.copyWith(
                                 color: p.to.color,
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 fontWeight: FontWeight.w600)),
                         const Spacer(),
                         Text('\$${p.amount.toStringAsFixed(2)}',
-                            style: GoogleFonts.inter(
-                                color: _T.red,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700)),
+                            style: AppTheme.normalText.copyWith(
+                                color: _T.red, fontWeight: FontWeight.w600)),
                       ]),
                     ),
                   )),
@@ -900,14 +889,19 @@ class _Step2Simplified extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Text('✨', style: GoogleFonts.inter(fontSize: 13)),
+                    Text('✨', style: AppTheme.normalText),
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        'Only ${data.netBalances.firstWhere((b) => !b.isCreditor).member.name} owes — routing everything through them',
-                        style: GoogleFonts.inter(
+                        () {
+                          final debtors = data.netBalances.where((b) => !b.isCreditor).toList();
+                          if (debtors.isEmpty) return 'All balances are settled';
+                          if (debtors.length == 1) return 'Only ${debtors.first.member.name} owes — routing everything through them';
+                          return '${debtors.length} people owe — each pays the largest creditor first to minimise transactions';
+                        }(),
+                        style: AppTheme.normalText.copyWith(
                             color: _T.green,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             fontWeight: FontWeight.w600),
                       ),
                     ),
@@ -918,9 +912,9 @@ class _Step2Simplified extends StatelessWidget {
 
               // AFTER
               Text('AFTER (${data.afterCount} transactions)',
-                  style: GoogleFonts.inter(
+                  style: AppTheme.normalText.copyWith(
                       color: _T.muted,
-                      fontSize: 11,
+                      fontSize: 11.sp,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.8)),
               const SizedBox(height: 8),
@@ -943,14 +937,12 @@ class _Step2Simplified extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text('${s.from.name} pays ${s.to.name}',
-                            style: GoogleFonts.inter(
-                                color: _T.muted, fontSize: 12)),
+                            style: AppTheme.normalText
+                                .copyWith(color: _T.muted, fontSize: 11.sp)),
                       ),
                       Text('\$${s.amount.toStringAsFixed(2)}',
-                          style: GoogleFonts.inter(
-                              color: _T.green,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700)),
+                          style: AppTheme.normalText.copyWith(
+                              color: _T.green, fontWeight: FontWeight.w700)),
                     ]),
                   )),
               const SizedBox(height: 6),
@@ -999,19 +991,18 @@ class _Step3Result extends StatelessWidget {
                       color: _T.green, borderRadius: BorderRadius.circular(14)),
                   alignment: Alignment.center,
                   child: Text('✓',
-                      style:
-                          GoogleFonts.inter(color: Colors.white, fontSize: 14)),
+                      style: AppTheme.subHeadingText
+                          .copyWith(color: Colors.white)),
                 ),
                 const SizedBox(width: 10),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('Final Settlement Plan',
-                      style: GoogleFonts.inter(
-                          color: _T.text,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700)),
+                      style: AppTheme.subHeadingText.copyWith(
+                          color: _T.text, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
                   Text('Minimum transactions to settle all debts',
-                      style: GoogleFonts.inter(color: _T.muted, fontSize: 12)),
+                      style: AppTheme.normalText
+                          .copyWith(color: _T.muted, fontSize: 11.sp)),
                 ]),
               ]),
             ),
@@ -1041,22 +1032,20 @@ class _Step3Result extends StatelessWidget {
                               children: [
                                 Row(children: [
                                   Text(s.from.name,
-                                      style: GoogleFonts.inter(
+                                      style: AppTheme.subHeadingText.copyWith(
                                           color: _T.text,
-                                          fontSize: 14,
                                           fontWeight: FontWeight.w700)),
                                   const SizedBox(width: 6),
                                   const _ArrowIcon(color: _T.green),
                                   const SizedBox(width: 6),
                                   Text(s.to.name,
-                                      style: GoogleFonts.inter(
+                                      style: AppTheme.subHeadingText.copyWith(
                                           color: _T.text,
-                                          fontSize: 14,
                                           fontWeight: FontWeight.w700)),
                                 ]),
                                 Text('Settlement #${i + 1}',
-                                    style: GoogleFonts.inter(
-                                        color: _T.muted, fontSize: 12)),
+                                    style: AppTheme.normalText.copyWith(
+                                        color: _T.muted, fontSize: 12.sp)),
                               ]),
                         ),
                         _Avatar(member: s.to, size: 40),
@@ -1072,10 +1061,10 @@ class _Step3Result extends StatelessWidget {
                         alignment: Alignment.center,
                         child: Text(
                           '\$${s.amount.toStringAsFixed(2)}',
-                          style: GoogleFonts.inter(
+                          style: AppTheme.headingText.copyWith(
                               color: _T.green,
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800),
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w700),
                         ),
                       ),
                     ]),
@@ -1097,27 +1086,27 @@ class _Step3Result extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('All debts settled with',
-                                style: GoogleFonts.inter(
+                                style: AppTheme.normalText.copyWith(
                                     color: _T.text,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700)),
+                                    fontWeight: FontWeight.w600)),
                             Text(
                                 'vs ${data.beforeCount} without simplification',
-                                style: GoogleFonts.inter(
-                                    color: _T.muted, fontSize: 12)),
+                                style: AppTheme.normalText.copyWith(
+                                    color: _T.muted, fontSize: 12.sp)),
                           ]),
                     ),
                     RichText(
                       text: TextSpan(
-                        style: GoogleFonts.inter(
+                        style: AppTheme.headingText.copyWith(
                             color: _T.accent,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 28),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18.sp),
                         children: [
                           TextSpan(text: '${data.afterCount}'),
                           TextSpan(
                               text: ' txns',
-                              style: GoogleFonts.inter(fontSize: 14)),
+                              style: AppTheme.subHeadingText
+                                  .copyWith(color: _T.accent)),
                         ],
                       ),
                     ),
@@ -1140,10 +1129,8 @@ class _Step3Result extends StatelessWidget {
             ),
             alignment: Alignment.center,
             child: Text('↩ Start over',
-                style: GoogleFonts.inter(
-                    color: _T.muted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600)),
+                style: AppTheme.normalText
+                    .copyWith(color: _T.muted, fontWeight: FontWeight.w600)),
           ),
         ),
       ],

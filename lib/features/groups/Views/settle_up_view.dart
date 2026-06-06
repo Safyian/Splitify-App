@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:splittify/features/groups/groups_controller.dart';
+import 'package:splittify/features/groups/Controllers/groups_controller.dart';
 
-import '../../core/constants/constants.dart';
-import '../../core/theme/app_themes.dart';
-import '../../shared/widgets/alert_widgets.dart';
-import 'group_summary_model.dart';
+import '../../../core/constants/constants.dart';
+import '../../../core/theme/app_themes.dart';
+import '../../../shared/widgets/alert_widgets.dart';
+import '../Models/group_summary_model.dart';
 
 // ── Settle Up View (member list) ───────────────────────────────────────────────
 class SettleUpView extends StatelessWidget {
@@ -146,10 +145,9 @@ class SettleUpView extends StatelessWidget {
                           backgroundColor: Constants.activeColor.withAlpha(25),
                           child: Text(
                             entity.name[0].toUpperCase(),
-                            style: GoogleFonts.inter(
+                            style: AppTheme.normalText.copyWith(
                               color: Constants.activeColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -318,9 +316,9 @@ class _SettleAmountViewState extends State<SettleAmountView> {
                           backgroundColor: Constants.activeColor.withAlpha(25),
                           child: Text(
                             youPay ? "You" : widget.entity.name[0],
-                            style: GoogleFonts.inter(
+                            style: AppTheme.normalText.copyWith(
                               color: Constants.activeColor,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -340,9 +338,9 @@ class _SettleAmountViewState extends State<SettleAmountView> {
                           backgroundColor: Constants.activeColor.withAlpha(25),
                           child: Text(
                             youPay ? widget.entity.name[0] : "You",
-                            style: GoogleFonts.inter(
+                            style: AppTheme.normalText.copyWith(
                               color: Constants.activeColor,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -507,9 +505,9 @@ class _QuickAmount extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: GoogleFonts.inter(
+          style: AppTheme.normalText.copyWith(
             color: Constants.activeColor,
-            fontSize: 12,
+            fontSize: 12.sp,
             fontWeight: FontWeight.w600,
           ),
         ),

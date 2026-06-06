@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:splittify/core/constants/constants.dart';
-import 'package:splittify/features/groups/group_members_model.dart';
-import 'package:splittify/features/groups/groups_controller.dart';
+import 'package:splittify/features/groups/Controllers/groups_controller.dart';
+import 'package:splittify/features/groups/Models/group_members_model.dart';
 
 import '../../core/theme/app_themes.dart';
 import '../../shared/widgets/alert_widgets.dart';
@@ -87,16 +87,16 @@ class _AddExpenseViewState extends State<AddExpenseView> {
 
     _isSubmitting.value = true;
     Get.dialog(const _ExpenseLoadingDialog(), barrierDismissible: false);
-
+    bool isEditMode = expenseCtrl.isEditMode.value;
     final success = await expenseCtrl.submitExpense(groupId: groupId);
 
     if (Get.isDialogOpen ?? false) Get.back();
     _isSubmitting.value = false;
 
     if (success) {
-      Get.back(result: true);
+      Get.close(isEditMode ? 2 : 1);
       AlertWidgets.showSnackBar(
-        message: expenseCtrl.isEditMode.value
+        message: isEditMode
             ? 'Expense updated successfully'
             : 'Expense added successfully',
       );
@@ -114,113 +114,113 @@ class _AddExpenseViewState extends State<AddExpenseView> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
           child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Amount hero ───────────────────────────
-            _AmountCard(ctrl: expenseCtrl),
-            const SizedBox(height: 20),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Amount hero ───────────────────────────
+              _AmountCard(ctrl: expenseCtrl),
+              const SizedBox(height: 20),
 
-            // ── Description ──────────────────────────
-            TextField(
-              controller: expenseCtrl.descriptionCtrl,
-              style: AppTheme.subHeadingText,
-              decoration: _fieldDecor(
-                label: 'What was it for?',
-                icon: Icons.receipt_long_outlined,
-              ),
-            ),
-            const SizedBox(height: 14),
-
-            // ── Paid By ──────────────────────────────
-            Obx(() {
-              final members = expenseCtrl.groupMembersData.members;
-              final loading = expenseCtrl.isLoading.value &&
-                  (members == null || members.isEmpty);
-              if (loading) return _fieldSkeleton(56);
-              final selected = expenseCtrl.selectedMember.value;
-              return GestureDetector(
-                onTap: () => _showPaidBySheet(members ?? []),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-                  decoration: BoxDecoration(
-                    color: Constants.bgColorLight,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.person_outline_rounded,
-                          size: 20, color: Constants.activeColor),
-                      const SizedBox(width: 12),
-                      if (selected != null) ...[
-                        CircleAvatar(
-                          radius: 14,
-                          backgroundColor: Constants.activeColor,
-                          child: Text(
-                            selected.name![0].toUpperCase(),
-                            style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(selected.name!, style: AppTheme.subHeadingText),
-                      ] else
-                        Text('Who paid?',
-                            style: GoogleFonts.inter(
-                                color: Colors.grey.shade500, fontSize: 14)),
-                      const Spacer(),
-                      Icon(Icons.keyboard_arrow_down_rounded,
-                          color: Colors.grey.shade400, size: 20),
-                    ],
-                  ),
+              // ── Description ──────────────────────────
+              TextField(
+                controller: expenseCtrl.descriptionCtrl,
+                style: AppTheme.subHeadingText,
+                decoration: _fieldDecor(
+                  label: 'What was it for?',
+                  icon: Icons.receipt_long_outlined,
                 ),
-              );
-            }),
-            const SizedBox(height: 24),
+              ),
+              const SizedBox(height: 14),
 
-            // ── Split by ─────────────────────────────
-            const _SectionLabel(label: 'Split by'),
-            const SizedBox(height: 10),
-            Obx(() => _SplitTypeChips(
-                  selected: expenseCtrl.selectedSplitType.value,
-                  onSelect: (t) => expenseCtrl.selectedSplitType.value = t,
-                )),
-            const SizedBox(height: 22),
-
-            // ── Members ──────────────────────────────
-            Obx(() {
-              final members = expenseCtrl.groupMembersData.members ?? [];
-              final splitType = expenseCtrl.selectedSplitType.value;
-
-              if (expenseCtrl.isLoading.value && members.isEmpty) {
-                return _membersSkeleton();
-              }
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _SectionLabel(label: _splitSectionTitle(splitType)),
-                  const SizedBox(height: 10),
-                  ...members.map((m) => _buildMemberRow(m, splitType)),
-                  if (splitType != SplitType.equal) ...[
-                    const SizedBox(height: 8),
-                    _TotalHintRow(
-                      splitType: splitType,
-                      controllers: expenseCtrl.splitInputControllers,
-                      members: members,
-                      amountCtrl: expenseCtrl.amountCtrl,
-                      selectedMembers: expenseCtrl.selectedMembers,
+              // ── Paid By ──────────────────────────────
+              Obx(() {
+                final members = expenseCtrl.groupMembersData.members;
+                final loading = expenseCtrl.isLoading.value &&
+                    (members == null || members.isEmpty);
+                if (loading) return _fieldSkeleton(56);
+                final selected = expenseCtrl.selectedMember.value;
+                return GestureDetector(
+                  onTap: () => _showPaidBySheet(members ?? []),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 15),
+                    decoration: BoxDecoration(
+                      color: Constants.bgColorLight,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                  ],
-                ],
-              );
-            }),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.person_outline_rounded,
+                            size: 20, color: Constants.activeColor),
+                        const SizedBox(width: 12),
+                        if (selected != null) ...[
+                          CircleAvatar(
+                            radius: 14,
+                            backgroundColor: Constants.activeColor,
+                            child: Text(
+                              selected.name![0].toUpperCase(),
+                              style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(selected.name!, style: AppTheme.subHeadingText),
+                        ] else
+                          Text('Who paid?',
+                              style: GoogleFonts.inter(
+                                  color: Colors.grey.shade500, fontSize: 14)),
+                        const Spacer(),
+                        Icon(Icons.keyboard_arrow_down_rounded,
+                            color: Colors.grey.shade400, size: 20),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+              const SizedBox(height: 24),
 
-            const SizedBox(height: 100),
-          ],
-        ),
+              // ── Split by ─────────────────────────────
+              const _SectionLabel(label: 'Split by'),
+              const SizedBox(height: 10),
+              Obx(() => _SplitTypeChips(
+                    selected: expenseCtrl.selectedSplitType.value,
+                    onSelect: (t) => expenseCtrl.selectedSplitType.value = t,
+                  )),
+              const SizedBox(height: 22),
+
+              // ── Members ──────────────────────────────
+              Obx(() {
+                final members = expenseCtrl.groupMembersData.members ?? [];
+                final splitType = expenseCtrl.selectedSplitType.value;
+
+                if (expenseCtrl.isLoading.value && members.isEmpty) {
+                  return _membersSkeleton();
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SectionLabel(label: _splitSectionTitle(splitType)),
+                    const SizedBox(height: 10),
+                    ...members.map((m) => _buildMemberRow(m, splitType)),
+                    if (splitType != SplitType.equal) ...[
+                      const SizedBox(height: 8),
+                      _TotalHintRow(
+                        splitType: splitType,
+                        controllers: expenseCtrl.splitInputControllers,
+                        members: members,
+                        amountCtrl: expenseCtrl.amountCtrl,
+                        selectedMembers: expenseCtrl.selectedMembers,
+                      ),
+                    ],
+                  ],
+                );
+              }),
+
+              const SizedBox(height: 100),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: _buildSubmitBar(),
@@ -583,9 +583,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                         width: 36, height: 36, shape: BoxShape.circle),
                     const SizedBox(width: 12),
                     ShimmerBox(
-                        width: 80.0 + i * 24,
-                        height: 12,
-                        borderRadius: 4),
+                        width: 80.0 + i * 24, height: 12, borderRadius: 4),
                   ],
                 ),
               ),

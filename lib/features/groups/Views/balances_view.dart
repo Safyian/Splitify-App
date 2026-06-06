@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import '../../core/constants/constants.dart';
-import '../../core/theme/app_themes.dart';
-import '../../shared/widgets/shimmer.dart';
-import '../profile/profile_controller.dart';
-import 'groups_controller.dart';
+import '../../../core/constants/constants.dart';
+import '../../../core/theme/app_themes.dart';
+import '../../../shared/widgets/shimmer.dart';
+import '../../profile/profile_controller.dart';
+import '../Controllers/groups_controller.dart';
 import 'settlement_breakdown_sheet.dart';
 
 class BalancesView extends StatelessWidget {
@@ -81,8 +81,8 @@ class BalancesView extends StatelessWidget {
                 final isZero = (b.net ?? 0.0) == 0;
 
                 return Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
                     color: Constants.bgColorLight,
@@ -100,16 +100,14 @@ class BalancesView extends StatelessWidget {
                               : isPositive
                                   ? Constants.activeColor
                                       .withValues(alpha: 0.12)
-                                  : Constants.redColor
-                                      .withValues(alpha: 0.10),
+                                  : Constants.redColor.withValues(alpha: 0.10),
                           shape: BoxShape.circle,
                         ),
                         alignment: Alignment.center,
                         child: Text(
                           name[0].toUpperCase(),
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                          style: AppTheme.normalText.copyWith(
+                            fontWeight: FontWeight.w600,
                             color: isZero
                                 ? Colors.grey
                                 : isPositive
@@ -129,8 +127,8 @@ class BalancesView extends StatelessWidget {
                             if (!isZero)
                               Text(
                                 isPositive ? 'gets back' : 'owes',
-                                style: GoogleFonts.inter(
-                                    fontSize: 11,
+                                style: AppTheme.normalText.copyWith(
+                                    fontSize: 11.sp,
                                     color: Colors.grey.shade500),
                               ),
                           ],
@@ -145,17 +143,15 @@ class BalancesView extends StatelessWidget {
                               : isPositive
                                   ? Constants.activeColor
                                       .withValues(alpha: 0.10)
-                                  : Constants.redColor
-                                      .withValues(alpha: 0.08),
+                                  : Constants.redColor.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           isZero
                               ? 'Settled'
                               : '${isPositive ? '+' : ''}\$${(b.net ?? 0.0).toStringAsFixed(2)}',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                          style: AppTheme.normalText.copyWith(
+                            fontWeight: FontWeight.w600,
                             color: isZero
                                 ? Colors.grey
                                 : isPositive
@@ -186,8 +182,8 @@ class BalancesView extends StatelessWidget {
                         isPairwise
                             ? 'Based on actual expenses'
                             : 'Optimised to reduce transactions',
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
+                        style: AppTheme.normalText.copyWith(
+                          fontSize: 10.sp,
                           color: Colors.grey.shade400,
                         ),
                       ),
@@ -198,15 +194,13 @@ class BalancesView extends StatelessWidget {
                     GestureDetector(
                       onTap: () {
                         final gId = groupCtrl.summaries[index].id;
-                        final myId =
-                            profileCtrl.user.value.user?.id ?? '';
+                        final myId = profileCtrl.user.value.user?.id ?? '';
                         final breakdownData =
                             SettlementBreakdownData.fromBalancesModel(
                           groupCtrl.balancesFor(gId),
                           myId,
-                          balanceMode:
-                              groupCtrl.balancesFor(gId).balanceMode ??
-                                  'pairwise',
+                          balanceMode: groupCtrl.balancesFor(gId).balanceMode ??
+                              'pairwise',
                         );
                         showSettlementBreakdown(context, breakdownData);
                       },
@@ -214,24 +208,22 @@ class BalancesView extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: Constants.activeColor
-                              .withValues(alpha: 0.10),
+                          color: Constants.activeColor.withValues(alpha: 0.10),
                           border: Border.all(
-                              color: Constants.activeColor
-                                  .withValues(alpha: 0.3)),
+                              color:
+                                  Constants.activeColor.withValues(alpha: 0.3)),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.calculate_outlined,
-                                size: 13,
-                                color: Constants.activeColor),
+                                size: 13, color: Constants.activeColor),
                             const SizedBox(width: 4),
                             Text(
                               'How is this calculated?',
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
+                              style: AppTheme.normalText.copyWith(
+                                fontSize: 11.sp,
                                 fontWeight: FontWeight.w600,
                                 color: Constants.activeColor,
                               ),
@@ -244,8 +236,7 @@ class BalancesView extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: Constants.activeColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
@@ -276,8 +267,8 @@ class BalancesView extends StatelessWidget {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: Constants.activeColor
-                                  .withValues(alpha: 0.10),
+                              color:
+                                  Constants.activeColor.withValues(alpha: 0.10),
                               shape: BoxShape.circle,
                             ),
                             alignment: Alignment.center,
@@ -286,8 +277,8 @@ class BalancesView extends StatelessWidget {
                           ),
                           const SizedBox(height: 10),
                           Text('Everyone is settled up!',
-                              style: AppTheme.subHeadingText.copyWith(
-                                  fontWeight: FontWeight.w600)),
+                              style: AppTheme.subHeadingText
+                                  .copyWith(fontWeight: FontWeight.w600)),
                           const SizedBox(height: 4),
                           Text(
                             'No outstanding balances in this group.',
@@ -320,8 +311,8 @@ class BalancesView extends StatelessWidget {
                             color: Constants.bgColorLight,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                                color: Constants.redColor
-                                    .withValues(alpha: 0.12)),
+                                color:
+                                    Constants.redColor.withValues(alpha: 0.12)),
                           ),
                           child: Row(
                             children: [
@@ -343,29 +334,24 @@ class BalancesView extends StatelessWidget {
                                   text: TextSpan(children: [
                                     TextSpan(
                                         text: '$fromName ',
-                                        style: AppTheme.subHeadingText
-                                            .copyWith(
-                                                fontWeight:
-                                                    FontWeight.w600)),
+                                        style: AppTheme.subHeadingText.copyWith(
+                                            fontWeight: FontWeight.w600)),
                                     TextSpan(
                                         text: 'owes ',
                                         style: AppTheme.normalText.copyWith(
                                             color: Colors.grey.shade500)),
                                     TextSpan(
                                         text: toName,
-                                        style: AppTheme.subHeadingText
-                                            .copyWith(
-                                                fontWeight:
-                                                    FontWeight.w600)),
+                                        style: AppTheme.subHeadingText.copyWith(
+                                            fontWeight: FontWeight.w600)),
                                   ]),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 '\$${item.amount.toStringAsFixed(2)}',
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
+                                style: AppTheme.subHeadingText.copyWith(
+                                  fontWeight: FontWeight.w600,
                                   color: Constants.redColor,
                                 ),
                               ),
@@ -391,10 +377,9 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: GoogleFonts.inter(
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        color: Colors.grey.shade500,
+      style: AppTheme.normalText.copyWith(
+        fontWeight: FontWeight.w600,
+        // color: Colors.grey,
         letterSpacing: 0.4,
       ),
     );
@@ -416,8 +401,8 @@ class _BalancesSkeleton extends StatelessWidget {
             // Status pill
             Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: Constants.activeColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(20),
@@ -430,15 +415,14 @@ class _BalancesSkeleton extends StatelessWidget {
                       height: 12,
                       child: CircularProgressIndicator(
                         strokeWidth: 1.5,
-                        color:
-                            Constants.activeColor.withValues(alpha: 0.6),
+                        color: Constants.activeColor.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Calculating balances…',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
+                      style: AppTheme.normalText.copyWith(
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w500,
                         color: Constants.activeColor,
                       ),
@@ -512,8 +496,7 @@ class _BalancesSkeleton extends StatelessWidget {
           const ShimmerBox(width: 34, height: 34, shape: BoxShape.circle),
           const SizedBox(width: 12),
           Expanded(
-            child:
-                ShimmerBox(width: nameWidth, height: 12, borderRadius: 4),
+            child: ShimmerBox(width: nameWidth, height: 12, borderRadius: 4),
           ),
           const SizedBox(width: 12),
           const ShimmerBox(width: 50, height: 12, borderRadius: 4),

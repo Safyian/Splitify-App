@@ -3,18 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 
-import '../../shared/widgets/alert_widgets.dart';
-import '../activity/activity_controller.dart';
-import '../expenses/add_expense_controller.dart';
-import '../friends/friends_controller.dart';
-import '../groups/groups_controller.dart';
-import '../navigation/nav_controller.dart';
-import '../navigation/navigation_view.dart';
-import '../profile/profile_controller.dart';
-import 'auth_services.dart';
-import 'login_view.dart';
-import 'verify_email_view.dart';
-import 'verify_phone_view.dart';
+import '../../../shared/widgets/alert_widgets.dart';
+import '../../activity/activity_controller.dart';
+import '../../expenses/add_expense_controller.dart';
+import '../../friends/friends_controller.dart';
+import '../../groups/Controllers/groups_controller.dart';
+import '../../navigation/nav_controller.dart';
+import '../../navigation/navigation_view.dart';
+import '../../profile/profile_controller.dart';
+import '../Views/login_view.dart';
+import '../Views/verify_email_view.dart';
+import '../Views/verify_phone_view.dart';
+import '../auth_services.dart';
 
 class AuthController extends GetxController {
   final AuthService _service = AuthService();

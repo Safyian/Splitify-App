@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:splittify/core/utils/cache_manager.dart';
 
 import '../../shared/widgets/alert_widgets.dart';
-import '../groups/groups_controller.dart';
+import '../groups/Controllers/groups_controller.dart';
 import 'friends_model.dart';
 import 'friends_services.dart';
 
@@ -88,8 +88,10 @@ class FriendsController extends GetxController {
         id: original.id,
         name: original.name,
         email: original.email,
+        phone: original.phone,
         isExplicitFriend: false,
         isGroupContact: true,
+        isPlaceholder: original.isPlaceholder,
         isPending: original.isPending,
         balance: original.balance,
       );
@@ -107,6 +109,18 @@ class FriendsController extends GetxController {
       AlertWidgets.showSnackBar(
           message: e.toString().replaceAll('Exception: ', ''));
     }
+  }
+
+  // ── Contact lookup (non-mutating) ────────────────────────────────────────
+
+  Future<Map<String, dynamic>> checkSingleContact({
+    String? phoneHash,
+    String? emailHash,
+  }) {
+    return _service.checkSingleContact(
+      phoneHash: phoneHash,
+      emailHash: emailHash,
+    );
   }
 
   // ── Shared groups ─────────────────────────────────────────────────────────

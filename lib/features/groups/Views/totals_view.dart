@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:splittify/core/constants/constants.dart';
 import 'package:splittify/core/theme/app_themes.dart';
 import 'package:splittify/features/expenses/chart_helpers.dart';
 import 'package:splittify/features/profile/profile_controller.dart';
 
-import 'groups_controller.dart';
+import '../Controllers/groups_controller.dart';
 
 class TotalsView extends StatelessWidget {
   TotalsView({super.key, required this.index});
@@ -43,31 +43,34 @@ class TotalsView extends StatelessWidget {
             // ── Group total card ───────────────────────────
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 12.w),
               decoration: BoxDecoration(
                 color: Constants.bgColorLight,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.r),
               ),
               child: Column(
                 children: [
-                  Text("Group Total Spent", style: AppTheme.normalText),
+                  Text("Group Total Spent",
+                      style: AppTheme.normalText
+                          .copyWith(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
                   Text(
                     "\$${groupTotal.toStringAsFixed(2)}",
                     style: AppTheme.headingText.copyWith(
-                      color: Constants.activeColor,
-                      fontSize: 28,
-                    ),
+                        color: Constants.activeColor,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     "${expenses.where((e) => e.description != 'Settlement').length} expenses",
-                    style: AppTheme.normalText,
+                    style: AppTheme.normalText
+                        .copyWith(fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
 
             // ── Per member breakdown ───────────────────────
             Text("Per Member Breakdown", style: AppTheme.subHeadingText),
@@ -81,8 +84,8 @@ class TotalsView extends StatelessWidget {
                   groupTotal > 0 ? member.totalPaid / groupTotal : 0.0;
 
               return Container(
-                padding: const EdgeInsets.all(16),
-                margin: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.all(16.w),
+                margin: EdgeInsets.only(bottom: 12.w),
                 decoration: BoxDecoration(
                   color: Constants.bgColorLight,
                   borderRadius: BorderRadius.circular(12),
@@ -101,9 +104,10 @@ class TotalsView extends StatelessWidget {
                           backgroundColor: Constants.activeColor.withAlpha(25),
                           child: Text(
                             name[0].toUpperCase(),
-                            style: GoogleFonts.inter(
+                            style: AppTheme.normalText.copyWith(
                               color: Constants.activeColor,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -127,8 +131,8 @@ class TotalsView extends StatelessWidget {
                             member.net == 0
                                 ? "Settled"
                                 : "${isPositive ? '+' : ''}\$${member.net.toStringAsFixed(2)}",
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
+                            style: AppTheme.normalText.copyWith(
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w600,
                               color: member.net == 0
                                   ? Colors.grey
@@ -209,10 +213,10 @@ class _StatColumn extends StatelessWidget {
       children: [
         Text(
           value,
-          style: AppTheme.subHeadingText.copyWith(color: color),
+          style: AppTheme.normalText.copyWith(fontSize: 12.sp, color: color),
         ),
         const SizedBox(height: 2),
-        Text(label, style: AppTheme.normalText),
+        Text(label, style: AppTheme.normalText.copyWith(fontSize: 12.sp)),
       ],
     );
   }
