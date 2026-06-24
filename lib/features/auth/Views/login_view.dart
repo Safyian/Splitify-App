@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:splittify/features/auth/Views/social_buttons.dart';
 
 import '../../../core/constants/constants.dart';
 import '../../../core/theme/app_themes.dart';
@@ -57,7 +58,7 @@ class LoginView extends StatelessWidget {
                         ),
                       ),
 
-                      SizedBox(height: 6.h),
+                      SizedBox(height: 2.h),
                       Text(
                         'Sign in to continue splitting expenses',
                         style: AppTheme.normalText.copyWith(
@@ -65,7 +66,7 @@ class LoginView extends StatelessWidget {
                           fontSize: 13.sp,
                         ),
                       ),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 16.h),
 
                       // ── Email / Phone toggle ──────────────────────────
                       Obx(() => _AuthToggle(
@@ -73,7 +74,7 @@ class LoginView extends StatelessWidget {
                             onEmailTap: () => c.isPhoneLogin.value = false,
                             onPhoneTap: () => c.isPhoneLogin.value = true,
                           )),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 16.h),
 
                       // ── Dynamic field label ───────────────────────────
                       Obx(() => Text(
@@ -86,16 +87,22 @@ class LoginView extends StatelessWidget {
                               color: Colors.grey.shade500,
                             ),
                           )),
-                      SizedBox(height: 6.h),
+                      SizedBox(height: 4.h),
 
                       // ── Email or Phone field ──────────────────────────
                       Obx(() {
                         if (c.isPhoneLogin.value) {
                           return IntlPhoneField(
                             initialCountryCode: 'AU',
-                            style:
-                                AppTheme.normalText.copyWith(fontSize: 13.sp),
+                            style: AppTheme.normalText,
                             textInputAction: TextInputAction.done,
+                            dropdownTextStyle: AppTheme.normalText,
+                            showCountryFlag: false,
+                            dropdownIcon: const Icon(
+                              Icons.arrow_drop_down,
+                              size: 20,
+                            ),
+                            flagsButtonMargin: const EdgeInsets.only(left: 8),
                             onSubmitted: (_) =>
                                 FocusScope.of(context).unfocus(),
                             decoration: InputDecoration(
@@ -107,7 +114,7 @@ class LoginView extends StatelessWidget {
                               filled: true,
                               fillColor: Constants.bgColorLight,
                               contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 14.w, vertical: 14.h),
+                                  horizontal: 14.w, vertical: 14.w),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12.r),
                                 borderSide: BorderSide(
@@ -134,6 +141,7 @@ class LoginView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
+                              height: 48.h,
                               decoration: BoxDecoration(
                                 color: Constants.bgColorLight,
                                 borderRadius: BorderRadius.circular(12.r),
@@ -143,6 +151,7 @@ class LoginView extends StatelessWidget {
                                       : Colors.grey.withAlpha(30),
                                 ),
                               ),
+                              alignment: Alignment.center,
                               child: TextFormField(
                                 controller: c.emailCtrl,
                                 keyboardType: TextInputType.emailAddress,
@@ -154,8 +163,9 @@ class LoginView extends StatelessWidget {
                                     color: Colors.grey.shade400,
                                     fontSize: 13.sp,
                                   ),
+                                  isCollapsed: true,
                                   contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 14.w, vertical: 14.h),
+                                      horizontal: 14.w, vertical: 14.w),
                                   border: InputBorder.none,
                                 ),
                               ),
@@ -173,7 +183,7 @@ class LoginView extends StatelessWidget {
                           ],
                         );
                       }),
-                      SizedBox(height: 14.h),
+                      SizedBox(height: 8.h),
 
                       // ── Password label ────────────────────────────────
                       Text(
@@ -184,7 +194,7 @@ class LoginView extends StatelessWidget {
                           color: Colors.grey.shade500,
                         ),
                       ),
-                      SizedBox(height: 6.h),
+                      SizedBox(height: 4.h),
 
                       // ── Password field ────────────────────────────────
                       Obx(() {
@@ -194,6 +204,7 @@ class LoginView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
+                              height: 48.h,
                               decoration: BoxDecoration(
                                 color: Constants.bgColorLight,
                                 borderRadius: BorderRadius.circular(12.r),
@@ -203,6 +214,7 @@ class LoginView extends StatelessWidget {
                                       : Colors.grey.withAlpha(30),
                                 ),
                               ),
+                              alignment: Alignment.center,
                               child: TextFormField(
                                 controller: c.passCtrl,
                                 obscureText: isObscure,
@@ -214,8 +226,9 @@ class LoginView extends StatelessWidget {
                                     color: Colors.grey.shade400,
                                     fontSize: 13.sp,
                                   ),
+                                  isCollapsed: true,
                                   contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 14.w, vertical: 14.h),
+                                      horizontal: 14.w, vertical: 14.w),
                                   border: InputBorder.none,
                                   suffixIcon: GestureDetector(
                                     onTap: () =>
@@ -244,7 +257,7 @@ class LoginView extends StatelessWidget {
                           ],
                         );
                       }),
-                      SizedBox(height: 10.h),
+                      SizedBox(height: 8.h),
 
                       // ── Forgot password (email mode only) ─────────────
                       Obx(() => c.isPhoneLogin.value
@@ -267,7 +280,7 @@ class LoginView extends StatelessWidget {
                                 ),
                               ),
                             )),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 16.h),
 
                       // ── Sign in button ────────────────────────────────
                       GestureDetector(
@@ -277,7 +290,7 @@ class LoginView extends StatelessWidget {
                         },
                         child: Container(
                           width: double.infinity,
-                          padding: EdgeInsets.symmetric(vertical: 13.h),
+                          height: 48.h,
                           decoration: BoxDecoration(
                             color: Constants.activeColor,
                             borderRadius: BorderRadius.circular(14.r),
@@ -294,15 +307,34 @@ class LoginView extends StatelessWidget {
                                 )
                               : Text(
                                   'Sign in',
-                                  style: AppTheme.normalText.copyWith(
-                                    fontSize: 15.sp,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
+                                  style: AppTheme.subHeadingText.copyWith(
+                                    color: Constants.textLight,
                                   ),
                                 )),
                         ),
                       ),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 16.h),
+
+                      // ── Divider ───────────────────────────────────────
+                      Row(
+                        children: [
+                          Expanded(child: Divider(color: Colors.grey.shade300)),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 12.w),
+                            child: Text('or',
+                                style: AppTheme.normalText
+                                    .copyWith(color: Colors.grey)),
+                          ),
+                          Expanded(child: Divider(color: Colors.grey.shade300)),
+                        ],
+                      ),
+                      SizedBox(height: 16.h),
+                      SocialAuthButtons(
+                        label: 'Sign in with',
+                        onApple: () => c.signInWithApple(),
+                        onGoogle: () => c.signInWithGoogle(),
+                      ),
+                      SizedBox(height: 16.h),
 
                       // ── Register link ─────────────────────────────────
                       Center(
@@ -355,7 +387,7 @@ class _AuthToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 44.h,
+      height: 48.h,
       decoration: BoxDecoration(
         color: Constants.bgColorLight,
         borderRadius: BorderRadius.circular(12.r),

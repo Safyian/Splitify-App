@@ -24,6 +24,7 @@ class ExpenseDetailView extends StatelessWidget {
 
   bool get _isSettlement => expense.description == "Settlement";
   bool get _iPaid => expense.paidBy?.id == myId;
+  bool get _isLocked => (expense.settledCycleId as String?) != null;
 
   double get _myAmount {
     final splits = expense.splits ?? [];
@@ -56,8 +57,6 @@ class ExpenseDetailView extends StatelessWidget {
 
       Get.to(
         () => const AddExpenseView(),
-        transition: Transition.downToUp,
-        duration: const Duration(milliseconds: 300),
       );
     }
   }
@@ -145,6 +144,16 @@ class ExpenseDetailView extends StatelessWidget {
     );
   }
 
+  void _goToCorrectExpense() {
+    Get.delete<AddExpenseController>(force: true);
+    final expenseCtrl = AddExpenseController(correctionOf: expense);
+    expenseCtrl.groupId = expense.group ?? '';
+    Get.put(expenseCtrl);
+    Get.to(
+      () => const AddExpenseView(),
+    );
+  }
+
   Future<void> _confirmDelete(BuildContext context) async {
     final groupCtrl = Get.find<GroupsController>();
     final confirmed = await AppDialogs.confirm(
@@ -203,22 +212,37 @@ class ExpenseDetailView extends StatelessWidget {
           style: AppTheme.headingText,
         ),
         actions: [
-          GestureDetector(
-            onTap: () => _goToEditExpense(),
-            child: Container(
+          if (!_isLocked)
+            GestureDetector(
+              onTap: () => _goToEditExpense(),
+              child: Container(
+                margin: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Constants.activeColor.withAlpha(20),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: const Icon(
+                  Icons.edit_outlined,
+                  color: Constants.activeColor,
+                  size: 18,
+                ),
+              ),
+            )
+          else
+            Container(
               margin: const EdgeInsets.only(right: 16),
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Constants.activeColor.withAlpha(20),
+                color: Constants.activeColor.withAlpha(15),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: const Icon(
-                Icons.edit_outlined,
+                Icons.lock_outline,
                 color: Constants.activeColor,
                 size: 18,
               ),
             ),
-          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -311,6 +335,7 @@ class ExpenseDetailView extends StatelessWidget {
               ),
               child: Column(
                 children: [
+                  // ── Top row: amount + paid-by on left, receipt icon on right ──
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -334,6 +359,7 @@ class ExpenseDetailView extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 4),
+                            // Paid-by pill
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -390,112 +416,10 @@ class ExpenseDetailView extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            if (isSettlement) ...[
-                              const SizedBox(height: 10),
-                              Container(
-                                width: double.infinity,
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 12.w, vertical: 10.h),
-                                decoration: BoxDecoration(
-                                  color: Constants.bgColor,
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 14.r,
-                                      backgroundColor:
-                                          Constants.activeColor.withAlpha(25),
-                                      child: Text(
-                                        (iPaid
-                                                ? 'You'
-                                                : (expense.paidBy?.name ??
-                                                    'U'))[0]
-                                            .toUpperCase(),
-                                        style: AppTheme.normalText.copyWith(
-                                          fontSize: 11.sp,
-                                          fontWeight: FontWeight.w600,
-                                          color: Constants.activeColor,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: 8.w),
-                                    Text(
-                                      iPaid
-                                          ? 'You'
-                                          : (expense.paidBy?.name ?? ''),
-                                      style: AppTheme.normalText.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 13.sp,
-                                      ),
-                                    ),
-                                    SizedBox(width: 10.w),
-                                    Icon(
-                                      Icons.arrow_forward_rounded,
-                                      size: 16.sp,
-                                      color: Constants.activeColor,
-                                    ),
-                                    SizedBox(width: 10.w),
-                                    Builder(builder: (context) {
-                                      final splits = expense.splits ?? [];
-                                      final recipientSplit =
-                                          splits.isNotEmpty ? splits[0] : null;
-                                      final recipientId =
-                                          recipientSplit?.user?.id ?? '';
-                                      final recipientName = recipientId == myId
-                                          ? 'You'
-                                          : (recipientSplit?.user?.name ??
-                                              'Unknown');
-                                      final initial =
-                                          recipientName[0].toUpperCase();
-                                      final recipientColor = recipientId == myId
-                                          ? Constants.redColor
-                                          : Constants.activeColor;
-
-                                      return Row(
-                                        children: [
-                                          CircleAvatar(
-                                            radius: 14.r,
-                                            backgroundColor:
-                                                recipientColor.withAlpha(25),
-                                            child: Text(
-                                              initial,
-                                              style:
-                                                  AppTheme.normalText.copyWith(
-                                                fontSize: 11.sp,
-                                                fontWeight: FontWeight.w600,
-                                                color: recipientColor,
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(width: 8.w),
-                                          Text(
-                                            recipientName,
-                                            style: AppTheme.normalText.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 13.sp,
-                                              color: recipientColor,
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    }),
-                                    const Spacer(),
-                                    Text(
-                                      '\$${(expense.amount ?? 0.0).toStringAsFixed(2)}',
-                                      style: AppTheme.headingText.copyWith(
-                                        fontSize: 14.sp,
-                                        color: Constants.activeColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                       ),
+                      // Receipt icon — stays in the top row
                       Container(
                         width: 44.w,
                         height: 44.w,
@@ -511,12 +435,136 @@ class ExpenseDetailView extends StatelessWidget {
                       ),
                     ],
                   ),
+
+                  // ── Settlement strip: full-width sibling (outside the top row) ──
+                  if (isSettlement) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 12.w, vertical: 10.h),
+                      decoration: BoxDecoration(
+                        color: Constants.bgColor,
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Row(
+                        children: [
+                          // Payer + arrow + recipient cluster (takes available space)
+                          Expanded(
+                            child: Row(
+                              children: [
+                                // Payer
+                                CircleAvatar(
+                                  radius: 14.r,
+                                  backgroundColor:
+                                      Constants.activeColor.withAlpha(25),
+                                  child: Text(
+                                    (iPaid
+                                            ? 'You'
+                                            : (expense.paidBy?.name ?? 'U'))[0]
+                                        .toUpperCase(),
+                                    style: AppTheme.normalText.copyWith(
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: Constants.activeColor,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 8.w),
+                                Flexible(
+                                  child: Text(
+                                    iPaid
+                                        ? 'You'
+                                        : (expense.paidBy?.name ?? ''),
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTheme.normalText.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13.sp,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10.w),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: 16.sp,
+                                  color: Constants.activeColor,
+                                ),
+                                SizedBox(width: 10.w),
+                                // Recipient
+                                Builder(builder: (context) {
+                                  final splits = expense.splits ?? [];
+                                  final recipientSplit =
+                                      splits.isNotEmpty ? splits[0] : null;
+                                  final recipientId =
+                                      recipientSplit?.user?.id ?? '';
+                                  final recipientName = recipientId == myId
+                                      ? 'You'
+                                      : (recipientSplit?.user?.name ??
+                                          'Unknown');
+                                  final initial =
+                                      recipientName[0].toUpperCase();
+                                  final recipientColor = recipientId == myId
+                                      ? Constants.redColor
+                                      : Constants.activeColor;
+
+                                  return Flexible(
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 14.r,
+                                          backgroundColor:
+                                              recipientColor.withAlpha(25),
+                                          child: Text(
+                                            initial,
+                                            style: AppTheme.normalText.copyWith(
+                                              fontSize: 11.sp,
+                                              fontWeight: FontWeight.w600,
+                                              color: recipientColor,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 8.w),
+                                        Flexible(
+                                          child: Text(
+                                            recipientName,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTheme.normalText.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 13.sp,
+                                              color: recipientColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          // Amount — pinned right, outside the Expanded
+                          Text(
+                            '\$${(expense.amount ?? 0.0).toStringAsFixed(2)}',
+                            style: AppTheme.headingText.copyWith(
+                              fontSize: 14.sp,
+                              color: Constants.activeColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
                   const SizedBox(height: 16),
                   Divider(
                     color: Colors.grey.withAlpha(35),
                     height: 0,
                   ),
                   const SizedBox(height: 16),
+
+                  // ── Bottom row: Transferred/Split + You lent/borrowed ──
                   Row(
                     children: [
                       Expanded(
@@ -759,41 +807,80 @@ class ExpenseDetailView extends StatelessWidget {
               }),
             ],
 
-            // ── Section 4: Delete button ───────────────────────
-            SizedBox(height: 6.h),
-            Divider(height: 1, color: Colors.grey.withAlpha(30)),
-            SizedBox(height: 16.h),
-            GestureDetector(
-              onTap: () => _confirmDelete(context),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  color: Constants.redColor.withAlpha(15),
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: Constants.redColor.withAlpha(40)),
-                ),
-                alignment: Alignment.center,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.delete_outline_rounded,
-                      color: Constants.redColor,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Delete expense',
-                      style: AppTheme.headingText.copyWith(
-                        fontSize: 14.sp,
+            // ── Section 4: Action button ───────────────────────
+            if (!_isLocked) ...[
+              SizedBox(height: 6.h),
+              Divider(height: 1, color: Colors.grey.withAlpha(30)),
+              SizedBox(height: 16.h),
+              GestureDetector(
+                onTap: () => _confirmDelete(context),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Constants.redColor.withAlpha(15),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: Constants.redColor.withAlpha(40)),
+                  ),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.delete_outline_rounded,
                         color: Constants.redColor,
+                        size: 18,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Text(
+                        'Delete expense',
+                        style: AppTheme.headingText.copyWith(
+                          fontSize: 14.sp,
+                          color: Constants.redColor,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ] else if (!_isSettlement) ...[
+              SizedBox(height: 6.h),
+              Divider(height: 1, color: Colors.grey.withAlpha(30)),
+              SizedBox(height: 16.h),
+              GestureDetector(
+                onTap: _goToCorrectExpense,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Constants.activeColor.withAlpha(15),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border:
+                        Border.all(color: Constants.activeColor.withAlpha(50)),
+                  ),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.edit_note_rounded,
+                        color: Constants.activeColor,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Correct this',
+                        style: AppTheme.headingText.copyWith(
+                          fontSize: 14.sp,
+                          color: Constants.activeColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ] else
+              SizedBox(height: 6.h),
           ],
         ),
       ),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -8,15 +10,56 @@ import '../Controllers/auth_controller.dart';
 import '../auth_widgets.dart';
 import 'login_view.dart';
 
-class VerifyEmailView extends StatelessWidget {
+class VerifyEmailView extends StatefulWidget {
   const VerifyEmailView({super.key, required this.email});
 
   final String email;
 
   @override
-  Widget build(BuildContext context) {
-    final c = Get.find<AuthController>();
+  State<VerifyEmailView> createState() => _VerifyEmailViewState();
+}
 
+class _VerifyEmailViewState extends State<VerifyEmailView> {
+  final c = Get.find<AuthController>();
+
+  static const int _cooldownSeconds = 60; // adjust as you like
+  int _countdown = _cooldownSeconds;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCountdown(); // start disabled on landing (email already sent by register)
+  }
+
+  void _startCountdown() {
+    setState(() => _countdown = _cooldownSeconds);
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (_countdown <= 1) {
+        t.cancel();
+        setState(() => _countdown = 0);
+      } else {
+        setState(() => _countdown--);
+      }
+    });
+  }
+
+  Future<void> _onResend() async {
+    if (_countdown > 0) return;
+    await c.resendVerification(widget.email);
+    _startCountdown(); // restart cooldown after a resend
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final canResend = _countdown == 0;
     return Scaffold(
       backgroundColor: Constants.bgColor,
       body: SafeArea(
@@ -74,7 +117,7 @@ class VerifyEmailView extends StatelessWidget {
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: Text(
-                  email,
+                  widget.email,
                   style: AppTheme.normalText.copyWith(
                     fontWeight: FontWeight.w600,
                     color: Constants.textDark,
@@ -96,15 +139,27 @@ class VerifyEmailView extends StatelessWidget {
               const SizedBox(height: 48),
 
               // ── Resend button ─────────────────────────────────
-              Obx(() => c.isLoading.value
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                          color: Constants.activeColor),
-                    )
-                  : AuthPrimaryButton(
-                      label: 'Resend verification email',
-                      onTap: () => c.resendVerification(email),
-                    )),
+              Obx(() {
+                if (c.isLoading.value) {
+                  return const Center(
+                    child:
+                        CircularProgressIndicator(color: Constants.activeColor),
+                  );
+                }
+                if (_countdown > 0) {
+                  return Opacity(
+                    opacity: 0.5,
+                    child: AuthPrimaryButton(
+                      label: 'Resend available in ${_countdown}s',
+                      onTap: () {},
+                    ),
+                  );
+                }
+                return AuthPrimaryButton(
+                  label: 'Resend verification email',
+                  onTap: _onResend,
+                );
+              }),
 
               const SizedBox(height: 24),
 

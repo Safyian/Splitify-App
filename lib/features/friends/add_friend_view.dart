@@ -98,8 +98,6 @@ class _AddFriendViewState extends State<AddFriendView> {
               GestureDetector(
                 onTap: () => Get.to(
                   () => const ContactPickerView(),
-                  transition: Transition.cupertino,
-                  duration: const Duration(milliseconds: 300),
                 ),
                 child: Container(
                   width: double.infinity,

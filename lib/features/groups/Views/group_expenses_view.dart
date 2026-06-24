@@ -9,6 +9,7 @@ import 'package:splittify/features/groups/Views/totals_view.dart';
 import '../../../core/theme/app_themes.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../core/utils/expense_icon_helper.dart';
+import '../../../shared/widgets/alert_widgets.dart';
 import '../../../shared/widgets/app_dialogs.dart';
 import '../../../shared/widgets/shimmer.dart';
 import '../../expenses/add_expense_controller.dart';
@@ -41,8 +42,6 @@ class GroupExpensesView extends StatelessWidget {
     // so there is nothing to do on return — data is already fresh.
     await Get.to(
       () => const AddExpenseView(),
-      transition: Transition.downToUp,
-      duration: const Duration(milliseconds: 300),
     );
   }
 
@@ -59,8 +58,14 @@ class GroupExpensesView extends StatelessWidget {
         }
         // Full skeleton only on first open before any data has loaded
         final groupId = groupCtrl.summaries[index].id;
+        final expenseError = groupCtrl.expenseErrors[groupId];
+
         if (groupCtrl.isLoading.isTrue &&
             groupCtrl.expensesFor(groupId).expenses == null) {
+          if (expenseError != null) {
+            return _GroupExpensesErrorState(
+                groupId: groupId, index: index); // failed → retry
+          }
           return const _GroupExpensesSkeleton();
         }
         return Padding(
@@ -72,7 +77,7 @@ class GroupExpensesView extends StatelessWidget {
               _GroupHeader(index: index, groupCtrl: groupCtrl),
               const SizedBox(height: 16),
               _ActionChips(index: index, groupCtrl: groupCtrl),
-              const SizedBox(height: 16),
+              const SizedBox(height: 4),
               Expanded(child: _ExpenseList(index: index)),
             ],
           ),
@@ -101,7 +106,6 @@ class GroupExpensesView extends StatelessWidget {
           GestureDetector(
             onTap: () => Get.to(
               () => GroupSettingsView(index: index),
-              transition: Transition.rightToLeft,
             ),
             child: SvgPicture.asset(
               Constants.settingsLogo,
@@ -115,19 +119,16 @@ class GroupExpensesView extends StatelessWidget {
         foregroundColor: Constants.bgColor,
       );
 
-  Widget _buildFAB() => FloatingActionButton.extended(
-        onPressed: _goToAddExpense,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-        elevation: 4,
-        backgroundColor: Constants.activeColor,
-        foregroundColor: Constants.activeColor,
-        extendedIconLabelSpacing: 4.w,
-        extendedPadding: const EdgeInsets.symmetric(horizontal: 20),
-        label: Text(
-          "Add Expense",
-          style: AppTheme.subHeadingText.copyWith(color: Constants.textLight),
+  Widget _buildFAB() => SizedBox(
+        width: 50.w,
+        height: 50.w,
+        child: FloatingActionButton(
+          onPressed: _goToAddExpense,
+          shape: const CircleBorder(),
+          elevation: 3,
+          backgroundColor: Constants.activeColor,
+          child: Icon(Icons.add, size: 20.w, color: Constants.bgColorLight),
         ),
-        icon: Icon(Icons.add, size: 20.w, color: Constants.bgColorLight),
       );
 }
 
@@ -161,6 +162,10 @@ class _GroupHeaderState extends State<_GroupHeader> {
           balanceMode:
               widget.groupCtrl.balancesFor(groupId).balanceMode ?? 'pairwise',
         );
+        if (data.netBalances.isEmpty) {
+          AlertWidgets.showSnackBar(message: 'No balances to break down yet');
+          return;
+        }
         showSettlementBreakdown(context, data);
       });
       return;
@@ -171,6 +176,10 @@ class _GroupHeaderState extends State<_GroupHeader> {
       myId,
       balanceMode: balances.balanceMode ?? 'pairwise',
     );
+    if (data.netBalances.isEmpty) {
+      AlertWidgets.showSnackBar(message: 'No balances to break down yet');
+      return;
+    }
     showSettlementBreakdown(context, data);
   }
 
@@ -234,10 +243,10 @@ class _GroupHeaderState extends State<_GroupHeader> {
             alignment: Alignment.center,
             child: Text(
               summary.emoji,
-              style: TextStyle(fontSize: 28.w),
+              style: TextStyle(fontSize: 26.w),
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
 
           // ── Group Info ────────────────────────────────────
           Expanded(
@@ -246,7 +255,8 @@ class _GroupHeaderState extends State<_GroupHeader> {
               children: [
                 Text(
                   summary.name,
-                  style: AppTheme.headingText,
+                  style: AppTheme.subHeadingText
+                      .copyWith(fontWeight: FontWeight.w600, fontSize: 15.sp),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -299,7 +309,7 @@ class _GroupHeaderState extends State<_GroupHeader> {
                                     color: youPay
                                         ? Constants.redColor
                                         : Constants.activeColor,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 // ── +N more chip inline on last row ──
@@ -325,10 +335,8 @@ class _GroupHeaderState extends State<_GroupHeader> {
                                                 '+${summary.othersCount} more',
                                                 style: AppTheme.normalText
                                                     .copyWith(
-                                                  color: Colors.grey.shade500,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
+                                                        color: Colors
+                                                            .grey.shade500),
                                               ),
                                               const SizedBox(width: 2),
                                               Icon(
@@ -367,8 +375,6 @@ class _GroupHeaderState extends State<_GroupHeader> {
                                 "See breakdown",
                                 style: AppTheme.normalText.copyWith(
                                   color: Constants.activeColor,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
                                   decoration: TextDecoration.underline,
                                   decorationColor: Constants.activeColor,
                                 ),
@@ -426,13 +432,14 @@ class _AllBalancesPopup extends StatelessWidget {
               children: [
                 Text(
                   'All balances',
-                  style: AppTheme.headingText.copyWith(fontSize: 14),
+                  style: AppTheme.subHeadingText
+                      .copyWith(fontWeight: FontWeight.w600),
                 ),
                 GestureDetector(
                   onTap: onClose,
                   child: Container(
-                    width: 28,
-                    height: 28,
+                    width: 28.w,
+                    height: 28.w,
                     decoration: const BoxDecoration(
                       color: Constants.bgColor,
                       shape: BoxShape.circle,
@@ -477,8 +484,8 @@ class _AllBalancesPopup extends StatelessWidget {
                       child: Row(
                         children: [
                           Container(
-                            width: 32,
-                            height: 32,
+                            width: 32.w,
+                            height: 32.w,
                             decoration: BoxDecoration(
                               color: avatarBg,
                               shape: BoxShape.circle,
@@ -487,7 +494,6 @@ class _AllBalancesPopup extends StatelessWidget {
                             child: Text(
                               initials,
                               style: AppTheme.normalText.copyWith(
-                                fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: avatarTextColor,
                               ),
@@ -497,13 +503,12 @@ class _AllBalancesPopup extends StatelessWidget {
                           Expanded(
                             child: Text(
                               name,
-                              style: AppTheme.normalText.copyWith(fontSize: 13),
+                              style: AppTheme.normalText,
                             ),
                           ),
                           Text(
                             label,
                             style: AppTheme.normalText.copyWith(
-                              fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: amountColor,
                             ),
@@ -528,7 +533,6 @@ class _AllBalancesPopup extends StatelessWidget {
                   'All settled up',
                   style: AppTheme.normalText.copyWith(
                     color: Constants.activeColor,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -551,17 +555,15 @@ class _AllBalancesPopup extends StatelessWidget {
                     children: [
                       Text(
                         'Net balance',
-                        style: AppTheme.normalText.copyWith(
+                        style: AppTheme.subHeadingText.copyWith(
                           color: Colors.grey,
-                          fontSize: 12,
                         ),
                       ),
                       Text(
                         isPositive
                             ? '+\$${net.toStringAsFixed(2)}'
                             : '-\$${net.abs().toStringAsFixed(2)}',
-                        style: AppTheme.headingText.copyWith(
-                          fontSize: 14,
+                        style: AppTheme.subHeadingText.copyWith(
                           color: isPositive
                               ? Constants.activeColor
                               : Constants.redColor,
@@ -596,18 +598,34 @@ class _ActionChips extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            _Chip(
-              label: isSettled ? "Settled" : "Settle Up",
-              color: Constants.activeColor,
-              onTap: isSettled
-                  ? null
-                  : () => Get.to(() => SettleUpView(index: index)),
-              trailing: isSettled
-                  ? Icon(Icons.check_circle,
-                      size: 16, color: Constants.textLight)
-                  : Icon(Icons.arrow_forward_ios,
-                      size: 12, color: Constants.textLight),
-            ),
+            // _Chip(
+            //   label: isSettled ? "Settled" : "Settle Up",
+            //   color: Constants.activeColor,
+            //   onTap: isSettled
+            //       ? null
+            //       : () => Get.to(() => SettleUpView(index: index)),
+            //   trailing: isSettled
+            //       ? Icon(Icons.check_circle,
+            //           size: 16, color: Constants.textLight)
+            //       : Icon(Icons.arrow_forward_ios,
+            //           size: 12, color: Constants.textLight),
+            // ),
+            isSettled
+                ? _Chip(
+                    label: "Settled",
+                    color: Constants.activeColor.withAlpha(28), // soft tint
+                    textColor: Constants.activeColor, // dark green content
+                    onTap: null,
+                    dimWhenDisabled: false, // stay crisp, not faded
+                    icon: Icons.check_circle, // leading check (uses `icon`)
+                  )
+                : _Chip(
+                    label: "Settle Up",
+                    color: Constants.activeColor,
+                    onTap: () => Get.to(() => SettleUpView(index: index)),
+                    trailing: Icon(Icons.arrow_forward_ios,
+                        size: 12, color: Constants.textLight),
+                  ),
             const SizedBox(width: 8),
             _Chip(
               label: "Charts",
@@ -615,7 +633,6 @@ class _ActionChips extends StatelessWidget {
               color: Constants.chipColor,
               onTap: () => Get.to(
                 () => ChartsView(index: index),
-                transition: Transition.rightToLeft,
               ),
             ),
             const SizedBox(width: 8),
@@ -629,7 +646,6 @@ class _ActionChips extends StatelessWidget {
                 );
                 Get.to(
                   () => BalancesView(index: index),
-                  transition: Transition.rightToLeft,
                 );
               },
             ),
@@ -640,7 +656,6 @@ class _ActionChips extends StatelessWidget {
               color: Constants.chipColor,
               onTap: () => Get.to(
                 () => TotalsView(index: index),
-                transition: Transition.rightToLeft,
               ),
             ),
           ],
@@ -657,22 +672,27 @@ class _Chip extends StatelessWidget {
     required this.onTap,
     this.icon,
     this.trailing,
+    this.textColor, // ← new: override content color
+    this.dimWhenDisabled = true, // ← new: skip the 0.6 fade for status chips
   });
   final String label;
   final Color color;
   final VoidCallback? onTap;
   final IconData? icon;
   final Widget? trailing;
+  final Color? textColor;
+  final bool dimWhenDisabled;
 
   @override
   Widget build(BuildContext context) {
+    final contentColor = textColor ?? Constants.textLight;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedOpacity(
-        opacity: onTap == null ? 0.6 : 1.0,
+        opacity: (onTap == null && dimWhenDisabled) ? 0.6 : 1.0,
         duration: const Duration(milliseconds: 200),
         child: Container(
-          height: 38,
+          height: 38.w,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: color,
@@ -683,13 +703,13 @@ class _Chip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 14, color: Constants.textLight),
+                Icon(icon, size: 14, color: contentColor),
                 const SizedBox(width: 5),
               ],
               Text(
                 label,
                 style: AppTheme.normalText.copyWith(
-                  color: Constants.textLight,
+                  color: contentColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -705,22 +725,44 @@ class _Chip extends StatelessWidget {
   }
 }
 
+// ── Cycle data holder ─────────────────────────────────────────────────────────
+class _CycleData {
+  final String id;
+  final DateTime latestDate;
+  final List<Expense> expenses;
+  _CycleData(
+      {required this.id, required this.latestDate, required this.expenses});
+}
+
 // ── Expense List ───────────────────────────────────────────────────────────────
-class _ExpenseList extends StatelessWidget {
-  _ExpenseList({required this.index});
+class _ExpenseList extends StatefulWidget {
+  const _ExpenseList({required this.index});
   final int index;
 
+  @override
+  State<_ExpenseList> createState() => _ExpenseListState();
+}
+
+class _ExpenseListState extends State<_ExpenseList> {
+  final Set<String> _expandedCycles = {};
   final groupCtrl = Get.find<GroupsController>();
   final profileCtrl = Get.find<ProfileController>();
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (index >= groupCtrl.summaries.length) return const SizedBox.shrink();
-      final groupId = groupCtrl.summaries[index].id;
+      if (widget.index >= groupCtrl.summaries.length) {
+        return const SizedBox.shrink();
+      }
+      final groupId = groupCtrl.summaries[widget.index].id;
       final expenses = groupCtrl.expensesFor(groupId).expenses;
+      final expenseError = groupCtrl.expenseErrors[groupId];
 
       if (expenses == null) {
+        if (expenseError != null) {
+          return _GroupExpensesErrorState(
+              groupId: groupId, index: widget.index); // failed → retry
+        }
         return const _ExpenseListSkeleton();
       }
 
@@ -743,10 +785,74 @@ class _ExpenseList extends StatelessWidget {
         );
       }
 
-      final grouped = SplitifyDateUtils.groupByMonth(
-        expenses,
-        (e) => e.createdAt,
-      );
+      // Partition into live (current) and settled cycles
+      final live = expenses.where((e) => e.settledCycleId == null).toList();
+
+      final Map<String, List<Expense>> cycleMap = {};
+      for (final e in expenses) {
+        if (e.settledCycleId != null) {
+          cycleMap.putIfAbsent(e.settledCycleId!, () => []).add(e);
+        }
+      }
+
+      // Sort cycles newest-first by latest expense date in the cycle
+      final cycles = cycleMap.entries.map((entry) {
+        final latestDate = entry.value
+            .map((e) => e.createdAt ?? DateTime(2000))
+            .reduce((a, b) => a.isAfter(b) ? a : b);
+        return _CycleData(
+            id: entry.key, latestDate: latestDate, expenses: entry.value);
+      }).toList()
+        ..sort((a, b) => b.latestDate.compareTo(a.latestDate));
+
+      // Build flat list of widgets
+      final items = <Widget>[];
+
+      if (live.isNotEmpty) {
+        final grouped =
+            SplitifyDateUtils.groupByMonth(live, (e) => e.createdAt);
+        for (final section in grouped) {
+          final monthLabel = section.key;
+          final monthExpenses = section.value;
+          final sectionTotal = monthExpenses
+              .where((e) => e.description != 'Settlement')
+              .fold(0.0, (sum, e) => sum + (e.amount ?? 0));
+
+          items.add(_MonthHeader(label: monthLabel, total: sectionTotal));
+          items.add(const SizedBox(height: 8));
+          for (final expense in monthExpenses) {
+            items.add(_buildLiveRow(expense, groupId));
+          }
+          items.add(const SizedBox(height: 4));
+        }
+      } else if (cycles.isNotEmpty) {
+        items.add(const SizedBox(height: 4));
+      }
+
+      // Collapsed/expanded cycle sections
+      for (final cycle in cycles) {
+        final isExpanded = _expandedCycles.contains(cycle.id);
+        items.add(_CycleHeader(
+          cycle: cycle,
+          isExpanded: isExpanded,
+          onTap: () => setState(() {
+            if (isExpanded) {
+              _expandedCycles.remove(cycle.id);
+            } else {
+              _expandedCycles.add(cycle.id);
+            }
+          }),
+        ));
+        if (isExpanded) {
+          final sorted = [...cycle.expenses]..sort((a, b) =>
+              (b.createdAt ?? DateTime(2000))
+                  .compareTo(a.createdAt ?? DateTime(2000)));
+          for (final expense in sorted) {
+            items.add(_buildLockedRow(expense));
+          }
+        }
+        items.add(const SizedBox(height: 4));
+      }
 
       return Column(
         children: [
@@ -755,125 +861,18 @@ class _ExpenseList extends StatelessWidget {
               onNotification: (scroll) {
                 if (scroll.metrics.pixels >=
                     scroll.metrics.maxScrollExtent - 200) {
-                  final gId = groupCtrl.summaries[index].id;
+                  final gId = groupCtrl.summaries[widget.index].id;
                   final hasMore = groupCtrl.expensesFor(gId).hasMore ?? false;
                   final isLoadingMore = groupCtrl.isLoadingMoreExpenses.value;
                   if (hasMore && !isLoadingMore) {
-                    groupCtrl.fetchGroupExpenses(
-                      groupId: gId,
-                      loadMore: true,
-                    );
+                    groupCtrl.fetchGroupExpenses(groupId: gId, loadMore: true);
                   }
                 }
                 return false;
               },
-              child: ListView.builder(
-                padding: const EdgeInsets.only(bottom: 100),
-                itemCount: grouped.length,
-                itemBuilder: (context, sectionIndex) {
-                  final section = grouped[sectionIndex];
-                  final monthLabel = section.key;
-                  final monthExpenses = section.value;
-
-                  final sectionTotal = monthExpenses
-                      .where((e) => e.description != 'Settlement')
-                      .fold(0.0, (sum, e) => sum + (e.amount ?? 0));
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _MonthHeader(label: monthLabel, total: sectionTotal),
-                      const SizedBox(height: 8),
-                      ...monthExpenses.map((expense) {
-                        final myId = profileCtrl.user.value.user?.id;
-                        final isSettlement =
-                            expense.description == "Settlement";
-
-                        double amount = 0.0;
-                        expense.splits?.forEach((split) {
-                          final iPaid = expense.paidBy?.id == myId;
-                          final isMe = split.user?.id == myId;
-
-                          if (iPaid && !isMe) {
-                            amount =
-                                (amount + (split.amount ?? 0)).toPrecision(2);
-                          } else if (!iPaid && isMe) {
-                            amount = (split.amount ?? 0).toPrecision(2);
-                          }
-                        });
-
-                        final card = _ExpenseCard(
-                          expense: expense,
-                          amount: amount,
-                          myId: myId,
-                          isSettlement: isSettlement,
-                          index: index,
-                        );
-
-                        return Dismissible(
-                          key: ValueKey(expense.id),
-                          direction: DismissDirection.endToStart,
-                          confirmDismiss: (_) => AppDialogs.confirm(
-                            title: isSettlement
-                                ? 'Delete Settlement'
-                                : 'Delete Expense',
-                            message: isSettlement
-                                ? 'Are you sure you want to delete this settlement? This cannot be undone.'
-                                : 'Are you sure you want to delete "${expense.description}"? This cannot be undone.',
-                            confirmLabel: 'Delete',
-                            confirmColor: Constants.redColor,
-                          ),
-                          onDismissed: (direction) async {
-                            final expenseId = expense.id ?? '';
-
-                            // Immediately remove from local cache so Dismissible is satisfied
-                            final currentExpenses =
-                                groupCtrl.expensesFor(groupId).expenses ?? [];
-                            final updatedExpenses = List.of(currentExpenses)
-                              ..removeWhere((e) => e.id == expenseId);
-                            groupCtrl.allGroupExpenses[groupId] = GroupExpenses(
-                              count: updatedExpenses.length,
-                              expenses: updatedExpenses,
-                            );
-
-                            // Then call the API in background
-                            await groupCtrl.deleteExpense(
-                              groupId: groupId,
-                              expenseId: expenseId,
-                            );
-                          },
-                          background: Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            decoration: BoxDecoration(
-                              color: Constants.redColor,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.only(right: 20),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.delete_outline,
-                                    color: Colors.white, size: 24),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "Delete",
-                                  style: AppTheme.normalText.copyWith(
-                                    color: Colors.white,
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          child: card,
-                        );
-                      }),
-                      const SizedBox(height: 4),
-                    ],
-                  );
-                },
+              child: ListView(
+                padding: EdgeInsets.only(bottom: 85.w),
+                children: items,
               ),
             ),
           ),
@@ -895,6 +894,173 @@ class _ExpenseList extends StatelessWidget {
       );
     });
   }
+
+  Widget _buildLiveRow(Expense expense, String groupId) {
+    final myId = profileCtrl.user.value.user?.id;
+    final isSettlement = expense.description == "Settlement";
+    final amount = _calcAmount(expense, myId);
+
+    final card = _ExpenseCard(
+      expense: expense,
+      amount: amount,
+      myId: myId,
+      isSettlement: isSettlement,
+      isLocked: false,
+      index: widget.index,
+    );
+
+    return Dismissible(
+      key: ValueKey(expense.id),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (_) => AppDialogs.confirm(
+        title: isSettlement ? 'Delete Settlement' : 'Delete Expense',
+        message: isSettlement
+            ? 'Are you sure you want to delete this settlement? This cannot be undone.'
+            : 'Are you sure you want to delete "${expense.description}"? This cannot be undone.',
+        confirmLabel: 'Delete',
+        confirmColor: Constants.redColor,
+      ),
+      onDismissed: (direction) async {
+        final expenseId = expense.id ?? '';
+        final current = groupCtrl.expensesFor(groupId).expenses ?? [];
+        final updated = List.of(current)..removeWhere((e) => e.id == expenseId);
+        groupCtrl.allGroupExpenses[groupId] =
+            GroupExpenses(count: updated.length, expenses: updated);
+        await groupCtrl.deleteExpense(groupId: groupId, expenseId: expenseId);
+      },
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: Constants.redColor,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.delete_outline, color: Colors.white, size: 24),
+            const SizedBox(height: 4),
+            Text(
+              "Delete",
+              style: AppTheme.normalText.copyWith(
+                color: Colors.white,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+      child: card,
+    );
+  }
+
+  Widget _buildLockedRow(Expense expense) {
+    final myId = profileCtrl.user.value.user?.id;
+    final isSettlement = expense.description == "Settlement";
+    final amount = _calcAmount(expense, myId);
+
+    return _ExpenseCard(
+      expense: expense,
+      amount: amount,
+      myId: myId,
+      isSettlement: isSettlement,
+      isLocked: true,
+      index: widget.index,
+    );
+  }
+
+  double _calcAmount(Expense expense, String? myId) {
+    double amount = 0.0;
+    expense.splits?.forEach((split) {
+      final iPaid = expense.paidBy?.id == myId;
+      final isMe = split.user?.id == myId;
+      if (iPaid && !isMe) {
+        amount = (amount + (split.amount ?? 0)).toPrecision(2);
+      } else if (!iPaid && isMe) {
+        amount = (split.amount ?? 0).toPrecision(2);
+      }
+    });
+    return amount;
+  }
+}
+
+// ── Cycle header row (collapsible) ────────────────────────────────────────────
+class _CycleHeader extends StatelessWidget {
+  const _CycleHeader({
+    required this.cycle,
+    required this.isExpanded,
+    required this.onTap,
+  });
+  final _CycleData cycle;
+  final bool isExpanded;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final dateStr = SplitifyDateUtils.formatExpenseDate(cycle.latestDate);
+    final count = cycle.expenses.length;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        margin: const EdgeInsets.only(bottom: 6),
+        decoration: BoxDecoration(
+          color: Constants.activeColor.withAlpha(12),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Constants.activeColor.withAlpha(45)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 30.w,
+              height: 30.w,
+              decoration: BoxDecoration(
+                color: Constants.activeColor.withAlpha(25),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.center,
+              child: const Icon(Icons.lock_outline,
+                  size: 14, color: Constants.activeColor),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "All settled",
+                    style: AppTheme.normalText.copyWith(
+                      color: Constants.activeColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    "$dateStr · $count expense${count != 1 ? 's' : ''}",
+                    style: AppTheme.normalText.copyWith(
+                      color: Constants.activeColor.withAlpha(180),
+                      fontSize: 11.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            AnimatedRotation(
+              turns: isExpanded ? 0.5 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 20,
+                color: Constants.activeColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // ── Expense Card ───────────────────────────────────────────────────────────────
@@ -904,6 +1070,7 @@ class _ExpenseCard extends StatelessWidget {
     required this.amount,
     required this.myId,
     required this.isSettlement,
+    required this.isLocked,
     required this.index,
   });
 
@@ -911,17 +1078,16 @@ class _ExpenseCard extends StatelessWidget {
   final double amount;
   final String? myId;
   final bool isSettlement;
+  final bool isLocked;
   final int index;
 
-  void _showExpenseDetail(BuildContext context, dynamic expense, String? myId) {
+  void _showExpenseDetail(BuildContext context) {
     Get.to(
       () => ExpenseDetailView(
         expense: expense,
         myId: myId,
         groupIndex: index,
       ),
-      transition: Transition.cupertino,
-      duration: const Duration(milliseconds: 300),
     );
   }
 
@@ -930,46 +1096,50 @@ class _ExpenseCard extends StatelessWidget {
     final iPaid = expense.paidBy?.id == myId;
     final isZero = amount == 0.0;
 
-    return GestureDetector(
-      onTap: () => _showExpenseDetail(context, expense, myId),
+    final card = GestureDetector(
+      onTap: () => _showExpenseDetail(context),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
           color: Constants.bgColorLight,
           borderRadius: BorderRadius.circular(14),
+          border:
+              isLocked ? Border.all(color: Colors.grey.withAlpha(35)) : null,
         ),
         child: isSettlement
             ? _buildSettlementContent(iPaid)
             : _buildExpenseContent(iPaid, isZero),
       ),
     );
+
+    return isLocked ? Opacity(opacity: 0.78, child: card) : card;
   }
 
   Widget _buildSettlementContent(bool iPaid) {
-    final payerName = iPaid ? 'You' : expense.paidBy?.name ?? '';
-    final recipientName = (expense.splits != null && expense.splits!.isNotEmpty)
-        ? (expense.splits![0].user?.id == myId
+    final payerName = iPaid ? 'You' : (expense.paidBy?.name ?? 'Someone');
+    final recipientName = (expense.splits?.isNotEmpty ?? false)
+        ? (expense.splits!.first.user?.id == myId
             ? 'You'
-            : expense.splits![0].user?.name ?? '')
-        : '';
+            : (expense.splits!.first.user?.name ?? 'Someone'))
+        : 'Someone';
     final amountStr = expense.amount?.toStringAsFixed(2) ?? '0.00';
     final date = SplitifyDateUtils.formatExpenseDate(expense.createdAt);
 
     return Row(
       children: [
         Container(
-          width: 40,
-          height: 40,
+          width: 36.w,
+          height: 36.w,
           decoration: BoxDecoration(
             color: Constants.activeColor.withAlpha(20),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(7),
           ),
           alignment: Alignment.center,
-          child: const Icon(
+          child: Icon(
             Icons.account_balance_wallet_outlined,
-            size: 18,
+            size: 16.w,
             color: Constants.activeColor,
           ),
         ),
@@ -980,62 +1150,76 @@ class _ExpenseCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text(
-                    payerName,
-                    style: AppTheme.normalText
-                        .copyWith(fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(width: 6),
-                  const Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 13,
-                    color: Colors.grey,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    recipientName,
-                    style: AppTheme.normalText.copyWith(
-                      color: Constants.activeColor,
-                      fontWeight: FontWeight.w500,
+                  Flexible(
+                    child: Text(
+                      payerName,
+                      style: AppTheme.normalText,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '·',
-                    style: AppTheme.normalText.copyWith(color: Colors.grey),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.arrow_forward_rounded,
+                      size: 13, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      recipientName,
+                      style: AppTheme.normalText
+                          .copyWith(color: Constants.activeColor),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 4),
+                  Text('·',
+                      style: AppTheme.normalText.copyWith(color: Colors.grey)),
+                  const SizedBox(width: 4),
                   Text(
                     '\$$amountStr',
-                    style: AppTheme.normalText.copyWith(
-                      color: Constants.activeColor,
-                      fontWeight: FontWeight.w500,
+                    style: AppTheme.normalText
+                        .copyWith(color: Constants.activeColor),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Text(
+                    'Paid on $date',
+                    style: AppTheme.normalText
+                        .copyWith(fontSize: 11.sp, color: Colors.grey),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Constants.activeColor.withAlpha(25),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isLocked) ...[
+                          const Icon(Icons.lock_outline,
+                              size: 9, color: Constants.activeColor),
+                          const SizedBox(width: 3),
+                        ],
+                        Text(
+                          'Settlement',
+                          style: AppTheme.normalText.copyWith(
+                            color: Constants.activeColor,
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 3),
-              Text(
-                'Settled up · $date',
-                style: AppTheme.normalText
-                    .copyWith(fontSize: 11, color: Colors.grey),
-              ),
             ],
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(
-            color: Constants.activeColor.withAlpha(25),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(
-            "Settlement",
-            style: AppTheme.normalText.copyWith(
-              color: Constants.activeColor,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
           ),
         ),
       ],
@@ -1046,11 +1230,11 @@ class _ExpenseCard extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 44.w,
-          height: 44.w,
+          width: 36.w,
+          height: 36.w,
           decoration: BoxDecoration(
             color: Constants.activeColor.withAlpha(25),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(7),
           ),
           alignment: Alignment.center,
           child: Icon(
@@ -1058,7 +1242,7 @@ class _ExpenseCard extends StatelessWidget {
               expense.description as String?,
               isSettlement: expense.description == 'Settlement',
             ),
-            size: 21.w,
+            size: 16.w,
             color: Constants.activeColor,
           ),
         ),
@@ -1099,8 +1283,7 @@ class _ExpenseCard extends StatelessWidget {
             if (isZero)
               Text(
                 "not involved",
-                style: AppTheme.normalText
-                    .copyWith(color: Colors.grey, fontSize: 11),
+                style: AppTheme.normalText.copyWith(color: Colors.grey),
               )
             else
               RichText(
@@ -1119,10 +1302,21 @@ class _ExpenseCard extends StatelessWidget {
                 ]),
               ),
             const SizedBox(height: 4),
-            Text(
-              SplitifyDateUtils.formatExpenseDate(expense.createdAt),
-              style: AppTheme.normalText
-                  .copyWith(color: Colors.grey, fontSize: 11),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isLocked) ...[
+                  const Icon(Icons.lock_outline, size: 9, color: Colors.grey),
+                  const SizedBox(width: 3),
+                ],
+                Text(
+                  SplitifyDateUtils.formatExpenseDate(expense.createdAt),
+                  style: AppTheme.normalText.copyWith(
+                    color: Colors.grey,
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -1154,7 +1348,6 @@ class _MonthHeader extends StatelessWidget {
               style: AppTheme.normalText.copyWith(
                 color: Constants.activeColor,
                 fontWeight: FontWeight.w600,
-                fontSize: 12,
               ),
             ),
           ),
@@ -1169,7 +1362,6 @@ class _MonthHeader extends StatelessWidget {
             "\$${total.toStringAsFixed(2)}",
             style: AppTheme.normalText.copyWith(
               color: Colors.grey,
-              fontSize: 12,
             ),
           ),
         ],
@@ -1215,16 +1407,19 @@ class _GroupExpensesSkeleton extends StatelessWidget {
             const SizedBox(height: 16),
 
             // ── Action Chips ──
-            const Row(
-              children: [
-                ShimmerBox(width: 100, height: 38, borderRadius: 10),
-                SizedBox(width: 8),
-                ShimmerBox(width: 76, height: 38, borderRadius: 10),
-                SizedBox(width: 8),
-                ShimmerBox(width: 92, height: 38, borderRadius: 10),
-                SizedBox(width: 8),
-                ShimmerBox(width: 76, height: 38, borderRadius: 10),
-              ],
+            const SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  ShimmerBox(width: 100, height: 38, borderRadius: 10),
+                  SizedBox(width: 8),
+                  ShimmerBox(width: 76, height: 38, borderRadius: 10),
+                  SizedBox(width: 8),
+                  ShimmerBox(width: 92, height: 38, borderRadius: 10),
+                  SizedBox(width: 8),
+                  ShimmerBox(width: 76, height: 38, borderRadius: 10),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
 
@@ -1362,6 +1557,67 @@ class _ExpenseListSkeleton extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _GroupExpensesErrorState extends StatelessWidget {
+  const _GroupExpensesErrorState({required this.groupId, required this.index});
+  final String groupId;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    final groupCtrl = Get.find<GroupsController>();
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: Constants.redColor.withAlpha(15),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: const Icon(Icons.wifi_off_rounded,
+                  size: 28, color: Constants.redColor),
+            ),
+            const SizedBox(height: 16),
+            Text("Couldn't load expenses",
+                style: AppTheme.subHeadingText
+                    .copyWith(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            Text("Check your connection and try again.",
+                style:
+                    AppTheme.normalText.copyWith(color: Colors.grey.shade400),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 20),
+            GestureDetector(
+              onTap: () {
+                groupCtrl.fetchGroupExpenses(
+                    groupId: groupId, forceRefresh: true);
+                groupCtrl.fetchGroupMembers(
+                    groupId: groupId, forceRefresh: true);
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 11),
+                decoration: BoxDecoration(
+                  color: Constants.activeColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text('Try again',
+                    style: AppTheme.normalText.copyWith(
+                        color: Colors.white, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

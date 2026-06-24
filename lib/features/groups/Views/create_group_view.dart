@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 
 import '../../../core/constants/constants.dart';
 import '../../../core/theme/app_themes.dart';
+import '../../../shared/widgets/alert_widgets.dart';
+import '../../../shared/widgets/app_dialogs.dart';
 import '../../friends/friends_controller.dart';
 import '../../friends/friends_model.dart';
 import '../../navigation/nav_controller.dart';
@@ -107,27 +109,40 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
 
   Future<void> _createGroup() async {
     HapticFeedback.mediumImpact();
-    _isCreating.value = true;
+
     final selectedFriends = friendsCtrl.friends
         .where((f) => _selectedFriendIds.contains(f.id))
         .toList();
-    await groupCtrl.createGroupWithFriends(
-      name: _nameCtrl.text.trim(),
-      emoji: _selectedEmoji.value,
-      friends: selectedFriends,
+
+    AppDialogs.loading(
+      message: 'Creating group...',
+      icon: Icons.group_add_outlined,
     );
-    _isCreating.value = false;
 
-    // Clear fields
-    _nameCtrl.clear();
-    _selectedEmoji.value = '🏠';
-    _selectedFriendIds.clear();
-    _searchQuery.value = '';
-    _searchCtrl.clear();
+    try {
+      await groupCtrl.createGroupWithFriends(
+        name: _nameCtrl.text.trim(),
+        emoji: _selectedEmoji.value,
+        friends: selectedFriends,
+      );
+      await AppDialogs.closeLoading();
 
-    // Close screen then switch to Groups tab
-    Get.back();
-    Get.find<NavigationController>().currentIndex.value = 1;
+      // Clear fields
+      _nameCtrl.clear();
+      _selectedEmoji.value = '🏠';
+      _selectedFriendIds.clear();
+      _searchQuery.value = '';
+      _searchCtrl.clear();
+
+      // Close screen then switch to Groups tab
+      Get.back();
+      Get.find<NavigationController>().currentIndex.value = 1;
+    } catch (e) {
+      await AppDialogs.closeLoading();
+      AlertWidgets.showSnackBar(
+        message: e.toString().replaceAll('Exception: ', ''),
+      );
+    }
   }
 
   void _showEmojiPicker() {
@@ -265,11 +280,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                     ScaleTransition(scale: anim, child: child),
                                 child: Container(
                                   key: ValueKey(_selectedEmoji.value),
-                                  width: 96,
-                                  height: 96,
+                                  width: 96.w,
+                                  height: 96.w,
                                   decoration: BoxDecoration(
                                     color: Constants.bgColorLight,
-                                    borderRadius: BorderRadius.circular(28),
+                                    borderRadius: BorderRadius.circular(18.r),
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black.withAlpha(12),
@@ -280,52 +295,52 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(_selectedEmoji.value,
-                                      style: AppTheme.normalText
-                                          .copyWith(fontSize: 46.sp)),
+                                      style: AppTheme.headingText
+                                          .copyWith(fontSize: 38.sp)),
                                 ),
                               )),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 6),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.edit_outlined,
-                                  size: 13, color: Colors.grey.shade400),
+                                  size: 13.w, color: Colors.grey.shade400),
                               const SizedBox(width: 4),
                               Text("Change emoji",
                                   style: AppTheme.normalText.copyWith(
                                       color: Colors.grey.shade400,
-                                      fontSize: 12)),
+                                      fontSize: 12.sp)),
                             ],
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 36),
+                  const SizedBox(height: 26),
 
                   // ── Heading ─────────────────────────────────────
                   Text("Name your group",
-                      style: AppTheme.headingText.copyWith(fontSize: 22)),
-                  const SizedBox(height: 6),
+                      style: AppTheme.headingText.copyWith(fontSize: 18.sp)),
+                  const SizedBox(height: 2),
                   Text("You can always change this later",
-                      style: AppTheme.normalText
-                          .copyWith(color: Colors.grey.shade400, fontSize: 13)),
-                  const SizedBox(height: 20),
+                      style: AppTheme.subHeadingText
+                          .copyWith(color: Colors.grey.shade400)),
+                  const SizedBox(height: 8),
 
                   // ── Name input ──────────────────────────────────
                   Obx(() => TextField(
                         controller: _nameCtrl,
                         focusNode: _nameFocus,
-                        autofocus: true,
-                        style: AppTheme.headingText.copyWith(fontSize: 18),
+                        // autofocus: true,
+                        style: AppTheme.headingText,
                         textCapitalization: TextCapitalization.words,
                         onChanged: (_) {
                           if (_nameError.value) _nameError.value = false;
                         },
                         decoration: InputDecoration(
                           hintText: "e.g. Bali Trip, Flatmates...",
-                          hintStyle: AppTheme.headingText.copyWith(
-                              fontSize: 18, color: Colors.grey.shade300),
+                          hintStyle: AppTheme.headingText
+                              .copyWith(color: Colors.grey.shade300),
                           errorText:
                               _nameError.value ? "Please enter a name" : null,
                           filled: true,
@@ -350,15 +365,17 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                 const BorderSide(color: Constants.redColor),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 18, vertical: 18),
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
                         ),
                       )),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 26),
 
                   // ── Quick picks ─────────────────────────────────
                   Text("Quick picks",
                       style: AppTheme.normalText
-                          .copyWith(color: Colors.grey.shade400, fontSize: 12)),
+                          .copyWith(color: Colors.grey.shade400)),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 8.w,
@@ -451,7 +468,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
 
             // ── Header ─────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -469,29 +486,29 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(_selectedEmoji.value,
-                                style: AppTheme.normalText
-                                    .copyWith(fontSize: 16.sp)),
+                                style: AppTheme.headingText),
                             const SizedBox(width: 8),
                             Text(_nameCtrl.text.trim(),
                                 style: AppTheme.normalText.copyWith(
                                   color: Constants.activeColor,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                 )),
                           ],
                         ),
                       )),
                   const SizedBox(height: 16),
                   Text("Who's joining?",
-                      style: AppTheme.headingText.copyWith(fontSize: 22)),
+                      style: AppTheme.headingText.copyWith(fontSize: 18.sp)),
                   const SizedBox(height: 4),
                   Text("Optional — you can add people later",
                       style: AppTheme.normalText
-                          .copyWith(color: Colors.grey.shade400, fontSize: 13)),
+                          .copyWith(color: Colors.grey.shade400)),
                   const SizedBox(height: 16),
 
                   // ── Search ───────────────────────────────────────
                   Container(
-                    height: 44,
+                    width: double.infinity,
+                    height: 48.w,
                     decoration: BoxDecoration(
                       color: Constants.bgColorLight,
                       borderRadius: BorderRadius.circular(12),
@@ -507,6 +524,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                         prefixIcon: Icon(Icons.search_rounded,
                             size: 18, color: Colors.grey.shade400),
                         border: InputBorder.none,
+                        isCollapsed: true,
                         contentPadding:
                             const EdgeInsets.symmetric(vertical: 12),
                       ),
@@ -515,7 +533,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
             // ── Friends list ────────────────────────────────────────
             Expanded(
@@ -557,7 +575,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                           duration: const Duration(milliseconds: 180),
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 12),
+                              horizontal: 10, vertical: 10),
                           decoration: BoxDecoration(
                             color: isSel
                                 ? Constants.activeColor.withAlpha(12)
@@ -574,8 +592,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                             children: [
                               AnimatedContainer(
                                 duration: const Duration(milliseconds: 180),
-                                width: 40,
-                                height: 40,
+                                width: 36.w,
+                                height: 36.w,
                                 decoration: BoxDecoration(
                                   color: isSel
                                       ? Constants.activeColor
@@ -585,7 +603,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                 alignment: Alignment.center,
                                 child: Text(
                                   friend.name[0].toUpperCase(),
-                                  style: AppTheme.subHeadingText.copyWith(
+                                  style: AppTheme.normalText.copyWith(
+                                    fontSize: 12.sp,
                                     color: isSel
                                         ? Colors.white
                                         : Constants.activeColor,
@@ -593,7 +612,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 8),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -603,34 +622,33 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                           fontWeight: FontWeight.w600,
                                         )),
                                     const SizedBox(height: 1),
-                                    Text(friend.email ?? '',
+                                    Text(friend.email ?? friend.phone ?? '',
                                         style: AppTheme.normalText.copyWith(
                                           color: Colors.grey.shade400,
-                                          fontSize: 11,
+                                          fontSize: 12.sp,
                                         )),
                                   ],
                                 ),
                               ),
                               AnimatedContainer(
                                 duration: const Duration(milliseconds: 180),
-                                width: 24,
-                                height: 24,
+                                width: 16.w,
+                                height: 16.w,
                                 decoration: BoxDecoration(
                                   color: isSel
                                       ? Constants.activeColor
                                       : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(7),
+                                  borderRadius: BorderRadius.circular(6.r),
                                   border: Border.all(
                                     color: isSel
                                         ? Constants.activeColor
-                                        : Colors.grey.shade300,
-                                    width: 2,
+                                        : Colors.grey.shade400,
                                   ),
                                 ),
                                 alignment: Alignment.center,
                                 child: isSel
-                                    ? const Icon(Icons.check_rounded,
-                                        size: 14, color: Colors.white)
+                                    ? Icon(Icons.check_rounded,
+                                        size: 12.w, color: Colors.white)
                                     : null,
                               ),
                             ],
@@ -648,9 +666,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
               final count = _selectedFriendIds.length;
               if (count == 0) return const SizedBox.shrink();
               return Container(
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                margin: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 decoration: BoxDecoration(
                   color: Constants.activeColor.withAlpha(12),
                   borderRadius: BorderRadius.circular(10),
@@ -660,25 +678,28 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                      width: 20.w,
+                      height: 20.w,
+                      alignment: Alignment.center,
+                      // padding: const EdgeInsets.symmetric(
+                      //     horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: Constants.activeColor,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text("$count",
                           style: AppTheme.normalText.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          )),
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 11.sp)),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 6),
                     Text(
                       "friend${count > 1 ? 's' : ''} will be added",
                       style: AppTheme.normalText.copyWith(
-                          color: Constants.activeColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13),
+                        color: Constants.activeColor,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -748,13 +769,15 @@ class _CTAButton extends StatelessWidget {
         children: [
           if (sublabel != null) ...[
             Text(sublabel!,
-                style: AppTheme.normalText
-                    .copyWith(color: Colors.grey.shade400, fontSize: 12)),
+                style: AppTheme.normalText.copyWith(
+                  color: Colors.grey.shade400,
+                  fontSize: 12.sp,
+                )),
             const SizedBox(height: 8),
           ],
           SizedBox(
             width: double.infinity,
-            height: 54,
+            height: 54.w,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: onTap == null
@@ -782,7 +805,7 @@ class _CTAButton extends StatelessWidget {
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700)),
                         const SizedBox(width: 8),
-                        Icon(icon, size: 18, color: Colors.white),
+                        Icon(icon, size: 18.w, color: Colors.white),
                       ],
                     ),
             ),

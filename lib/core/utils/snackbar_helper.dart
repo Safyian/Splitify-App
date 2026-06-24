@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:splittify/core/theme/app_themes.dart';
 
 import '../constants/constants.dart';
 
@@ -26,11 +26,7 @@ class SnackBarHelper {
             Expanded(
               child: Text(
                 message,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTheme.normalText.copyWith(color: Colors.white),
               ),
             ),
           ],

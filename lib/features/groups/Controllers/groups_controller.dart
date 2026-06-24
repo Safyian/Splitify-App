@@ -24,6 +24,10 @@ class GroupsController extends GetxController {
   final ExpenseService _expenseService = ExpenseService();
   final _cache = CacheManager();
 
+  final RxString error = ''.obs;
+  final RxMap<String, String> expenseErrors = <String, String>{}.obs;
+  final RxMap<String, String> balanceErrors = <String, String>{}.obs;
+
   // ── Per-group caches ──────────────────────────────────────────────────────
   final RxMap<String, GroupExpenses> allGroupExpenses =
       <String, GroupExpenses>{}.obs;
@@ -71,12 +75,17 @@ class GroupsController extends GetxController {
       return;
     try {
       isLoadingBalances.value = true;
-      print("id = $groupId");
+      balanceErrors.remove(groupId);
       allGroupBalances[groupId] =
           await _service.getGroupBalances(groupId: groupId);
       _cache.markFetched(key);
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load balances');
+      // only an "error state" if we have nothing loaded for this group
+      if (allGroupBalances[groupId] == null) {
+        balanceErrors[groupId] = 'Check your connection and try again.';
+      } else {
+        Get.snackbar('Error', 'Failed to refresh balances');
+      }
     } finally {
       isLoadingBalances.value = false;
     }
@@ -90,11 +99,18 @@ class GroupsController extends GetxController {
         summaries.isNotEmpty) return;
     try {
       isLoading.value = true;
+      error.value = ''; // clear on new attempt
       summaries.value = await _service.getSummary();
       _cache.markFetched(CacheKeys.summaries);
       if (onBalanceChanged != null) onBalanceChanged!();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load groups');
+      if (summaries.isEmpty) {
+        error.value =
+            'Check your connection and try again.'; // inline error (empty case)
+      } else {
+        Get.snackbar('Error',
+            'Failed to refresh groups'); // snackbar (have data already)
+      }
     } finally {
       isLoading.value = false;
     }
@@ -119,7 +135,7 @@ class GroupsController extends GetxController {
       } else {
         isLoading.value = true;
       }
-
+      expenseErrors.remove(groupId);
       final current = allGroupExpenses[groupId];
       final nextPage = loadMore ? ((current?.page ?? 0) + 1) : 1;
 
@@ -146,7 +162,11 @@ class GroupsController extends GetxController {
         }
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load expenses');
+      if (allGroupExpenses[groupId]?.expenses == null) {
+        expenseErrors[groupId] = 'Check your connection and try again.';
+      } else {
+        Get.snackbar('Error', 'Failed to refresh expenses');
+      }
     } finally {
       isLoading.value = false;
       isLoadingMoreExpenses.value = false;
@@ -558,8 +578,7 @@ class GroupsController extends GetxController {
       ]);
       await fetchSummary(forceRefresh: true);
     } catch (e) {
-      AlertWidgets.showSnackBar(
-          message: e.toString().replaceAll('Exception: ', ''));
+      rethrow; // let the caller decide (close dialog, show error, keep form)
     } finally {
       isLoading.value = false;
     }
@@ -572,11 +591,5 @@ class GroupsController extends GetxController {
     allGroupExpenses.clear();
     allGroupMembers.clear();
     allGroupBalances.clear();
-  }
-
-  @override
-  void onInit() {
-    fetchSummary();
-    super.onInit();
   }
 }

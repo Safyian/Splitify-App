@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
@@ -48,8 +47,6 @@ class BottomNavBar extends StatelessWidget {
 
     Get.to(
       () => const AddExpenseView(),
-      transition: Transition.downToUp,
-      duration: const Duration(milliseconds: 300),
     );
   }
 
@@ -180,26 +177,20 @@ class _GroupPickerSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Text(
-            'Add expense to...',
-            style: GoogleFonts.inter(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(height: 4),
+          Text('Add expense to...', style: AppTheme.headingText),
+          const SizedBox(height: 2),
           Text(
             'Select a group for this expense',
-            style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade600),
+            style:
+                AppTheme.subHeadingText.copyWith(color: Colors.grey.shade600),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           ...groups.map((g) => GestureDetector(
                 onTap: () => Navigator.of(context).pop(g.id),
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: 10),
+                  margin: const EdgeInsets.only(bottom: 4),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   decoration: BoxDecoration(
                     color: Constants.bgColorLight,
                     border: Border.all(color: Colors.grey.shade200),
@@ -207,20 +198,21 @@ class _GroupPickerSheet extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Text(g.emoji, style: GoogleFonts.inter(fontSize: 22)),
+                      Text(g.emoji,
+                          style:
+                              AppTheme.subHeadingText.copyWith(fontSize: 16)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           g.name,
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
+                          style: AppTheme.normalText.copyWith(
                             fontWeight: FontWeight.w600,
                             color: Colors.black,
                           ),
                         ),
                       ),
                       Icon(Icons.arrow_forward_ios_rounded,
-                          size: 14, color: Colors.grey.shade400),
+                          size: 12, color: Colors.grey.shade400),
                     ],
                   ),
                 ),

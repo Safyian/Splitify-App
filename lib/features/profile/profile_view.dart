@@ -1,13 +1,13 @@
 // lib/features/profile/profile_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:splittify/core/constants/constants.dart';
 import 'package:splittify/features/auth/Controllers/auth_controller.dart';
 import 'package:splittify/features/groups/Controllers/groups_controller.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_themes.dart';
 import '../../shared/widgets/app_dialogs.dart';
@@ -20,6 +20,13 @@ class ProfileView extends StatelessWidget {
   final profileCtrl = Get.find<ProfileController>();
   final groupsCtrl = Get.find<GroupsController>();
 
+  Future<void> openUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      Get.snackbar('Error', 'Could not open link');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (profileCtrl.user.value.user == null) {
@@ -31,10 +38,10 @@ class ProfileView extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         title: Text('My Profile', style: AppTheme.headingText),
-        actions: [
-          SvgPicture.asset(Constants.premiumLogo, width: 24, height: 24),
-          const SizedBox(width: 16),
-        ],
+        // actions: [
+        //   SvgPicture.asset(Constants.premiumLogo, width: 20, height: 20),
+        //   const SizedBox(width: 16),
+        // ],
         backgroundColor: Constants.bgColor,
         foregroundColor: Constants.bgColor,
         elevation: 0,
@@ -63,7 +70,7 @@ class ProfileView extends StatelessWidget {
                 onEditTap: () => _showEditNameSheet(profileCtrl),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // ── Balance summary ──────────────────────────────
               _BalanceSummaryCard(
@@ -73,11 +80,11 @@ class ProfileView extends StatelessWidget {
                 activeGroups: summaries.length,
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
 
               // ── Account ──────────────────────────────────────
               const _SectionLabel(label: 'Account'),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               _SettingsCard(items: [
                 _SettingsItem(
                   icon: Icons.person_outline_rounded,
@@ -86,18 +93,22 @@ class ProfileView extends StatelessWidget {
                   onTap: () => _showEditNameSheet(profileCtrl),
                 ),
                 _SettingsItem(
-                  icon: Icons.email_outlined,
-                  label: 'Email',
-                  value: user?.email ?? '—',
+                  icon: (user?.email?.isNotEmpty ?? false)
+                      ? Icons.email_outlined
+                      : Icons.phone_outlined,
+                  label: (user?.email?.isNotEmpty ?? false) ? 'Email' : 'Phone',
+                  value: (user?.email?.isNotEmpty ?? false)
+                      ? user!.email!
+                      : (user?.phone ?? '—'),
                   onTap: null,
                 ),
               ]),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
 
               // ── Splittify ────────────────────────────────────
               const _SectionLabel(label: 'Splittify'),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               _SettingsCard(items: [
                 _SettingsItem(
                   icon: Icons.person_add_outlined,
@@ -107,17 +118,29 @@ class ProfileView extends StatelessWidget {
                 ),
               ]),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
 
               // ── Support ──────────────────────────────────────
               const _SectionLabel(label: 'Support'),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               _SettingsCard(items: [
                 _SettingsItem(
+                  icon: Icons.shield_outlined,
+                  label: 'Privacy Policy',
+                  value: '',
+                  onTap: () => openUrl('https://legal.splittify.app/#privacy'),
+                ),
+                _SettingsItem(
+                  icon: Icons.description_outlined,
+                  label: 'Terms of Use',
+                  value: '',
+                  onTap: () => openUrl('https://legal.splittify.app/#terms'),
+                ),
+                _SettingsItem(
                   icon: Icons.info_outline_rounded,
-                  label: 'About Splittify',
+                  label: 'About',
                   value: 'v1.0.0',
-                  onTap: () {},
+                  onTap: () => openUrl('https://legal.splittify.app/#about'),
                 ),
                 _SettingsItem(
                   icon: Icons.star_outline_rounded,
@@ -127,11 +150,11 @@ class ProfileView extends StatelessWidget {
                 ),
               ]),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
 
               // ── Danger zone ───────────────────────────────────
               const _SectionLabel(label: 'Danger zone'),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               _SettingsCard(items: [
                 _SettingsItem(
                   icon: Icons.delete_outline_rounded,
@@ -150,14 +173,14 @@ class ProfileView extends StatelessWidget {
                 ),
               ]),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 26),
 
               // ── Logout ────────────────────────────────────────
               GestureDetector(
                 onTap: () async => await authCtrl.logout(),
                 child: Container(
                   width: double.infinity,
-                  height: 52,
+                  height: 54.w,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(14),
                     color: Constants.redColor.withAlpha(12),
@@ -174,7 +197,6 @@ class ProfileView extends StatelessWidget {
                         'Log out',
                         style: AppTheme.headingText.copyWith(
                           color: Constants.redColor,
-                          fontSize: 15,
                         ),
                       ),
                     ],
@@ -222,12 +244,11 @@ class ProfileView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            Text('Edit display name',
-                style: AppTheme.headingText.copyWith(fontSize: 17)),
+            Text('Edit display name', style: AppTheme.headingText),
             const SizedBox(height: 4),
             Text('This is how you appear to other members',
-                style: AppTheme.normalText
-                    .copyWith(color: Colors.grey.shade400, fontSize: 13)),
+                style: AppTheme.subHeadingText
+                    .copyWith(color: Colors.grey.shade400)),
             const SizedBox(height: 20),
             Form(
               key: formKey,
@@ -235,8 +256,7 @@ class ProfileView extends StatelessWidget {
                 controller: nameCtrl,
                 autofocus: true,
                 textCapitalization: TextCapitalization.words,
-                style: AppTheme.normalText
-                    .copyWith(fontSize: 15, fontWeight: FontWeight.w500),
+                style: AppTheme.normalText,
                 decoration: InputDecoration(
                   hintText: 'Your name',
                   hintStyle:
@@ -283,7 +303,7 @@ class ProfileView extends StatelessWidget {
                         },
                   child: Container(
                     width: double.infinity,
-                    height: 52,
+                    height: 52.w,
                     decoration: BoxDecoration(
                       color: ctrl.isUpdatingName.value
                           ? Constants.activeColor.withAlpha(120)
@@ -300,7 +320,7 @@ class ProfileView extends StatelessWidget {
                           )
                         : Text('Save',
                             style: AppTheme.headingText
-                                .copyWith(color: Colors.white, fontSize: 15)),
+                                .copyWith(color: Colors.white)),
                   ),
                 )),
           ],
@@ -311,24 +331,14 @@ class ProfileView extends StatelessWidget {
   }
 
   // ── Invite friend ────────────────────────────────────────────────────────
+  // ── Invite friend ──────────────────────────────────────────────
   void _inviteFriend() {
-    // Uses Share package — add share_plus to pubspec.yaml
-    // import 'package:share_plus/share_plus.dart';
-    // Share.share('Join me on Splitify — the easiest way to split bills with friends!\nhttps://apps.apple.com/your-app-link');
-
-    // Fallback: copy to clipboard until share_plus is added
-    const appLink =
-        'https://your-app-link-here.com'; // TODO: replace with your real Play Store / App Store link
-    Clipboard.setData(const ClipboardData(text: appLink));
-    Get.snackbar(
-      'Link copied! 🎉',
-      'Share it with your friends to invite them',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Constants.activeColor,
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-      duration: const Duration(seconds: 3),
+    SharePlus.instance.share(
+      ShareParams(
+        text:
+            "Join me on Splittify — the easiest way to split bills with friends!\n"
+            "https://splittify.app",
+      ),
     );
   }
 }
@@ -342,11 +352,12 @@ class _AvatarCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = user?.name ?? '';
-    final email = user?.email ?? '';
+    final contact =
+        (user?.email?.isNotEmpty ?? false) ? user!.email! : (user?.phone ?? '');
     final initials = _initials(name);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Constants.bgColorLight,
         borderRadius: BorderRadius.circular(20),
@@ -361,8 +372,8 @@ class _AvatarCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 42.w,
-            height: 42.w,
+            width: 36.w,
+            height: 36.w,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Constants.activeColor, Color(0xFF0B9472)],
@@ -374,7 +385,7 @@ class _AvatarCard extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               initials,
-              style: AppTheme.subHeadingText.copyWith(
+              style: AppTheme.normalText.copyWith(
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 letterSpacing: -0.5,
@@ -389,17 +400,15 @@ class _AvatarCard extends StatelessWidget {
                 Text(
                   name.isNotEmpty ? name : 'Your Name',
                   style: AppTheme.headingText.copyWith(
-                    fontSize: 18,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
                   ),
                 ),
-                const SizedBox(height: 3),
+                // const SizedBox(height: 3),
                 Text(
-                  email.isNotEmpty ? email : '—',
+                  contact.isNotEmpty ? contact : '—',
                   style: AppTheme.normalText.copyWith(
-                    color: Colors.grey.shade400,
-                    fontSize: 13,
+                    color: Colors.grey.shade500,
                   ),
                 ),
               ],
@@ -412,10 +421,10 @@ class _AvatarCard extends StatelessWidget {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: Constants.bgColor,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(Icons.edit_outlined,
-                  size: 16, color: Colors.grey.shade400),
+                  size: 12, color: Colors.grey.shade400),
             ),
           ),
         ],
@@ -449,7 +458,7 @@ class _BalanceSummaryCard extends StatelessWidget {
     final isPositive = netBalance >= 0;
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Constants.activeColor, Color(0xFF0B9472)],
@@ -475,19 +484,19 @@ class _BalanceSummaryCard extends StatelessWidget {
               letterSpacing: 0.3,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             netBalance == 0
                 ? 'All settled up 🎉'
                 : '${isPositive ? '+' : '-'}\$${netBalance.abs().toStringAsFixed(2)}',
             style: AppTheme.headingText.copyWith(
-              fontSize: 18.sp,
+              fontSize: 17.sp,
               fontWeight: FontWeight.w700,
               color: Colors.white,
               letterSpacing: -0.8,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           Row(
             children: [
               _StatPill(
@@ -524,7 +533,7 @@ class _StatPill extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(value,
-                style: AppTheme.subHeadingText.copyWith(
+                style: AppTheme.normalText.copyWith(
                     fontWeight: FontWeight.w700, color: Colors.white)),
             const SizedBox(height: 2),
             Text(label,
@@ -551,9 +560,9 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: AppTheme.normalText.copyWith(
-          fontSize: 11,
+          fontSize: 12.sp,
           fontWeight: FontWeight.w700,
-          color: Colors.grey.shade400,
+          color: Colors.grey.shade500,
           letterSpacing: 1.2,
         ),
       ),
@@ -636,18 +645,18 @@ class _SettingsRow extends StatelessWidget {
       onTap: item.onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         child: Row(
           children: [
             Container(
-              width: 34,
-              height: 34,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: iconColor.withAlpha(15),
                 borderRadius: BorderRadius.circular(9),
               ),
               alignment: Alignment.center,
-              child: Icon(item.icon, size: 17, color: iconColor),
+              child: Icon(item.icon, size: 14, color: iconColor),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -655,7 +664,7 @@ class _SettingsRow extends StatelessWidget {
                 item.label,
                 style: AppTheme.normalText.copyWith(
                   fontWeight: FontWeight.w500,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   color: labelColor,
                 ),
               ),
@@ -664,7 +673,7 @@ class _SettingsRow extends StatelessWidget {
               Text(
                 item.value,
                 style: AppTheme.normalText.copyWith(
-                  fontSize: 13,
+                  // fontSize: 13,
                   color: Colors.grey.shade400,
                 ),
               ),

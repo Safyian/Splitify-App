@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
@@ -27,6 +26,12 @@ class FriendCard extends StatelessWidget {
     if (isPending) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Constants.bgColorLight,
+          border: Border(
+            bottom: BorderSide(color: Colors.grey.withOpacity(0.08)),
+          ),
+        ),
         child: Row(
           children: [
             CircleAvatar(
@@ -54,8 +59,8 @@ class FriendCard extends StatelessWidget {
                   ),
                   Text(
                     friend.email ?? friend.phone ?? 'Invited · Pending',
-                    style: AppTheme.normalText.copyWith(
-                        color: Colors.grey.shade400, fontSize: 11.sp),
+                    style: AppTheme.normalText
+                        .copyWith(color: Colors.grey.shade400, fontSize: 11.sp),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -132,7 +137,6 @@ class FriendCard extends StatelessWidget {
                 "Settled",
                 style: AppTheme.normalText.copyWith(
                   color: Colors.grey.shade400,
-                  fontSize: 12,
                 ),
               )
             else
@@ -145,14 +149,13 @@ class FriendCard extends StatelessWidget {
                       color:
                           youOwe ? Constants.redColor : Constants.activeColor,
                       fontWeight: FontWeight.w700,
-                      fontSize: 13,
                     ),
                   ),
                   Text(
                     youOwe ? "you owe" : "owes you",
                     style: AppTheme.normalText.copyWith(
                       color: Colors.grey.shade400,
-                      fontSize: 10,
+                      fontSize: 12.sp,
                     ),
                   ),
                 ],
@@ -182,13 +185,13 @@ class FriendCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.person_remove_outlined,
-                color: Colors.white, size: 22),
+                color: Colors.white, size: 20),
             const SizedBox(height: 4),
             Text(
               "Remove",
-              style: GoogleFonts.inter(
+              style: AppTheme.normalText.copyWith(
                 color: Colors.white,
-                fontSize: 11,
+                fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),

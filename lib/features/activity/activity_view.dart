@@ -23,7 +23,7 @@ class ActivityScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -31,17 +31,14 @@ class ActivityScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Activity',
-                            style: AppTheme.headingText.copyWith(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.5,
-                            )),
-                        Text('Everything happening in your groups',
-                            style: AppTheme.normalText.copyWith(
-                              color: Colors.grey.shade400,
-                              fontSize: 12,
-                            )),
+                        Center(
+                            child:
+                                Text('Activity', style: AppTheme.headingText)),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Everything happening in your groups',
+                          style: AppTheme.normalText,
+                        ),
                       ],
                     ),
                   ),
@@ -132,14 +129,14 @@ class _ActivitySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
           child: Row(
             children: [
               Text(
                 section.label.toUpperCase(),
                 style: AppTheme.normalText.copyWith(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
                   color: Colors.grey.shade400,
                   letterSpacing: 1.2,
                 ),
@@ -153,7 +150,7 @@ class _ActivitySection extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: List.generate(section.items.length, (i) {
               return _TimelineItem(
@@ -222,7 +219,7 @@ class _TimelineItem extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.only(bottom: isLast ? 4 : 12),
               child: Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Constants.bgColorLight,
                   borderRadius: BorderRadius.circular(16),
@@ -271,7 +268,7 @@ class _TimelineItem extends StatelessWidget {
                         Text(
                           _timeAgo(activity.createdAt),
                           style: AppTheme.normalText.copyWith(
-                            fontSize: 11,
+                            fontSize: 10.sp,
                             color: Colors.grey.shade400,
                           ),
                         ),
@@ -283,7 +280,7 @@ class _TimelineItem extends StatelessWidget {
                     // ── Rich description ──────────────────────
                     _RichDescription(activity: activity, accentColor: color),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
 
                     // Group name
                     Row(
@@ -294,7 +291,7 @@ class _TimelineItem extends StatelessWidget {
                         Text(
                           activity.groupName,
                           style: AppTheme.normalText.copyWith(
-                            fontSize: 11,
+                            fontSize: 10.sp,
                             color: Colors.grey.shade400,
                             fontWeight: FontWeight.w500,
                           ),
@@ -599,7 +596,6 @@ class _LoadMoreButton extends StatelessWidget {
                         style: AppTheme.normalText.copyWith(
                           color: Constants.activeColor,
                           fontWeight: FontWeight.w600,
-                          fontSize: 13,
                         ),
                       ),
                     ),
@@ -639,8 +635,8 @@ class _ErrorState extends StatelessWidget {
                     .copyWith(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             Text(ctrl.error.value,
-                style: AppTheme.normalText
-                    .copyWith(color: Colors.grey.shade400, fontSize: 12),
+                style:
+                    AppTheme.normalText.copyWith(color: Colors.grey.shade400),
                 textAlign: TextAlign.center),
             const SizedBox(height: 20),
             GestureDetector(
@@ -685,19 +681,13 @@ class _EmptyState extends StatelessWidget {
             child: Icon(Icons.history_rounded,
                 size: 36, color: Constants.activeColor.withAlpha(180)),
           ),
-          const SizedBox(height: 20),
-          Text('All quiet for now',
-              style: AppTheme.subHeadingText.copyWith(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-              )),
+          const SizedBox(height: 12),
+          Text('All quiet for now', style: AppTheme.headingText),
           const SizedBox(height: 6),
           Text(
             'When expenses, settlements or\nmembers change, you\'ll see it here.',
             style: AppTheme.normalText.copyWith(
-              color: Colors.grey.shade400,
-              fontSize: 13,
-              height: 1.5,
+              color: Colors.grey.shade500,
             ),
             textAlign: TextAlign.center,
           ),

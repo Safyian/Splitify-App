@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:splittify/core/theme/app_themes.dart';
 
+import '../../../core/bindings/initial_binding.dart';
 import '../../../core/constants/constants.dart';
 import '../../navigation/navigation_view.dart';
 import '../../profile/profile_controller.dart';
@@ -20,8 +21,8 @@ class SplashView extends StatefulWidget {
 
 class _SplashViewState extends State<SplashView>
     with SingleTickerProviderStateMixin {
-  final AuthController auth = Get.put(AuthController());
-  final ProfileController profileCtrl = Get.put(ProfileController());
+  final AuthController auth = Get.find<AuthController>();
+  final ProfileController profileCtrl = Get.find<ProfileController>();
 
   late AnimationController _ctrl;
   late Animation<double> _fadeIn;
@@ -47,15 +48,27 @@ class _SplashViewState extends State<SplashView>
     );
 
     _ctrl.forward();
+    _runStartup();
+  }
 
-    Future.delayed(const Duration(milliseconds: 2000), () async {
-      await profileCtrl.getUserDetails();
-      if (auth.isLoggedIn.value && profileCtrl.user.value.user != null) {
-        Get.off(() => NavigationView());
-      } else {
-        Get.off(() => LoginView());
-      }
-    });
+  Future<void> _runStartup() async {
+    await Future.delayed(const Duration(milliseconds: 2000));
+    await auth.checkLogin();
+
+    if (!auth.isLoggedIn.value) {
+      Get.off(() => LoginView());
+      return;
+    }
+    try {
+      final ok = await profileCtrl.getUserDetails();
+      if (ok) loadInitialAppData();
+      Get.off(() => ok ? NavigationView() : LoginView());
+    } catch (_) {
+      // Token exists but network failed — offer retry instead of logging out
+      Get.off(() => _ConnectionRetryView(onRetry: () {
+            Get.off(() => const SplashView()); // re-run the whole startup
+          }));
+    }
   }
 
   @override
@@ -176,6 +189,56 @@ class _SplashViewState extends State<SplashView>
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// retry screen when connection fails
+class _ConnectionRetryView extends StatelessWidget {
+  const _ConnectionRetryView({required this.onRetry});
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Constants.bgColor,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.wifi_off_rounded,
+                  size: 56, color: Colors.grey.shade400),
+              const SizedBox(height: 16),
+              Text("Couldn't connect", style: AppTheme.subHeadingText),
+              const SizedBox(height: 6),
+              Text(
+                "Check your internet connection and try again.",
+                textAlign: TextAlign.center,
+                style: AppTheme.normalText.copyWith(color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: onRetry,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 14, horizontal: 36),
+                  decoration: BoxDecoration(
+                    color: Constants.activeColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'Try again',
+                    style: AppTheme.subHeadingText.copyWith(
+                        color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

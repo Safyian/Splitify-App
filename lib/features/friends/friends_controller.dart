@@ -12,6 +12,7 @@ class FriendsController extends GetxController {
 
   RxList<Friend> friends = <Friend>[].obs;
   RxBool isLoading = false.obs;
+  final RxString error = ''.obs;
 
   double get overallNet {
     return friends.fold(0.0, (sum, f) => sum + f.balance.net);
@@ -27,11 +28,15 @@ class FriendsController extends GetxController {
     }
     try {
       isLoading.value = true;
+      error.value = '';
       friends.value = await _service.getFriends();
       _cache.markFetched(CacheKeys.friends);
     } catch (e) {
-      AlertWidgets.showSnackBar(
-          message: e.toString().replaceAll('Exception: ', ''));
+      if (friends.isEmpty) {
+        error.value = 'Check your connection and try again.';
+      } else {
+        AlertWidgets.showSnackBar(message: 'Failed to refresh friends');
+      }
     } finally {
       isLoading.value = false;
     }

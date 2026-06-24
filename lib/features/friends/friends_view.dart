@@ -35,8 +35,6 @@ class FriendsScreen extends StatelessWidget {
   void _addFriendView(BuildContext context) {
     Get.to(
       () => const AddFriendView(),
-      transition: Transition.cupertino,
-      duration: const Duration(milliseconds: 300),
     );
   }
 
@@ -114,8 +112,6 @@ class FriendsScreen extends StatelessWidget {
           groupId: g['groupId'] as String,
           popCount: 1,
         ),
-        transition: Transition.downToUp,
-        duration: const Duration(milliseconds: 300),
       );
       return;
     }
@@ -161,8 +157,6 @@ class FriendsScreen extends StatelessWidget {
                       groupId: g['groupId'] as String,
                       popCount: 1,
                     ),
-                    transition: Transition.downToUp,
-                    duration: const Duration(milliseconds: 300),
                   );
                 },
                 child: Container(
@@ -209,21 +203,21 @@ class FriendsScreen extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Friends', style: AppTheme.headingText),
-        actions: [
-          GestureDetector(
-            onTap: () => _addFriendView(context),
-            child: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Constants.activeColor.withAlpha(20),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.person_add_outlined,
-                  size: 18, color: Constants.activeColor),
-            ),
-          ),
-          const SizedBox(width: 16),
-        ],
+        // actions: [
+        //   GestureDetector(
+        //     onTap: () => _addFriendView(context),
+        //     child: Container(
+        //       padding: const EdgeInsets.all(6),
+        //       decoration: BoxDecoration(
+        //         color: Constants.activeColor.withAlpha(20),
+        //         borderRadius: BorderRadius.circular(8),
+        //       ),
+        //       child: const Icon(Icons.person_add_outlined,
+        //           size: 18, color: Constants.activeColor),
+        //     ),
+        //   ),
+        //   const SizedBox(width: 16),
+        // ],
         backgroundColor: Constants.bgColor,
         foregroundColor: Constants.bgColor,
         elevation: 0,
@@ -241,7 +235,7 @@ class FriendsScreen extends StatelessWidget {
               child: GestureDetector(
                 onTap: () => _addFriendView(context),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  height: 48.h,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border:
@@ -271,10 +265,9 @@ class FriendsScreen extends StatelessWidget {
               child: GestureDetector(
                 onTap: () => Get.to(
                   () => const CreateGroupScreen(),
-                  transition: Transition.rightToLeft,
                 ),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  height: 48.h,
                   decoration: BoxDecoration(
                     color: Constants.activeColor,
                     borderRadius: BorderRadius.circular(12),
@@ -324,11 +317,10 @@ class FriendsScreen extends StatelessWidget {
                     children: [
                       // ── Overall balance card ──────────────
                       _OverallBalanceCard(
-                        net: overallNet,
-                        isSettled: overallSettled,
-                        owed: overallOwed,
-                      ),
-                      const SizedBox(height: 16),
+                          net: overallNet,
+                          isSettled: overallSettled,
+                          owed: overallOwed),
+                      const SizedBox(height: 12),
 
                       // ── Search bar ────────────────────────
                       _SearchBar(searchQuery: _searchQuery),
@@ -343,7 +335,11 @@ class FriendsScreen extends StatelessWidget {
               ),
 
               // ── List ──────────────────────────────────────
-              if (filtered.isEmpty)
+              if (friendsCtrl.error.value.isNotEmpty && all.isEmpty)
+                const SliverFillRemaining(
+                  child: _FriendsErrorState(),
+                )
+              else if (filtered.isEmpty)
                 SliverFillRemaining(
                   child: _EmptyState(
                     isFiltered: _searchQuery.value.isNotEmpty ||
@@ -488,7 +484,7 @@ class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 42,
+      height: 42.w,
       decoration: BoxDecoration(
         color: Constants.bgColorLight,
         borderRadius: BorderRadius.circular(12),
@@ -502,6 +498,7 @@ class _SearchBar extends StatelessWidget {
           prefixIcon: Icon(Icons.search, size: 18, color: Colors.grey.shade400),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 11),
+          isCollapsed: true,
         ),
       ),
     );
@@ -535,7 +532,7 @@ class _FilterChips extends StatelessWidget {
                   duration: const Duration(milliseconds: 180),
                   margin: const EdgeInsets.only(right: 8),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.w),
                   decoration: BoxDecoration(
                     color: isActive
                         ? Constants.activeColor
@@ -601,18 +598,21 @@ class _FriendsSkeleton extends StatelessWidget {
             const SizedBox(height: 12),
 
             // ── Filter chips ──
-            const Row(
-              children: [
-                ShimmerBox(width: 40, height: 30, borderRadius: 20),
-                SizedBox(width: 8),
-                ShimmerBox(width: 68, height: 30, borderRadius: 20),
-                SizedBox(width: 8),
-                ShimmerBox(width: 76, height: 30, borderRadius: 20),
-                SizedBox(width: 8),
-                ShimmerBox(width: 72, height: 30, borderRadius: 20),
-                SizedBox(width: 8),
-                ShimmerBox(width: 88, height: 30, borderRadius: 20),
-              ],
+            const SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  ShimmerBox(width: 40, height: 30, borderRadius: 20),
+                  SizedBox(width: 8),
+                  ShimmerBox(width: 68, height: 30, borderRadius: 20),
+                  SizedBox(width: 8),
+                  ShimmerBox(width: 76, height: 30, borderRadius: 20),
+                  SizedBox(width: 8),
+                  ShimmerBox(width: 72, height: 30, borderRadius: 20),
+                  SizedBox(width: 8),
+                  ShimmerBox(width: 88, height: 30, borderRadius: 20),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
 
@@ -698,6 +698,61 @@ class _EmptyState extends StatelessWidget {
             style: AppTheme.normalText.copyWith(color: Colors.grey.shade400),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Error State ───────────────────────────────────────────────────────────────
+class _FriendsErrorState extends StatelessWidget {
+  const _FriendsErrorState();
+
+  @override
+  Widget build(BuildContext context) {
+    final friendsCtrl = Get.find<FriendsController>(tag: 'friends');
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: Constants.redColor.withAlpha(15),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: const Icon(Icons.wifi_off_rounded,
+                  size: 28, color: Constants.redColor),
+            ),
+            const SizedBox(height: 16),
+            Text("Couldn't load friends",
+                style: AppTheme.subHeadingText
+                    .copyWith(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            Obx(() => Text(friendsCtrl.error.value,
+                style:
+                    AppTheme.normalText.copyWith(color: Colors.grey.shade400),
+                textAlign: TextAlign.center)),
+            const SizedBox(height: 20),
+            GestureDetector(
+              onTap: () => friendsCtrl.fetchFriends(forceRefresh: true),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 11),
+                decoration: BoxDecoration(
+                  color: Constants.activeColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text('Try again',
+                    style: AppTheme.normalText.copyWith(
+                        color: Colors.white, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

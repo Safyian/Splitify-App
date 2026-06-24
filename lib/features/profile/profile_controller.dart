@@ -1,5 +1,6 @@
 // lib/features/profile/profile_controller.dart
 
+import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:splittify/features/profile/profile_service.dart';
@@ -15,20 +16,20 @@ class ProfileController extends GetxController {
   var isUpdatingName = false.obs;
   var isDeletingAccount = false.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    getUserDetails();
-  }
-
   // ── Profile ───────────────────────────────────────────────────────────────
 
-  Future<void> getUserDetails() async {
+  Future<bool> getUserDetails() async {
     try {
       user.value = await _service.getUser();
+      return true;
     } catch (e) {
-      await storage.delete(key: 'token');
-      Get.offAll(() => LoginView());
+      // Only clear token on actual auth failure, not network errors
+      if (e is DioException && e.response?.statusCode == 401) {
+        await storage.delete(key: 'token');
+        return false;
+      }
+      // network/other error — keep token, let caller decide
+      rethrow;
     }
   }
 

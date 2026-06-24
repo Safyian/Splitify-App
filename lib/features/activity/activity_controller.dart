@@ -27,7 +27,6 @@ class ActivityController extends GetxController {
   @override
   void onInit() {
     ever(activities, (_) => _regroup());
-    fetchActivity();
     super.onInit();
   }
 

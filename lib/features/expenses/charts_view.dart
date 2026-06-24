@@ -4,7 +4,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:splittify/core/constants/constants.dart';
 import 'package:splittify/core/theme/app_themes.dart';
 
@@ -70,15 +69,15 @@ class _ChartsViewState extends State<ChartsView> {
               expenseCount:
                   expenses.where((e) => e.description != "Settlement").length,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
             // ── Donut ────────────────────────────────────────
             const _SectionTitle(title: "Spending by Member"),
-            const SizedBox(height: 8),
+            const SizedBox(height: 2),
             memberData.isEmpty
                 ? const _EmptyChart(message: "No expense data yet")
                 : _DonutChart(data: memberData, colors: _colors),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
             // ── Bar with toggle ───────────────────────────────
             Row(
@@ -89,7 +88,8 @@ class _ChartsViewState extends State<ChartsView> {
                 ),
                 // ── Toggle switch ──
                 Container(
-                  height: 34,
+                  height: 34.w,
+                  padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     color: Constants.bgColorLight,
                     borderRadius: BorderRadius.circular(8),
@@ -112,7 +112,7 @@ class _ChartsViewState extends State<ChartsView> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
 
             // ── Animated chart swap ───────────────────────────
             AnimatedSwitcher(
@@ -149,13 +149,13 @@ class _ChartsViewState extends State<ChartsView> {
             ),
 
             // Add after the bar chart section
-            const SizedBox(height: 32),
-            const _SectionTitle(title: "My Share vs Others"),
             const SizedBox(height: 12),
+            const _SectionTitle(title: "My Share vs Others"),
+            const SizedBox(height: 4),
             (myShare.iPaid == 0 && myShare.iOwe == 0)
                 ? const _EmptyChart(message: "No personal data yet")
                 : _MyShareChart(data: myShare),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -173,7 +173,7 @@ class _SummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Constants.bgColorLight,
         borderRadius: BorderRadius.circular(16),
@@ -232,7 +232,7 @@ class _DonutChartState extends State<_DonutChart> {
     final total = widget.data.fold(0.0, (s, e) => s + e.amount);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 16),
       decoration: BoxDecoration(
         color: Constants.bgColorLight,
         borderRadius: BorderRadius.circular(16),
@@ -240,7 +240,7 @@ class _DonutChartState extends State<_DonutChart> {
       child: Column(
         children: [
           SizedBox(
-            height: 220.h,
+            height: 0.32.sh,
             child: PieChart(
               PieChartData(
                 pieTouchData: PieTouchData(
@@ -254,7 +254,7 @@ class _DonutChartState extends State<_DonutChart> {
                   },
                 ),
                 sectionsSpace: 2,
-                centerSpaceRadius: 55,
+                centerSpaceRadius: 65.w,
                 sections: widget.data.asMap().entries.map((entry) {
                   final i = entry.key;
                   final item = entry.value;
@@ -267,9 +267,9 @@ class _DonutChartState extends State<_DonutChart> {
                     title: isTouched
                         ? "\$${item.amount.toStringAsFixed(0)}"
                         : "$pct%",
-                    radius: isTouched ? 60 : 50,
-                    titleStyle: GoogleFonts.inter(
-                      fontSize: isTouched ? 13 : 11,
+                    radius: isTouched ? 65.w : 55.w,
+                    titleStyle: AppTheme.normalText.copyWith(
+                      fontSize: isTouched ? 13.sp : 11.sp,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -278,12 +278,12 @@ class _DonutChartState extends State<_DonutChart> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 2),
 
           // ── Legend ──
           Wrap(
-            spacing: 16,
-            runSpacing: 8,
+            spacing: 12,
+            runSpacing: 4,
             children: widget.data.asMap().entries.map((entry) {
               final i = entry.key;
               final item = entry.value;
@@ -323,7 +323,7 @@ class _BarChart extends StatelessWidget {
     final maxY = data.map((e) => e.amount).reduce((a, b) => a > b ? a : b);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(8, 20, 20, 12),
+      padding: const EdgeInsets.fromLTRB(12, 20, 12, 12),
       decoration: BoxDecoration(
         color: Constants.bgColorLight,
         borderRadius: BorderRadius.circular(16),
@@ -338,7 +338,7 @@ class _BarChart extends StatelessWidget {
                 getTooltipItem: (group, groupIndex, rod, rodIndex) =>
                     BarTooltipItem(
                   "\$${rod.toY.toStringAsFixed(0)}",
-                  GoogleFonts.inter(
+                  AppTheme.normalText.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
@@ -352,7 +352,8 @@ class _BarChart extends StatelessWidget {
                   reservedSize: 42,
                   getTitlesWidget: (value, meta) => Text(
                     "\$${value.toInt()}",
-                    style: GoogleFonts.inter(fontSize: 10, color: Colors.grey),
+                    style: AppTheme.normalText
+                        .copyWith(fontSize: 11.sp, color: Colors.grey),
                   ),
                 ),
               ),
@@ -366,8 +367,8 @@ class _BarChart extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
                         data[i].label,
-                        style:
-                            GoogleFonts.inter(fontSize: 11, color: Colors.grey),
+                        style: AppTheme.normalText
+                            .copyWith(fontSize: 11.sp, color: Colors.grey),
                       ),
                     );
                   },
@@ -424,15 +425,14 @@ class _ToggleTab extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
           color: isSelected ? Constants.activeColor : Colors.transparent,
           borderRadius: BorderRadius.circular(7),
         ),
         child: Text(
           label,
-          style: GoogleFonts.inter(
-            fontSize: 12,
+          style: AppTheme.normalText.copyWith(
             fontWeight: FontWeight.w600,
             color: isSelected ? Colors.white : Colors.grey,
           ),
@@ -510,7 +510,7 @@ class _MyShareChartState extends State<_MyShareChart> {
     ];
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 16),
       decoration: BoxDecoration(
         color: Constants.bgColorLight,
         borderRadius: BorderRadius.circular(16),
@@ -519,7 +519,7 @@ class _MyShareChartState extends State<_MyShareChart> {
         children: [
           // ── Center label on touch ──────────────────────────
           SizedBox(
-            height: 220.h,
+            height: 0.32.sh,
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -536,7 +536,7 @@ class _MyShareChartState extends State<_MyShareChart> {
                       },
                     ),
                     sectionsSpace: 3,
-                    centerSpaceRadius: 60,
+                    centerSpaceRadius: 65.w,
                     sections: slices.asMap().entries.map((entry) {
                       final i = entry.key;
                       final slice = entry.value;
@@ -549,9 +549,9 @@ class _MyShareChartState extends State<_MyShareChart> {
                         color: slice.color,
                         value: slice.amount == 0 ? 0.001 : slice.amount,
                         title: "$pct%",
-                        radius: isTouched ? 62 : 52,
-                        titleStyle: GoogleFonts.inter(
-                          fontSize: isTouched ? 13 : 11,
+                        radius: isTouched ? 65.w : 55.w,
+                        titleStyle: AppTheme.normalText.copyWith(
+                          fontSize: isTouched ? 14.sp : 13.sp,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -568,8 +568,7 @@ class _MyShareChartState extends State<_MyShareChart> {
                       _touchedIndex == -1
                           ? "Net"
                           : slices[_touchedIndex].label.split(" ").first,
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
+                      style: AppTheme.normalText.copyWith(
                         color: Colors.grey,
                       ),
                     ),
@@ -577,8 +576,8 @@ class _MyShareChartState extends State<_MyShareChart> {
                       _touchedIndex == -1
                           ? _netText(widget.data)
                           : "\$${slices[_touchedIndex].amount.toStringAsFixed(2)}",
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
+                      style: AppTheme.subHeadingText.copyWith(
+                        fontSize: 15.sp,
                         fontWeight: FontWeight.bold,
                         color: _touchedIndex == -1
                             ? _netColor(widget.data)
@@ -590,7 +589,7 @@ class _MyShareChartState extends State<_MyShareChart> {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 2),
 
           // ── Legend with amounts ───────────────────────────
           Row(

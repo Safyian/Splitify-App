@@ -10,9 +10,10 @@ import 'expense_payload_model.dart';
 import 'expense_service.dart';
 
 class AddExpenseController extends GetxController {
-  // ✅ Accept optional expense for edit mode
+  // ✅ Accept optional expense for edit mode, or correctionOf for pre-fill without edit mode
   final dynamic editExpense;
-  AddExpenseController({this.editExpense});
+  final dynamic correctionOf;
+  AddExpenseController({this.editExpense, this.correctionOf});
 
   final descriptionCtrl = TextEditingController();
   final amountCtrl = TextEditingController();
@@ -44,6 +45,8 @@ class AddExpenseController extends GetxController {
       // ✅ Load edit data AFTER controllers are initialized
       if (editExpense != null) {
         loadExpenseForEdit(editExpense);
+      } else if (correctionOf != null) {
+        _loadCorrectionData(correctionOf);
       }
     } catch (e) {
       AlertWidgets.showSnackBar(message: "Failed to load group members");
@@ -329,6 +332,50 @@ class AddExpenseController extends GetxController {
   void resetEditMode() {
     isEditMode.value = false;
     editingExpenseId = null;
+  }
+
+  // Pre-fill form from a locked expense as a NEW expense (no edit mode).
+  void _loadCorrectionData(dynamic expense) {
+    descriptionCtrl.text =
+        '${expense.description ?? ''} (correction)';
+    amountCtrl.text = expense.amount?.toString() ?? '';
+
+    final members = groupMembersData.members ?? [];
+    selectedMember.value =
+        members.firstWhereOrNull((m) => m.id == expense.paidBy?.id);
+
+    selectedMembers.clear();
+    for (final split in (expense.splits ?? [])) {
+      if (split.user?.id != null) selectedMembers.add(split.user!.id!);
+    }
+
+    switch (expense.splitType) {
+      case 'exact':
+        selectedSplitType.value = SplitType.exact;
+        break;
+      case 'percentage':
+        selectedSplitType.value = SplitType.percentage;
+        break;
+      default:
+        selectedSplitType.value = SplitType.equal;
+    }
+
+    for (final split in (expense.splits ?? [])) {
+      final userId = split.user?.id;
+      if (userId == null || !splitInputControllers.containsKey(userId)) continue;
+      switch (expense.splitType) {
+        case 'exact':
+          splitInputControllers[userId]?.text =
+              split.amount?.toStringAsFixed(2) ?? '';
+          break;
+        case 'percentage':
+          splitInputControllers[userId]?.text =
+              split.percentage?.toStringAsFixed(1) ?? '';
+          break;
+        default:
+          splitInputControllers[userId]?.text = '';
+      }
+    }
   }
 
   void toggleMember(String memberId) {

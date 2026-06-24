@@ -20,8 +20,6 @@ void showAddMemberSheet(
 }) {
   Get.to(
     () => AddMemberView(groupId: groupId, groupIndex: groupIndex),
-    transition: Transition.cupertino,
-    duration: const Duration(milliseconds: 300),
   );
 }
 

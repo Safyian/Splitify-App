@@ -128,8 +128,6 @@ class SettleUpView extends StatelessWidget {
                       groupId: groupCtrl.summaries[index].id,
                       popCount: 2, // SettleUpView + SettleAmountView
                     ),
-                    transition: Transition.downToUp,
-                    duration: const Duration(milliseconds: 300),
                   ),
                   child: Container(
                     padding: const EdgeInsets.all(16),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
@@ -34,7 +33,7 @@ class GroupCard extends StatelessWidget {
           Get.to(() => GroupExpensesView(index: index));
         },
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Constants.bgColorLight,
             borderRadius: BorderRadius.circular(16),
@@ -44,8 +43,8 @@ class GroupCard extends StatelessWidget {
             children: [
               // ── Group emoji avatar ───────────────────────────
               Container(
-                width: 56.w,
-                height: 56.w,
+                width: 48.w,
+                height: 48.w,
                 decoration: BoxDecoration(
                   color: Constants.activeColor.withAlpha(20),
                   borderRadius: BorderRadius.circular(12),
@@ -53,10 +52,10 @@ class GroupCard extends StatelessWidget {
                 alignment: Alignment.center,
                 child: Text(
                   summary.emoji,
-                  style: TextStyle(fontSize: 26.w),
+                  style: TextStyle(fontSize: 20.w),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 10),
 
               // ── Group info ───────────────────────────────────
               Expanded(
@@ -65,13 +64,13 @@ class GroupCard extends StatelessWidget {
                   children: [
                     Text(
                       summary.name,
-                      style: AppTheme.subHeadingText.copyWith(
+                      style: AppTheme.normalText.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     if (isSettled)
                       Row(
                         children: [
@@ -82,7 +81,7 @@ class GroupCard extends StatelessWidget {
                             "All settled up",
                             style: AppTheme.normalText.copyWith(
                               color: Constants.activeColor,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                             ),
                           ),
                         ],
@@ -101,7 +100,7 @@ class GroupCard extends StatelessWidget {
                                   text: youPay ? "You owe " : "${entity.name} ",
                                   style: AppTheme.normalText.copyWith(
                                     color: Colors.grey,
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                   ),
                                 ),
                                 TextSpan(
@@ -109,16 +108,17 @@ class GroupCard extends StatelessWidget {
                                       youPay ? "${entity.name} " : "owes you ",
                                   style: AppTheme.normalText.copyWith(
                                     color: Colors.grey,
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                   ),
                                 ),
                                 TextSpan(
-                                  text: "\$${entity.amount.toStringAsFixed(2)}",
+                                  text:
+                                      " \$${entity.amount.toStringAsFixed(2)}",
                                   style: AppTheme.normalText.copyWith(
                                     color: youPay
                                         ? Constants.redColor
                                         : Constants.activeColor,
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -137,7 +137,7 @@ class GroupCard extends StatelessWidget {
                 children: [
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: balanceColor.withAlpha(25),
                       borderRadius: BorderRadius.circular(20),
@@ -146,10 +146,10 @@ class GroupCard extends StatelessWidget {
                       isSettled
                           ? "Settled"
                           : "\$${summary.balance.net.abs().toStringAsFixed(2)}",
-                      style: GoogleFonts.inter(
+                      style: AppTheme.normalText.copyWith(
                         color: balanceColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),

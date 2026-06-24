@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_themes.dart';
@@ -100,7 +101,7 @@ class _ContactPickerWidgetState extends State<ContactPickerWidget> {
     }
     try {
       final status =
-          await FlutterContacts.permissions.request(PermissionType.readWrite);
+          await FlutterContacts.permissions.request(PermissionType.read);
 
       if (status == PermissionStatus.permanentlyDenied ||
           status == PermissionStatus.restricted) {
@@ -249,11 +250,13 @@ class _ContactPickerWidgetState extends State<ContactPickerWidget> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
           child: Container(
+            height: 48.h,
             decoration: BoxDecoration(
               color: Constants.bgColorLight,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.withAlpha(30)),
             ),
+            alignment: Alignment.center,
             child: TextField(
               controller: _searchCtrl,
               style: AppTheme.normalText.copyWith(fontSize: 13),

@@ -175,8 +175,6 @@ void showSettlementBreakdown(
     BuildContext context, SettlementBreakdownData data) {
   Get.to(
     () => SettlementBreakdownScreen(data: data),
-    transition: Transition.cupertino,
-    duration: const Duration(milliseconds: 300),
   );
 }
 
@@ -259,10 +257,12 @@ class _SettlementBreakdownScreenState extends State<SettlementBreakdownScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             _Header(
-                debtorName: widget.data.netBalances
-                    .firstWhere((b) => !b.isCreditor)
-                    .member
-                    .name),
+              debtorName: widget.data.netBalances
+                      .firstWhereOrNull((b) => !b.isCreditor)
+                      ?.member
+                      .name ??
+                  '—',
+            ),
             const SizedBox(height: 20),
             _StepTabs(steps: _steps, current: _step, onTap: _goTo),
             const SizedBox(height: 16),
@@ -894,9 +894,13 @@ class _Step2Simplified extends StatelessWidget {
                     Flexible(
                       child: Text(
                         () {
-                          final debtors = data.netBalances.where((b) => !b.isCreditor).toList();
-                          if (debtors.isEmpty) return 'All balances are settled';
-                          if (debtors.length == 1) return 'Only ${debtors.first.member.name} owes — routing everything through them';
+                          final debtors = data.netBalances
+                              .where((b) => !b.isCreditor)
+                              .toList();
+                          if (debtors.isEmpty)
+                            return 'All balances are settled';
+                          if (debtors.length == 1)
+                            return 'Only ${debtors.first.member.name} owes — routing everything through them';
                           return '${debtors.length} people owe — each pays the largest creditor first to minimise transactions';
                         }(),
                         style: AppTheme.normalText.copyWith(

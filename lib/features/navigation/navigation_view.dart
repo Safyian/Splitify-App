@@ -14,10 +14,10 @@ import 'nav_controller.dart';
 class NavigationView extends StatelessWidget {
   NavigationView({super.key});
 
-  final navigationCtrl = Get.put(NavigationController());
-  final groupCtrl = Get.put(GroupsController());
-  final profileCtrl = Get.put(ProfileController());
-  final actCrel = Get.put(ActivityController());
+  final navigationCtrl = Get.find<NavigationController>();
+  final groupCtrl = Get.find<GroupsController>();
+  final profileCtrl = Get.find<ProfileController>();
+  final actCtrl = Get.find<ActivityController>();
   final pages = [
     FriendsScreen(),
     GroupsScreen(),

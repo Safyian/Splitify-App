@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class Constants {
   // color palette
@@ -68,12 +67,19 @@ InputDecoration inputDecoration = InputDecoration(
     borderSide: const BorderSide(color: Colors.red, width: 1.0),
     // borderSide: BorderSide.none,
   ),
-  errorStyle: GoogleFonts.inter(fontSize: 14.sp, color: Colors.red),
+  errorStyle:
+      TextStyle(fontFamily: 'Inter', fontSize: 14.sp, color: Colors.red),
   // hintText: 'xyz@abc.com',
-  hintStyle: GoogleFonts.inter(
-      color: Colors.black54, fontSize: 15.sp, fontWeight: FontWeight.w600),
+  hintStyle: TextStyle(
+      fontFamily: 'Inter',
+      color: Colors.black54,
+      fontSize: 15.sp,
+      fontWeight: FontWeight.w600),
   // labelText: 'Email',
-  labelStyle: GoogleFonts.inter(
-      color: Colors.black54, fontSize: 15.sp, fontWeight: FontWeight.w600),
+  labelStyle: TextStyle(
+      fontFamily: 'Inter',
+      color: Colors.black54,
+      fontSize: 15.sp,
+      fontWeight: FontWeight.w600),
   filled: true,
 );

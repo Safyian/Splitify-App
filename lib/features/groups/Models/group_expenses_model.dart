@@ -57,6 +57,7 @@ class Expense {
   DateTime? createdAt;
   DateTime? updatedAt;
   int? v;
+  final String? settledCycleId;
 
   Expense({
     this.id,
@@ -69,6 +70,7 @@ class Expense {
     this.createdAt,
     this.updatedAt,
     this.v,
+    this.settledCycleId,
   });
 
   factory Expense.fromJson(Map<String, dynamic> json) => Expense(
@@ -88,6 +90,7 @@ class Expense {
             ? null
             : DateTime.parse(json["updatedAt"]),
         v: json["__v"],
+        settledCycleId: json["settledCycleId"] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -102,6 +105,7 @@ class Expense {
         "createdAt": createdAt?.toIso8601String(),
         "updatedAt": updatedAt?.toIso8601String(),
         "__v": v,
+        "settledCycleId": settledCycleId,
       };
 }
 

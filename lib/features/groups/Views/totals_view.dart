@@ -70,11 +70,11 @@ class TotalsView extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
 
             // ── Per member breakdown ───────────────────────
             Text("Per Member Breakdown", style: AppTheme.subHeadingText),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
 
             ...totals.map((member) {
               final isMe = member.userId == myId;
@@ -84,8 +84,9 @@ class TotalsView extends StatelessWidget {
                   groupTotal > 0 ? member.totalPaid / groupTotal : 0.0;
 
               return Container(
-                padding: EdgeInsets.all(16.w),
-                margin: EdgeInsets.only(bottom: 12.w),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                margin: EdgeInsets.only(bottom: 8.w),
                 decoration: BoxDecoration(
                   color: Constants.bgColorLight,
                   borderRadius: BorderRadius.circular(12),
@@ -144,7 +145,7 @@ class TotalsView extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 8),
 
                     // ── Paid vs Share row ───────────────────
                     Row(

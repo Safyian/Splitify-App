@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:splittify/core/config/app_config.dart';
 
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
@@ -14,13 +15,7 @@ class ApiClient {
     // print("Production Mode: $isProduction");
     dio = Dio(
       BaseOptions(
-        baseUrl:
-            // isProduction
-            //     ?
-            // "https://splitify-backend-production.up.railway.app",
-            "https://api.splittify.app",
-        // :
-        // "http://localhost:3000",
+        baseUrl: AppConfig.baseUrl,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
       ),

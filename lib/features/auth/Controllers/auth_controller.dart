@@ -1,8 +1,13 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+import '../../../core/bindings/initial_binding.dart';
 import '../../../shared/widgets/alert_widgets.dart';
 import '../../activity/activity_controller.dart';
 import '../../expenses/add_expense_controller.dart';
@@ -71,7 +76,6 @@ class AuthController extends GetxController {
   // ✅ Just reads token, NO navigation
   Future<void> checkLogin() async {
     final token = await storage.read(key: "token");
-    print("token = $token");
     isLoggedIn.value = token != null;
   }
 
@@ -91,6 +95,14 @@ class AuthController extends GetxController {
       if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
       Get.closeAllSnackbars();
 
+      ensureAppControllers();
+      try {
+        await Get.find<ProfileController>().getUserDetails();
+      } catch (_) {
+        // login succeeded + token stored; profile will refetch inside the app
+      }
+
+      loadInitialAppData();
       Get.offAll(() => NavigationView());
       emailCtrl.clear();
       passCtrl.clear();
@@ -159,7 +171,6 @@ class AuthController extends GetxController {
       final data = e.response?.data;
       final message = (data is Map ? data['message'] as String? : null) ??
           'Something went wrong';
-      print("msg: $message");
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.snackbar("Error", message, snackPosition: SnackPosition.BOTTOM);
       });
@@ -222,7 +233,6 @@ class AuthController extends GetxController {
         completePhone.value = '';
         Get.to(
           () => VerifyPhoneView(phone: phone, otpAlreadySent: true),
-          transition: Transition.cupertino,
         );
       }
     } catch (e) {
@@ -238,6 +248,87 @@ class AuthController extends GetxController {
         }
       }
       AlertWidgets.showSnackBar(message: message);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> signInWithGoogle() async {
+    try {
+      isLoading.value = true;
+      final signIn = GoogleSignIn.instance;
+      await signIn.initialize(
+        clientId: Platform.isIOS
+            ? '404438906252-cvm8dtcld1ae0soujl0asiauhohj8m6g.apps.googleusercontent.com' // iOS client ID
+            : null, // Android uses serverClientId only
+        // web client (backend audience) — both platforms
+        serverClientId:
+            '404438906252-1busgkil24ede462vfbqd5pq1tieu8jl.apps.googleusercontent.com',
+      );
+      final GoogleSignInAccount account = await signIn.authenticate();
+      final idToken = account.authentication.idToken;
+      if (idToken == null) {
+        AlertWidgets.showSnackBar(message: 'Google sign-in failed');
+        return;
+      }
+
+      final res = await _service.googleAuth(idToken);
+      await storage.write(key: 'token', value: res['token']);
+
+      ensureAppControllers();
+      try {
+        await Get.find<ProfileController>().getUserDetails();
+      } catch (_) {}
+      loadInitialAppData();
+      Get.offAll(() => NavigationView());
+    } on GoogleSignInException catch (e) {
+      if (e.code != GoogleSignInExceptionCode.canceled) {
+        AlertWidgets.showSnackBar(message: 'Google sign-in failed');
+      }
+      // canceled → silent, user backed out
+    } catch (e) {
+      AlertWidgets.showSnackBar(message: 'Google sign-in failed');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> signInWithApple() async {
+    try {
+      isLoading.value = true;
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      final idToken = credential.identityToken;
+      if (idToken == null) {
+        AlertWidgets.showSnackBar(message: 'Apple sign-in failed');
+        return;
+      }
+
+      // Apple sends name ONLY on first sign-in — capture it
+      final name = [credential.givenName, credential.familyName]
+          .where((p) => p != null && p.isNotEmpty)
+          .join(' ');
+
+      final res = await _service.appleAuth(idToken, name.isEmpty ? null : name);
+      await storage.write(key: 'token', value: res['token']);
+
+      ensureAppControllers();
+      try {
+        await Get.find<ProfileController>().getUserDetails();
+      } catch (_) {}
+      loadInitialAppData();
+      Get.offAll(() => NavigationView());
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code != AuthorizationErrorCode.canceled) {
+        AlertWidgets.showSnackBar(message: 'Apple sign-in failed');
+      }
+    } catch (e) {
+      AlertWidgets.showSnackBar(message: 'Apple sign-in failed');
     } finally {
       isLoading.value = false;
     }
@@ -268,13 +359,21 @@ class AuthController extends GetxController {
         );
         Get.to(
           () => VerifyPhoneView(phone: verifyPhone, otpAlreadySent: false),
-          transition: Transition.cupertino,
         );
         return;
       }
       await storage.write(key: 'token', value: res['token']);
       completePhone.value = '';
       passCtrl.clear();
+
+      ensureAppControllers();
+      try {
+        await Get.find<ProfileController>().getUserDetails();
+      } catch (_) {
+        // login succeeded + token stored; profile will refetch inside the app
+      }
+
+      loadInitialAppData();
       Get.offAll(() => NavigationView());
     } catch (e) {
       String message = 'Something went wrong. Please try again.';

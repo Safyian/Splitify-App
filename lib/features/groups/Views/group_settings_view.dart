@@ -411,8 +411,7 @@ class _SplitTypeCard extends StatelessWidget {
             Text("Default Split Type", style: AppTheme.subHeadingText),
             Text(
               "Applied automatically when adding new expenses",
-              style: AppTheme.normalText
-                  .copyWith(color: Colors.grey.shade500, fontSize: 12),
+              style: AppTheme.normalText.copyWith(color: Colors.grey.shade500),
             ),
             const SizedBox(height: 16),
             ..._options.map((opt) {
@@ -489,7 +488,7 @@ class _SplitTypeCard extends StatelessWidget {
 
     Get.bottomSheet(
       Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 36),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         decoration: const BoxDecoration(
           color: Constants.bgColorLight,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -509,15 +508,13 @@ class _SplitTypeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            Text('Balance Mode',
-                style: AppTheme.headingText.copyWith(fontSize: 17)),
+            Text('Balance Mode', style: AppTheme.subHeadingText),
             const SizedBox(height: 4),
             Text(
               'Choose how balances are calculated and displayed',
-              style: AppTheme.normalText
-                  .copyWith(color: Colors.grey.shade400, fontSize: 13),
+              style: AppTheme.normalText.copyWith(color: Colors.grey.shade500),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             _BalanceModeOption(
               title: 'Pairwise',
               subtitle:
@@ -882,9 +879,7 @@ class _DangerCard extends StatelessWidget {
       );
       if (goSettle) {
         Get.to(() => SettleUpView(
-              // groupId: groupCtrl.summaries[index].id,
               index: index,
-              // match the params SettleUpView actually requires
             ));
       }
       return; // do NOT show the leave dialog
@@ -969,7 +964,7 @@ class _BalanceModeOption extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isSelected
               ? Constants.activeColor.withAlpha(12)
@@ -985,8 +980,8 @@ class _BalanceModeOption extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 38,
-              height: 38,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: isSelected
                     ? Constants.activeColor.withAlpha(20)
@@ -995,12 +990,12 @@ class _BalanceModeOption extends StatelessWidget {
               ),
               alignment: Alignment.center,
               child: Icon(icon,
-                  size: 18,
+                  size: 14,
                   color: isSelected
                       ? Constants.activeColor
                       : Colors.grey.shade400),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1009,7 +1004,6 @@ class _BalanceModeOption extends StatelessWidget {
                     title,
                     style: AppTheme.normalText.copyWith(
                       fontWeight: FontWeight.w600,
-                      fontSize: 14,
                       color: isSelected
                           ? Constants.activeColor
                           : const Color(0xFF1C1C1E),
@@ -1019,8 +1013,8 @@ class _BalanceModeOption extends StatelessWidget {
                   Text(
                     subtitle,
                     style: AppTheme.normalText.copyWith(
-                      fontSize: 12,
-                      color: Colors.grey.shade400,
+                      color: Colors.grey.shade500,
+                      fontSize: 12.sp,
                     ),
                   ),
                 ],
@@ -1028,7 +1022,7 @@ class _BalanceModeOption extends StatelessWidget {
             ),
             if (isSelected)
               const Icon(Icons.check_circle_rounded,
-                  size: 20, color: Constants.activeColor),
+                  size: 16, color: Constants.activeColor),
           ],
         ),
       ),

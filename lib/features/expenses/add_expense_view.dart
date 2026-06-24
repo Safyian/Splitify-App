@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:splittify/core/constants/constants.dart';
 import 'package:splittify/features/groups/Controllers/groups_controller.dart';
 import 'package:splittify/features/groups/Models/group_members_model.dart';
@@ -30,7 +30,11 @@ InputDecoration _fieldDecor({
   return InputDecoration(
     labelText: label,
     prefixIcon: icon != null
-        ? Icon(icon, size: 20, color: Constants.activeColor)
+        ? Icon(
+            icon,
+            size: 18,
+            color: Constants.activeColor,
+          )
         : null,
     suffixText: suffix,
     prefixText: prefix,
@@ -39,15 +43,13 @@ InputDecoration _fieldDecor({
     border: base,
     enabledBorder: base,
     focusedBorder: focused,
-    labelStyle: TextStyle(
-        color: Colors.grey.shade500,
-        fontSize: 14,
-        fontFamily: GoogleFonts.inter().fontFamily),
-    floatingLabelStyle: TextStyle(
-        color: Constants.activeColor,
-        fontSize: 12,
-        fontFamily: GoogleFonts.inter().fontFamily),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+    labelStyle: AppTheme.normalText.copyWith(
+      color: Colors.grey.shade500,
+    ),
+    floatingLabelStyle: AppTheme.normalText.copyWith(
+      color: Constants.activeColor,
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
   );
 }
 
@@ -112,18 +114,18 @@ class _AddExpenseViewState extends State<AddExpenseView> {
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.opaque,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Amount hero ───────────────────────────
               _AmountCard(ctrl: expenseCtrl),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
 
               // ── Description ──────────────────────────
               TextField(
                 controller: expenseCtrl.descriptionCtrl,
-                style: AppTheme.subHeadingText,
+                style: AppTheme.normalText,
                 decoration: _fieldDecor(
                   label: 'What was it for?',
                   icon: Icons.receipt_long_outlined,
@@ -141,53 +143,44 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                 return GestureDetector(
                   onTap: () => _showPaidBySheet(members ?? []),
                   child: Container(
+                    width: double.infinity,
+                    height: 54.h,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 15),
+                        horizontal: 12, vertical: 12),
                     decoration: BoxDecoration(
                       color: Constants.bgColorLight,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Row(
                       children: [
+                        const SizedBox(width: 4),
                         const Icon(Icons.person_outline_rounded,
-                            size: 20, color: Constants.activeColor),
-                        const SizedBox(width: 12),
+                            size: 18, color: Constants.activeColor),
+                        const SizedBox(width: 18),
                         if (selected != null) ...[
-                          CircleAvatar(
-                            radius: 14,
-                            backgroundColor: Constants.activeColor,
-                            child: Text(
-                              selected.name![0].toUpperCase(),
-                              style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(selected.name!, style: AppTheme.subHeadingText),
+                          Text(selected.name!, style: AppTheme.normalText),
                         ] else
                           Text('Who paid?',
-                              style: GoogleFonts.inter(
-                                  color: Colors.grey.shade500, fontSize: 14)),
+                              style: AppTheme.normalText
+                                  .copyWith(color: Colors.grey.shade500)),
                         const Spacer(),
                         Icon(Icons.keyboard_arrow_down_rounded,
-                            color: Colors.grey.shade400, size: 20),
+                            color: Colors.grey.shade400, size: 18),
                       ],
                     ),
                   ),
                 );
               }),
-              const SizedBox(height: 24),
+              const SizedBox(height: 14),
 
               // ── Split by ─────────────────────────────
               const _SectionLabel(label: 'Split by'),
-              const SizedBox(height: 10),
+              const SizedBox(height: 2),
               Obx(() => _SplitTypeChips(
                     selected: expenseCtrl.selectedSplitType.value,
                     onSelect: (t) => expenseCtrl.selectedSplitType.value = t,
                   )),
-              const SizedBox(height: 22),
+              const SizedBox(height: 14),
 
               // ── Members ──────────────────────────────
               Obx(() {
@@ -202,7 +195,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _SectionLabel(label: _splitSectionTitle(splitType)),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 2),
                     ...members.map((m) => _buildMemberRow(m, splitType)),
                     if (splitType != SplitType.equal) ...[
                       const SizedBox(height: 8),
@@ -218,7 +211,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                 );
               }),
 
-              const SizedBox(height: 100),
+              const SizedBox(height: 50),
             ],
           ),
         ),
@@ -234,7 +227,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
         scrolledUnderElevation: 0,
         centerTitle: true,
         leading: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(12),
           child: GestureDetector(
             onTap: () => Get.back(),
             child: Container(
@@ -249,8 +242,8 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.close_rounded,
-                  size: 18, color: Colors.black87),
+              child:
+                  Icon(Icons.close_rounded, size: 18.w, color: Colors.black87),
             ),
           ),
         ),
@@ -264,7 +257,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
   Widget _buildSubmitBar() {
     return Container(
       padding: EdgeInsets.fromLTRB(
-          20, 12, 20, MediaQuery.of(context).padding.bottom + 16),
+          16, 6, 16, MediaQuery.of(context).padding.bottom + 12),
       decoration: BoxDecoration(
         color: Constants.bgColor,
         border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
@@ -277,16 +270,16 @@ class _AddExpenseViewState extends State<AddExpenseView> {
           onTap: enabled ? _submit : null,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            height: 54,
+            height: 54.h,
             decoration: BoxDecoration(
               color: enabled ? Constants.activeColor : Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             alignment: Alignment.center,
             child: Text(
               expenseCtrl.isEditMode.value ? 'Update Expense' : 'Add Expense',
-              style: GoogleFonts.inter(
-                fontSize: 15,
+              style: AppTheme.subHeadingText.copyWith(
+                fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
                 color: enabled ? Colors.white : Colors.grey.shade400,
                 letterSpacing: 0.2,
@@ -302,10 +295,10 @@ class _AddExpenseViewState extends State<AddExpenseView> {
   void _showPaidBySheet(List<Member> members) {
     Get.bottomSheet(
       Container(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
         decoration: const BoxDecoration(
           color: Constants.bgColorLight,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -352,18 +345,18 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                       child: Row(
                         children: [
                           CircleAvatar(
-                            radius: 18,
+                            radius: 14.w,
                             backgroundColor: isSelected
                                 ? Constants.activeColor
                                 : Colors.grey.shade200,
                             child: Text(
                               m.name![0].toUpperCase(),
-                              style: GoogleFonts.inter(
+                              style: AppTheme.normalText.copyWith(
                                 color: isSelected
                                     ? Colors.white
                                     : Colors.grey.shade500,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -378,15 +371,15 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                           ),
                           if (isSelected)
                             Container(
-                              width: 24,
-                              height: 24,
+                              width: 18.w,
+                              height: 18.w,
                               decoration: const BoxDecoration(
                                 color: Constants.activeColor,
                                 shape: BoxShape.circle,
                               ),
                               alignment: Alignment.center,
                               child: const Icon(Icons.check_rounded,
-                                  size: 14, color: Colors.white),
+                                  size: 12, color: Colors.white),
                             ),
                         ],
                       ),
@@ -406,17 +399,20 @@ class _AddExpenseViewState extends State<AddExpenseView> {
     return Obx(() {
       final isSelected = expenseCtrl.selectedMembers.contains(member.id);
       return Padding(
-        padding: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.only(bottom: 8),
         child: GestureDetector(
           onTap: () => expenseCtrl.toggleMember(member.id!),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical:
+                    (splitType == SplitType.equal && isSelected) ? 16 : 12),
             decoration: BoxDecoration(
               color: isSelected
                   ? Constants.activeColor.withValues(alpha: 0.06)
                   : Constants.bgColorLight,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(14.r),
               border: Border.all(
                 color: isSelected
                     ? Constants.activeColor.withValues(alpha: 0.3)
@@ -429,8 +425,8 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                 // Checkbox
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
-                  width: 22,
-                  height: 22,
+                  width: 22.w,
+                  height: 22.w,
                   decoration: BoxDecoration(
                     color:
                         isSelected ? Constants.activeColor : Colors.transparent,
@@ -445,35 +441,10 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                   alignment: Alignment.center,
                   child: isSelected
                       ? const Icon(Icons.check_rounded,
-                          size: 13, color: Colors.white)
+                          size: 12, color: Colors.white)
                       : null,
                 ),
                 const SizedBox(width: 12),
-
-                // Avatar
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? Constants.activeColor
-                        : Colors.grey.shade200,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    member.name![0].toUpperCase(),
-                    style: GoogleFonts.inter(
-                      color: isSelected ? Colors.white : Colors.grey.shade500,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-
-                // Name
                 Expanded(
                   child: Text(
                     member.name!,
@@ -487,8 +458,10 @@ class _AddExpenseViewState extends State<AddExpenseView> {
 
                 // Split input (exact / percentage)
                 if (splitType != SplitType.equal && isSelected)
-                  SizedBox(
-                    width: 96,
+                  Container(
+                    width: 96.w,
+                    height: 36.w,
+                    alignment: Alignment.center,
                     child: TextField(
                       controller: expenseCtrl.splitInputControllers[member.id],
                       keyboardType:
@@ -496,11 +469,12 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                       textInputAction: TextInputAction.done,
                       onEditingComplete: () => FocusScope.of(context).unfocus(),
                       textAlign: TextAlign.center,
-                      style: AppTheme.subHeadingText,
+                      style: AppTheme.normalText,
                       decoration: InputDecoration(
-                        isDense: true,
+                        // isDense: true,
+                        isCollapsed: true,
                         contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 10),
+                            horizontal: 8, vertical: 8),
                         filled: true,
                         fillColor: Constants.bgColor,
                         border: OutlineInputBorder(
@@ -538,9 +512,8 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                     ),
                     child: Text(
                       'Equal',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
+                      style: AppTheme.normalText.copyWith(
+                        fontSize: 11.sp,
                         color: Constants.activeColor,
                       ),
                     ),
@@ -615,7 +588,7 @@ class _AmountCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
       decoration: BoxDecoration(
         color: Constants.bgColorLight,
         borderRadius: BorderRadius.circular(20),
@@ -632,9 +605,7 @@ class _AmountCard extends StatelessWidget {
         children: [
           Text(
             'TOTAL AMOUNT',
-            style: GoogleFonts.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+            style: AppTheme.normalText.copyWith(
               color: Colors.grey.shade400,
               letterSpacing: 1.2,
             ),
@@ -647,8 +618,8 @@ class _AmountCard extends StatelessWidget {
               children: [
                 Text(
                   '\$',
-                  style: GoogleFonts.inter(
-                    fontSize: 28,
+                  style: AppTheme.headingText.copyWith(
+                    fontSize: 26.sp,
                     fontWeight: FontWeight.w600,
                     color: Constants.activeColor,
                     height: 1,
@@ -659,13 +630,11 @@ class _AmountCard extends StatelessWidget {
                   child: IntrinsicWidth(
                     child: TextField(
                       controller: ctrl.amountCtrl,
-                      textAlign: TextAlign.center,
+                      // textAlign: TextAlign.center,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      style: GoogleFonts.inter(
-                        fontSize: 44,
-                        fontWeight: FontWeight.w700,
-                        color: Constants.textDark,
+                      style: AppTheme.headingText.copyWith(
+                        fontSize: 36.sp,
                         letterSpacing: -1.5,
                         height: 1.1,
                       ),
@@ -674,9 +643,8 @@ class _AmountCard extends StatelessWidget {
                         isDense: true,
                         contentPadding: EdgeInsets.zero,
                         hintText: '0.00',
-                        hintStyle: GoogleFonts.inter(
-                          fontSize: 44,
-                          fontWeight: FontWeight.w700,
+                        hintStyle: AppTheme.headingText.copyWith(
+                          fontSize: 36.sp,
                           color: Colors.grey.shade200,
                           letterSpacing: -1.5,
                           height: 1.1,
@@ -691,7 +659,7 @@ class _AmountCard extends StatelessWidget {
           const SizedBox(height: 8),
           Container(
             height: 1.5,
-            width: 80,
+            width: 140.w,
             decoration: BoxDecoration(
               color: Constants.activeColor.withValues(alpha: 0.25),
               borderRadius: BorderRadius.circular(2),
@@ -712,8 +680,7 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: GoogleFonts.inter(
-        fontSize: 12,
+      style: AppTheme.normalText.copyWith(
         fontWeight: FontWeight.w600,
         color: Colors.grey.shade500,
         letterSpacing: 0.4,
@@ -740,7 +707,7 @@ class _SplitTypeChips extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Constants.bgColorLight,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: Colors.grey.shade100),
       ),
       child: Row(
@@ -751,17 +718,16 @@ class _SplitTypeChips extends StatelessWidget {
               onTap: () => onSelect(type),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
-                height: 38,
+                height: 38.w,
                 decoration: BoxDecoration(
                   color:
                       isSelected ? Constants.activeColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   _labels[type]!,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
+                  style: AppTheme.normalText.copyWith(
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected ? Colors.white : Colors.grey.shade500,
                   ),
@@ -821,17 +787,14 @@ class _ExpenseLoadingDialog extends StatelessWidget {
             const SizedBox(height: 18),
             Text(
               'Saving expense',
-              style: GoogleFonts.inter(
-                fontSize: 15,
+              style: AppTheme.subHeadingText.copyWith(
                 fontWeight: FontWeight.w600,
-                color: Constants.textDark,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Just a moment…',
-              style: GoogleFonts.inter(
-                fontSize: 13,
+              style: AppTheme.normalText.copyWith(
                 color: Colors.grey.shade400,
               ),
             ),
@@ -902,7 +865,7 @@ class _TotalHintRowState extends State<_TotalHintRow> {
     final isValid = remaining.abs() < 0.01;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: isValid
             ? const Color(0xFF0DAD85).withValues(alpha: 0.08)
@@ -926,9 +889,7 @@ class _TotalHintRowState extends State<_TotalHintRow> {
                 isPct
                     ? '${_currentTotal.toStringAsFixed(1)}% of 100%'
                     : '\$${_currentTotal.toStringAsFixed(2)} of \$${target.toStringAsFixed(2)}',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                style: AppTheme.normalText.copyWith(
                   color: isValid ? Constants.activeColor : Colors.orange,
                 ),
               ),
@@ -939,18 +900,15 @@ class _TotalHintRowState extends State<_TotalHintRow> {
               isPct
                   ? '${remaining > 0 ? '+' : ''}${remaining.toStringAsFixed(1)}% left'
                   : '${remaining > 0 ? '+' : ''}\$${remaining.toStringAsFixed(2)} left',
-              style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: Colors.orange,
-                  fontWeight: FontWeight.w500),
+              style: AppTheme.normalText.copyWith(
+                color: Colors.orange,
+              ),
             ),
           if (isValid)
             Text(
               'Balanced ✓',
-              style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: Constants.activeColor,
-                  fontWeight: FontWeight.w600),
+              style: AppTheme.normalText.copyWith(
+                  color: Constants.activeColor, fontWeight: FontWeight.w600),
             ),
         ],
       ),

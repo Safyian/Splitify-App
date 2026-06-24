@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../../core/constants/constants.dart';
 import '../../../core/theme/app_themes.dart';
+import '../../../shared/widgets/alert_widgets.dart';
 import '../../../shared/widgets/shimmer.dart';
 import '../../profile/profile_controller.dart';
 import '../Controllers/groups_controller.dart';
@@ -39,6 +40,13 @@ class BalancesView extends StatelessWidget {
         final myId = profileCtrl.user.value.user?.id ?? '';
         final members = groupCtrl.membersFor(groupId).members ?? [];
         final nameMap = {for (final m in members) m.id!: m.name!};
+
+        // failed to load → error state, before any "settled" interpretation
+        final balanceError = groupCtrl.balanceErrors[groupId];
+        if (balanceError != null &&
+            groupCtrl.allGroupBalances[groupId] == null) {
+          return _BalancesErrorState(groupId: groupId);
+        }
 
         final balances = groupCtrl.balancesFor(groupId).balances;
         final settlements = groupCtrl.balancesFor(groupId).settlements;
@@ -202,6 +210,11 @@ class BalancesView extends StatelessWidget {
                           balanceMode: groupCtrl.balancesFor(gId).balanceMode ??
                               'pairwise',
                         );
+                        if (breakdownData.netBalances.isEmpty) {
+                          AlertWidgets.showSnackBar(
+                              message: 'No balances to break down yet');
+                          return;
+                        }
                         showSettlementBreakdown(context, breakdownData);
                       },
                       child: Container(
@@ -501,6 +514,63 @@ class _BalancesSkeleton extends StatelessWidget {
           const SizedBox(width: 12),
           const ShimmerBox(width: 50, height: 12, borderRadius: 4),
         ],
+      ),
+    );
+  }
+}
+
+// ── Error state ────────────────────────────────────────────────────────────
+class _BalancesErrorState extends StatelessWidget {
+  const _BalancesErrorState({required this.groupId});
+  final String groupId;
+
+  @override
+  Widget build(BuildContext context) {
+    final groupCtrl = Get.find<GroupsController>();
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: Constants.redColor.withAlpha(15),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: const Icon(Icons.wifi_off_rounded,
+                  size: 28, color: Constants.redColor),
+            ),
+            const SizedBox(height: 16),
+            Text("Couldn't load balances",
+                style: AppTheme.subHeadingText
+                    .copyWith(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            Text("Check your connection and try again.",
+                style:
+                    AppTheme.normalText.copyWith(color: Colors.grey.shade400),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 20),
+            GestureDetector(
+              onTap: () => groupCtrl.fetchGroupBalances(
+                  groupId: groupId, forceRefresh: true),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 11),
+                decoration: BoxDecoration(
+                  color: Constants.activeColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text('Try again',
+                    style: AppTheme.normalText.copyWith(
+                        color: Colors.white, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

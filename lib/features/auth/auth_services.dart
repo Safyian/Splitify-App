@@ -13,8 +13,6 @@ class AuthService {
         "password": password,
       },
     );
-
-    // print(res);
     return res.data;
   }
 
@@ -88,6 +86,17 @@ class AuthService {
       'phone': phone,
       'password': password,
     });
+    return res.data;
+  }
+
+  Future<Map<String, dynamic>> googleAuth(String idToken) async {
+    final res = await _dio.post('/auth/google', data: {'idToken': idToken});
+    return res.data;
+  }
+
+  Future<Map<String, dynamic>> appleAuth(String idToken, String? name) async {
+    final res = await _dio
+        .post('/auth/apple', data: {'idToken': idToken, 'name': name});
     return res.data;
   }
 }
