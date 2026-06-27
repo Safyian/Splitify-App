@@ -1,8 +1,8 @@
-# 💸 Splitify
+# 💸 Splittify
 
 > **Split smart. Settle fast.**
 
-A full-stack bill-splitting app (like Splitwise) built with Flutter + GetX on the frontend and Node.js + Express + MongoDB on the backend. Splitify lets friend groups track shared expenses, visualise spending patterns, and settle debts in the fewest possible transactions using a greedy debt-simplification algorithm.
+A bill-splitting app (like Splitwise) built with Flutter + GetX, backed by a Node.js + Express + MongoDB REST API. Splittify lets friend groups track shared expenses, visualise spending patterns, and settle debts in the fewest possible transactions using a greedy debt-simplification algorithm.
 
 ---
 
@@ -11,7 +11,7 @@ A full-stack bill-splitting app (like Splitwise) built with Flutter + GetX on th
 ![GetX](https://img.shields.io/badge/GetX-4.7.3-9C27B0)
 ![Android](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)
 ![iOS](https://img.shields.io/badge/Platform-iOS-000000?logo=apple&logoColor=white)
-![Backend](https://img.shields.io/badge/Backend-Railway-0B0D0E?logo=railway&logoColor=white)
+![Backend](https://img.shields.io/badge/Backend-Node.js-339933?logo=nodedotjs&logoColor=white)
 
 ---
 
@@ -53,23 +53,28 @@ A full-stack bill-splitting app (like Splitwise) built with Flutter + GetX on th
 
 ### 🔐 Authentication
 - Animated splash screen with fade + slide entrance and decorative teal blob backgrounds
-- Register with name, email, and password — field-level inline validation (length, format, alphanumeric password)
-- Login with email/password — JWT persisted in flutter_secure_storage
+- **Four sign-in methods**:
+  - **Email + password** — field-level inline validation (length, format, alphanumeric password)
+  - **Phone + OTP** — register/login by phone number with a one-time passcode (E.164 entry via `intl_phone_field`, OTP UI via `pinput`)
+  - **Google Sign-In** — available on **both** Android and iOS
+  - **Apple Sign-In** — available on **iOS only** (gated behind `Platform.isIOS`; captures the user's name on first sign-in)
+- JWT persisted in `flutter_secure_storage`
 - Email verification gate — redirected to a resend-verification screen on unverified login (HTTP 403)
 - Forgot password flow — triggers a reset email via API
-- Auto-login on relaunch (token check in splash)
-- Full logout — clears JWT, destroys all GetX controllers, returns to Login
+- Auto-login on relaunch (token check in splash); on a network failure with a valid token, a "Couldn't connect" retry screen is shown instead of logging the user out
+- Full logout — clears JWT, destroys all per-user GetX controllers, returns to Login
 
 ### 🏠 Groups
 - Groups list with per-group balance summary card (owed / owes / settled status)
 - Shimmer skeleton loading on first fetch
-- Create group: name + emoji picker (24 presets) + optional friends from your friend list
+- Create group: name + emoji picker + optional friends from your friend list
 - Per-group balance preview (up to 2 rows inline; "+N more ›" tap opens the full breakdown sheet)
 - "All settled up" state with green check indicator
 - Group card taps navigate to the full expense view
 
 ### 💰 Expenses
 - Expenses grouped by month with a month-total header (settlements excluded from total)
+- **Paginated** expense history — older expenses load on demand
 - Category icons auto-resolved from description keywords (food, transport, home, utilities, entertainment, shopping, health, education, and more)
 - Expense card shows: category icon, description, payer, "you lent / you borrowed" amount, date
 - **Add Expense**: description, amount, payer selector, member toggle checkboxes, split type selector
@@ -84,7 +89,7 @@ A full-stack bill-splitting app (like Splitwise) built with Flutter + GetX on th
 
 ### ⚖️ Balances
 - Net balance per member (positive = gets back, negative = owes)
-- Suggested settlements list (minimum transactions via greedy algorithm)
+- **Balance modes** — view raw **pairwise** direct debts (default) or **simplified** suggested settlements (minimum transactions via greedy algorithm); toggle per group in settings
 - Shimmer loading state while balances are calculated server-side
 - "Everyone is settled up" empty state with celebration icon
 
@@ -109,30 +114,42 @@ Triggered from: the Balances screen ("How is this calculated?" button) and the G
 - Linear progress bar showing each member's proportion of group spend
 - "You" card highlighted with a teal border
 
+### 👥 Friends & Contacts
+- Friends list with per-friend net balance across all shared groups
+- **Add a friend by email**
+- **Add from device contacts** — contacts are matched against registered users using **privacy-preserving SHA-256 hashing** (phone numbers / emails are hashed on-device before being sent for matching)
+- **Invite non-registered contacts** — share an invite to people who aren't on Splittify yet via the native share sheet
+- Friend changes refresh balances across the app
+
 ### ⚙️ Group Settings
 - Rename group (inline text field)
-- Change group emoji (24-emoji picker grid)
+- Change group emoji (emoji picker grid)
 - Change default split type (equal / exact / percentage)
-- Add member by email
+- Change balance mode (pairwise / simplified)
+- Add member by email, by user, or from contacts
 - Remove member with confirmation dialog
 - Leave group (any member)
-- Delete group (creator only — danger zone)
-- All mutations update local state immediately without a full refetch
+- Delete group (creator/admin only — danger zone)
+- Local mutations (rename, emoji, split type, balance mode) update state immediately without a full refetch
 
 ### 👤 Profile
 - Avatar card with initials circle (gradient background) and inline name edit shortcut
 - Overall balance summary card (teal gradient): total you're owed, total you owe, net, active group count
 - Edit display name (bottom sheet with validation)
 - Set default split type preference (persisted; applied when opening Add Expense)
-- Invite a friend (copies app link to clipboard)
+- Invite a friend (shares the app link)
 - Account settings: display name, email (read-only)
 - Delete account (confirmation sheet with guard copy)
 - Log out button
+
+### 🔔 Activity
+- Activity feed surfacing new expenses and settlements across your groups (paginated)
 
 ### 🧩 UX & Polish
 - Portrait-only orientation lock
 - Shimmer skeleton loading on Groups list, Expense list, and Balances screen
 - All data mutations invalidate the relevant cache keys and silently refresh in the background
+- **Offline-aware fetches** — a failed load with no cached data shows an inline retry/error state, while a failed refresh of existing data keeps the screen and shows a snackbar (load-failure is distinguished from genuinely-empty)
 - Empty states with icons and CTAs on every screen
 - Consistent snackbar via `AlertWidgets.showSnackBar()` — never raw `Get.snackbar()`
 
@@ -148,12 +165,24 @@ Triggered from: the Balances screen ("How is this calculated?" button) and the G
 | `get` | ^4.7.3 | State management, routing, dependency injection |
 | `dio` | ^5.9.1 | HTTP client with JWT interceptor |
 | `flutter_secure_storage` | ^10.0.0 | Encrypted JWT token storage |
-| `flutter_screenutil` | ^5.9.3 | Responsive `.w` / `.sp` sizing (design base 414×896) |
-| `google_fonts` | ^7.0.0 | Inter font family throughout |
+| `flutter_screenutil` | ^5.9.3 | Responsive `.w` / `.h` / `.sp` / `.r` sizing (design base 414×896) |
 | `flutter_svg` | ^2.0.10+1 | SVG logo and icon assets |
 | `lottie` | ^3.1.3 | Lottie JSON animation support |
 | `fl_chart` | ^0.71.0 | Donut and bar charts |
+| `google_sign_in` | ^7.2.0 | Google authentication (Android + iOS) |
+| `sign_in_with_apple` | ^8.1.0 | Apple authentication (iOS) |
+| `intl_phone_field` | ^3.2.0 | Phone number input with country codes |
+| `pinput` | ^5.0.0 | OTP / PIN entry fields |
+| `flutter_contacts` | ^2.2.0 | Device contacts access for friend matching |
+| `permission_handler` | ^11.3.0 | Runtime permission requests (contacts) |
+| `crypto` | ^3.0.3 | SHA-256 hashing for privacy-preserving contact matching |
+| `share_plus` | ^13.0.0 | Native share sheet for invites |
+| `url_launcher` | ^6.3.2 | Open external links |
 | `cupertino_icons` | ^1.0.6 | iOS-style icon support |
+
+> **Fonts:** The **Inter** family is bundled as static `.ttf` files in `assets/fonts/` (weights 400–800) and declared in `pubspec.yaml`. The app sets `fontFamily: 'Inter'` on its theme — it does **not** use the `google_fonts` runtime package, so there is no font download at runtime.
+
+> **Dev tooling:** `flutter_lints ^3.0.0`, `flutter_launcher_icons ^0.14.4`.
 
 ### Backend
 
@@ -162,59 +191,76 @@ Triggered from: the Balances screen ("How is this calculated?" button) and the G
 | Node.js + Express | REST API server |
 | MongoDB + Mongoose | Database and ODM |
 | JWT | Stateless authentication |
-| Railway | Production cloud deployment |
+
+> The backend is a separate service and is **not** included in this repository. The Flutter app talks to it through the base URL configured in `lib/core/config/app_config.dart`.
 
 ---
 
 ## 🏗 Architecture
 
 ```
-splitify/
+splitify/                                  # repo folder (one "t"); package name is "splittify"
 ├── lib/
-│   ├── main.dart                          # Entry — ScreenUtilInit + GetMaterialApp
+│   ├── main.dart                          # Entry — ScreenUtilInit + GetMaterialApp + InitialBinding
 │   ├── core/
 │   │   ├── api/
-│   │   │   └── api_client.dart            # Dio singleton, base URL, JWT interceptor
+│   │   │   └── api_client.dart            # Dio singleton + JWT interceptor
+│   │   ├── bindings/
+│   │   │   └── initial_binding.dart       # App-wide controllers registered once
+│   │   ├── config/
+│   │   │   └── app_config.dart            # Base API URL lives here
 │   │   ├── constants/
-│   │   │   └── constants.dart             # Color palette, asset paths
+│   │   │   └── constants.dart             # Color palette, asset paths, input decoration
 │   │   ├── theme/
-│   │   │   └── app_themes.dart            # headingText / subHeadingText / normalText
+│   │   │   └── app_themes.dart            # headingText / subHeadingText / normalText (Inter)
 │   │   └── utils/
 │   │       ├── cache_manager.dart         # TTL-based in-memory cache singleton
 │   │       ├── date_helper.dart           # SplitifyDateUtils (format + groupByMonth)
+│   │       ├── expense_icon_helper.dart   # Category icon resolution
+│   │       ├── hash_helper.dart           # SHA-256 hashing for contact matching
 │   │       └── snackbar_helper.dart       # SnackBarHelper.success / .error
 │   ├── features/
-│   │   ├── auth/                          # Login, Register, Splash, Verify, Forgot PW
-│   │   ├── groups/                        # Groups list, Expenses, Balances, Settings,
-│   │   │                                  # Settle Up, Charts, Totals, Breakdown Sheet
-│   │   ├── expenses/                      # Add/Edit expense, Charts helpers
-│   │   ├── friends/                       # Friends list (layout complete)
-│   │   ├── activity/                      # Activity feed (placeholder)
+│   │   ├── auth/
+│   │   │   ├── Controllers/               # AuthController
+│   │   │   ├── Views/                     # Login, Register, Splash, Verify Email,
+│   │   │   │                              # Verify Phone, Forgot PW, Social buttons
+│   │   │   ├── auth_services.dart
+│   │   │   └── auth_widgets.dart
+│   │   ├── groups/
+│   │   │   ├── Controllers/               # GroupsController
+│   │   │   ├── Models/                    # summary / expenses / members / balances
+│   │   │   ├── Views/                     # Groups list, Expenses, Balances, Settings,
+│   │   │   │                              # Settle Up, Totals, Detail, Breakdown Sheet,
+│   │   │   │                              # Create Group, Add Member Sheet
+│   │   │   └── group_service.dart
+│   │   ├── expenses/                      # Add/Edit expense, Charts, helpers, service
+│   │   ├── friends/                       # Friends list + contact picker + service
+│   │   ├── activity/                      # Activity feed (controller / model / service / view)
 │   │   ├── navigation/                    # Bottom nav controller + shell
-│   │   └── profile/                       # Profile view, controller, user model
+│   │   └── profile/                       # Profile view, controller, service, user model
 │   └── shared/
-│       └── widgets/                       # AlertWidgets, GroupCard, Shimmer, BottomNav
-└── src/                                   # Node.js backend
-    ├── controllers/
-    ├── models/
-    ├── routes/
-    ├── middleware/
-    └── utils/
-        └── balance.js                     # calculateGroupBalances() — cents arithmetic
+│       ├── contacts/                      # Reusable contact picker widgets
+│       └── widgets/                       # AlertWidgets, AppDialogs, GroupCard,
+│                                          # Shimmer, BottomNav, cards
+├── assets/
+│   ├── fonts/                             # Inter static .ttf files (400–800)
+│   └── images/                            # SVG / PNG / Lottie JSON assets
+├── android/                              # Android project (Google sign-in config)
+└── ios/                                  # iOS project (Apple + Google sign-in config)
 ```
 
 ---
 
 ## 🧠 State Management
 
-Splitify uses **GetX** exclusively — no Provider, Riverpod, or Bloc.
+Splittify uses **GetX** exclusively — no Provider, Riverpod, or Bloc.
 
 ### Pattern
 
 ```dart
-// Register once (permanent controllers)
-Get.put(GroupsController());
-Get.put(ProfileController());
+// App-wide controllers registered once in InitialBinding
+Get.put(GroupsController(), permanent: true);
+Get.put(ProfileController(), permanent: true);
 
 // Reactive variables
 RxList<GroupSummary> summaries = <GroupSummary>[].obs;
@@ -226,14 +272,19 @@ Obx(() => Text(groupCtrl.summaries.length.toString()))
 
 ### Controller Lifecycle
 
+App-wide controllers are registered **once** in `core/bindings/initial_binding.dart`
+(`Get.put(..., permanent: true)`) and retrieved everywhere with `Get.find<T>()`.
+On logout they are explicitly deleted to wipe per-user state, then re-created on the
+next sign-in via `ensureAppControllers()`.
+
 | Controller | Lifetime | Notes |
 |-----------|---------|-------|
-| `AuthController` | App session | Registered in Splash |
-| `ProfileController` | App session | Registered in Splash |
-| `GroupsController` | App session | Main data hub for all group data |
-| `NavigationController` | App session | Tracks bottom nav index |
-| `FriendsController` | App session | Tagged `'friends'` |
-| `ActivityController` | App session | |
+| `AuthController` | App session | Registered in `InitialBinding`; owns all auth flows |
+| `ProfileController` | App session | Registered in `InitialBinding`; current user |
+| `GroupsController` | App session | Registered in `InitialBinding`; main data hub |
+| `ActivityController` | App session | Registered in `InitialBinding` |
+| `NavigationController` | App session | Registered in `InitialBinding`; tracks bottom nav index |
+| `FriendsController` | App session | Registered with `tag: 'friends'` from the Friends screen |
 | `AddExpenseController` | Per-navigation | Deleted + re-created on every open to prevent stale state |
 
 ### Key Rule — Edit Mode
@@ -251,17 +302,17 @@ Get.to(() => const AddExpenseView());
 
 ## ⚡ Caching Strategy
 
-Splitify uses a **TTL-based in-memory singleton** (`CacheManager`) combined with **per-group Map-based stores** in `GroupsController`.
+Splittify uses a **TTL-based in-memory singleton** (`CacheManager`) combined with **per-group Map-based stores** in `GroupsController`.
 
 ### How It Works
 
 ```dart
 class CacheManager {
-  // isFresh(key) — true if fetched within TTL (default 5 min)
-  // markFetched(key) — stamps the current time for a key
-  // invalidate(key) — forces the next access to hit the network
+  // isFresh(key, {ttl}) — true if fetched within TTL (default 5 min; per-group 120 s)
+  // markFetched(key)    — stamps the current time for a key
+  // invalidate(key)     — forces the next access to hit the network
   // invalidateAll([...keys]) — batch invalidation
-  // clear() — wipe everything on logout
+  // clear()             — wipe everything on logout
 }
 
 class CacheKeys {
@@ -299,15 +350,21 @@ await Future.wait([
 ]);
 ```
 
-Local-only mutations (rename, emoji, split type) update `summaries[index]` in place and call `summaries.refresh()` — no network round-trip.
+Local-only mutations (rename, emoji, split type, balance mode) update `summaries[index]` in place and call `summaries.refresh()` — no network round-trip.
 
 ---
 
 ## 🌐 Backend Integration
 
-**Production API:** `https://splitify-backend-production.up.railway.app`
+The base API URL is configured in **`lib/core/config/app_config.dart`**:
 
-All requests attach the stored JWT automatically via a Dio interceptor:
+```dart
+class AppConfig {
+  static const String baseUrl = '<YOUR_BACKEND_BASE_URL>';
+}
+```
+
+All requests attach the stored JWT automatically via a Dio interceptor in `lib/core/api/api_client.dart`:
 
 ```dart
 options.headers["Authorization"] = "Bearer $token";
@@ -317,24 +374,42 @@ options.headers["Authorization"] = "Bearer $token";
 
 | Method | Endpoint | Description |
 |--------|---------|-------------|
-| `POST` | `/api/auth/register` | Register + trigger email verification |
-| `POST` | `/api/auth/login` | Returns `{ token, user }` |
-| `POST` | `/api/auth/forgot-password` | Send password reset email |
-| `GET` | `/api/groups/summary` | All groups with balance preview |
-| `POST` | `/api/groups` | Create group |
-| `GET` | `/api/groups/:id/expenses` | Expense list |
-| `POST` | `/api/groups/:id/expenses` | Add expense |
-| `PUT` | `/api/groups/:id/expenses/:eid` | Update expense |
-| `DELETE` | `/api/groups/:id/expenses/:eid` | Delete expense |
-| `GET` | `/api/groups/:id/balances` | Net balances + simplified settlements |
-| `POST` | `/api/groups/:id/settle` | Record a settlement payment |
-| `POST` | `/api/groups/:id/members` | Add member by email |
-| `DELETE` | `/api/groups/:id/members/:mid` | Remove member |
-| `PUT` | `/api/groups/:id/rename` | Rename group |
-| `PUT` | `/api/groups/:id/emoji` | Update group emoji |
-| `PUT` | `/api/groups/:id/default-split-type` | Update default split type |
-| `DELETE` | `/api/groups/:id/leave` | Leave group |
-| `DELETE` | `/api/groups/:id` | Delete group (creator only) |
+| `POST` | `/auth/register` | Register (email or phone) + trigger verification |
+| `POST` | `/auth/login` | Email/password login → `{ token, user }` |
+| `POST` | `/auth/login-phone` | Phone + password login |
+| `POST` | `/auth/send-phone-otp` | Send a phone OTP |
+| `POST` | `/auth/verify-phone-otp` | Verify a phone OTP |
+| `POST` | `/auth/google` | Exchange a Google ID token for a session |
+| `POST` | `/auth/apple` | Exchange an Apple ID token for a session |
+| `POST` | `/auth/resend-verification` | Resend the email verification link |
+| `POST` | `/auth/forgot-password` | Send password reset email |
+| `GET` | `/auth/me` | Current user profile |
+| `PATCH` | `/auth/me` | Update display name |
+| `DELETE` | `/auth/me` | Delete account |
+| `GET` | `/groups/summary` | All groups with balance preview |
+| `POST` | `/groups/new` | Create group |
+| `GET` | `/groups/:id/expenses` | Expense list (paginated) |
+| `POST` | `/groups/:id/expenses` | Add expense |
+| `PATCH` | `/groups/:id/expenses/:eid` | Update expense |
+| `DELETE` | `/groups/:id/expenses/:eid` | Delete expense |
+| `PATCH` | `/groups/:id/settlements/:eid` | Update a settlement amount |
+| `GET` | `/groups/:id/balances` | Net balances + pairwise + simplified settlements |
+| `POST` | `/groups/:id/settle` | Record a settlement payment |
+| `POST` | `/groups/:id/members` | Add member (by email, user id, or contact) |
+| `DELETE` | `/groups/:id/members/:mid` | Remove member |
+| `PATCH` | `/groups/:id/name` | Rename group |
+| `PATCH` | `/groups/:id/emoji` | Update group emoji |
+| `PATCH` | `/groups/:id/settings/split-type` | Update default split type |
+| `PATCH` | `/groups/:id/settings/balance-mode` | Update balance mode |
+| `POST` | `/groups/:id/leave` | Leave group |
+| `DELETE` | `/groups/:id` | Delete group (creator/admin only) |
+| `GET` | `/friends` | Friends list with balances |
+| `POST` | `/friends` | Add friend by email |
+| `POST` | `/friends/add-by-id` | Add friend by user id |
+| `DELETE` | `/friends/:id` | Remove friend |
+| `POST` | `/friends/invite` | Invite a non-registered contact |
+| `POST` | `/users/check-contacts` | Match hashed contacts against registered users |
+| `GET` | `/activity` | Activity feed (paginated) |
 
 ### Debt Simplification Algorithm (Backend)
 
@@ -353,9 +428,9 @@ The backend runs a **greedy algorithm** to minimise settlement transactions:
 
 ### Prerequisites
 
-- Flutter SDK ≥ 3.x ([install guide](https://docs.flutter.dev/get-started/install))
-- Android Studio or Xcode for a device/simulator
-- Node.js ≥ 18 + MongoDB (only needed if running the backend locally)
+- Flutter SDK ≥ 3.x, Dart `>=3.4.4 <4.0.0` ([install guide](https://docs.flutter.dev/get-started/install))
+- Android Studio (min SDK 21) and/or Xcode + CocoaPods for a device/simulator
+- A running instance of the Splittify backend API
 
 ### 1. Clone the repository
 
@@ -372,27 +447,21 @@ flutter pub get
 
 ### 3. Configure the API URL
 
-Open `lib/core/api/api_client.dart` and set the base URL:
+Open **`lib/core/config/app_config.dart`** and set the base URL to your own backend instance:
 
 ```dart
-// Local backend:
-baseUrl: "http://localhost:3000",
-
-// Production (Railway — already set by default):
-baseUrl: "https://splitify-backend-production.up.railway.app",
+class AppConfig {
+  static const String baseUrl = '<YOUR_BACKEND_BASE_URL>';
+}
 ```
 
-> **iOS Simulator:** use `http://localhost:3000`  
-> **Android Emulator:** use `http://10.0.2.2:3000`
+> **iOS Simulator:** a local backend is reachable at `http://localhost:<port>`
+> **Android Emulator:** use `http://10.0.2.2:<port>` to reach a local backend
 
-### 4. (Optional) Run the backend locally
+### 4. Configure social sign-in (optional)
 
-```bash
-cd src
-npm install
-# Create a .env with MONGODB_URI and JWT_SECRET
-npm start
-```
+Google and Apple sign-in require your own credentials configured in the native
+`android/` and `ios/` projects. Provide your own client IDs — do not commit secrets.
 
 ### 5. Run the app
 
@@ -406,22 +475,23 @@ flutter run -d <device-id>
 
 ---
 
-## 📦 Building a Release APK
+## 📦 Building a Release
 
 ```bash
+# Android APK
 flutter build apk --release
+
+# Android App Bundle (Play Store)
+flutter build appbundle --release
+
+# iOS (macOS only)
+flutter build ios --release
 ```
 
-Output path:
+APK output path:
 
 ```
 build/app/outputs/flutter-apk/app-release.apk
-```
-
-For a Play Store app bundle:
-
-```bash
-flutter build appbundle --release
 ```
 
 ---
@@ -430,23 +500,29 @@ flutter build appbundle --release
 
 ```
 Launch app
-    └── Splash (2 s) — checks stored JWT
+    └── Splash (~2 s) — checks stored JWT
           ├── Token valid + profile loaded  →  Home (Groups)
-          └── No token / expired           →  Login
+          ├── No token / 401                →  Login
+          └── Token valid but offline       →  "Couldn't connect" retry screen
 
-Register
-    └── POST /register  →  Email Verification screen
-          └── Click email link  →  Login
-
-Login
-    ├── HTTP 403 (unverified)  →  Verify Email screen (resend option)
-    └── Success  →  JWT stored securely  →  Home
+Sign in / Register
+    ├── Email + password
+    │     ├── Register  →  Email Verification screen  →  (verify link)  →  Login
+    │     └── Login
+    │           ├── HTTP 403 (unverified)  →  Verify Email screen (resend option)
+    │           └── Success  →  JWT stored securely  →  Home
+    ├── Phone + OTP
+    │     └── Register / Login  →  Verify Phone screen (OTP)  →  Home
+    ├── Google (Android + iOS)
+    │     └── Google account  →  POST /auth/google  →  Home
+    └── Apple (iOS only)
+          └── Apple ID  →  POST /auth/apple  →  Home
 
 Forgot Password
-    └── Enter email  →  POST /forgot-password  →  reset email sent  →  Login
+    └── Enter email  →  POST /auth/forgot-password  →  reset email sent  →  Login
 
 Logout
-    └── Delete JWT  →  destroy all controllers  →  Login screen
+    └── Delete JWT  →  destroy per-user controllers  →  Login screen
 ```
 
 ---
@@ -459,16 +535,18 @@ Logout
 | Charts (donut, bar, my share) | ✅ Complete |
 | Totals view | ✅ Complete |
 | Settlement Breakdown Sheet (4-step) | ✅ Complete |
-| Group Settings (rename, emoji, split type, members) | ✅ Complete |
+| Group Settings (rename, emoji, split type, balance mode, members) | ✅ Complete |
 | Profile (edit name, default split, delete account) | ✅ Complete |
 | Email verification + forgot password | ✅ Complete |
+| Phone + OTP authentication | ✅ Complete |
+| Google + Apple Sign-In | ✅ Complete |
+| Friends screen + add by email / contacts (hashed matching) | ✅ Complete |
+| Invite flow for non-registered contacts | ✅ Complete |
+| Activity feed | ✅ Complete |
+| Expense list pagination | ✅ Complete |
 | TTL-based cache with per-group maps | ✅ Complete |
 | Shimmer skeleton loading states | ✅ Complete |
-| Friends screen | 🔧 Layout complete — API integration pending |
-| Activity feed | 🔧 Placeholder screen |
 | Push notifications | 📋 Planned |
-| Invite flow for non-registered users | 📋 Planned |
-| Expense list pagination | 📋 Planned |
 | Dark mode | 📋 Planned |
 
 ---
@@ -482,7 +560,7 @@ Logout
 | `activeColor` | `#0DAD85` | Primary brand colour · positive balances · CTAs |
 | `redColor` | `#E56D39` | Debt · danger · delete actions |
 | `chipColor` | `#373B3F` | Inactive action chips |
-| Font | Inter (Google Fonts) | All text — never hardcoded `fontFamily` |
+| Font | Inter (bundled static fonts in `assets/fonts/`, weights 400–800) | All text — set via theme `fontFamily: 'Inter'`, never hardcoded per widget |
 | Card radius | 12–16 px | Consistent rounding on all cards |
 | Chip radius | 10 px | Action chips |
 | Pill radius | 20 px | Badge pills |
@@ -495,4 +573,5 @@ Built by **Safyian** — [GitHub](https://github.com/Safyian)
 
 ---
 
-_Splitify — because nobody likes doing the maths after dinner._
+_Splittify — because nobody likes doing the maths after dinner._
+</content>
