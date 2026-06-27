@@ -17,35 +17,39 @@ A bill-splitting app (like Splitwise) built with Flutter + GetX, backed by a Nod
 
 ## 📸 Screenshots
 
-### Groups & Expense List
+### 🔐 Authentication
 
-| Groups | Group Details |
-|--------|---------------|
-| <img src="https://github.com/user-attachments/assets/1730a03e-623d-45ee-8c72-81118af12fb7" width="220"/> | <img src="https://github.com/user-attachments/assets/65daf175-5584-4e09-8c61-7d847b901681" width="220"/> |
+| Sign In | Sign Up |
+|:-------:|:-------:|
+| <img src="https://github.com/user-attachments/assets/c0d142a5-9fd4-481f-9dcf-d9df7acfca1b" width="220"/> | <img src="https://github.com/user-attachments/assets/0e0a018f-e1dc-4d7c-ae81-b6b6bfaa066e" width="220"/> |
 
-### Add Expense
+### 🧭 Main Navigation
 
-| Add Expense |
-|-------------|
-| <img src="https://github.com/user-attachments/assets/52255a5c-ffae-4140-900f-e5ae8867e17d" width="220"/> |
+| Friends | Groups | Activity | Profile |
+|:-------:|:------:|:--------:|:-------:|
+| <img src="https://github.com/user-attachments/assets/d775f0cc-1aa6-4a9d-9ac8-2cc741737be5" width="220"/> | <img src="https://github.com/user-attachments/assets/7c5c8cf3-00dc-4fc5-84b5-58177a45488f" width="220"/> | <img src="https://github.com/user-attachments/assets/1f1b95d9-58b6-4aba-aa00-997023a099fc" width="220"/> | <img src="https://github.com/user-attachments/assets/72d96852-025f-4290-acd4-c130eb63fc37" width="220"/> |
 
-### Charts
+### 💰 Group Expenses
 
-| Chart View 1 | Chart View 2 |
-|--------------|--------------|
-| <img src="https://github.com/user-attachments/assets/df6b61ee-c3d0-4370-96cb-26d02cc76380" width="220"/> | <img src="https://github.com/user-attachments/assets/88f90f17-8e19-4e4c-bada-3b039143c494" width="220"/> |
+| Expenses | Expense Details | Add Expense |
+|:--------:|:---------------:|:-----------:|
+| <img src="https://github.com/user-attachments/assets/15eb49ef-a863-41dd-bfe1-9e0400f9c7e7" width="220"/> | <img src="https://github.com/user-attachments/assets/65c82b35-ba4b-4047-bca1-6c0ea81400be" width="220"/> | <img src="https://github.com/user-attachments/assets/62fdbb61-8338-4847-9b50-921e257a8530" width="220"/> |
 
-### Balances
+| Settle Up | Add Settlement |
+|:---------:|:--------------:|
+| <img src="https://github.com/user-attachments/assets/07c3fc7f-5f81-453c-bfdc-08722101611b" width="220"/> | <img src="https://github.com/user-attachments/assets/c1a6240a-cb09-4df4-baf9-366671aa1585" width="220"/> |
 
-| Balances |
-|----------|
-| <img src="https://github.com/user-attachments/assets/3f733030-9dab-4caa-a393-81a1461c0409" width="220"/> |
+### 🏠 Create & Manage Groups
 
-### Settlement Breakdown
+| Create — Step 1 | Create — Step 2 | Group Settings |
+|:---------------:|:---------------:|:--------------:|
+| <img src="https://github.com/user-attachments/assets/16baff97-8ec1-4160-9f8a-d6afb60c545d" width="220"/> | <img src="https://github.com/user-attachments/assets/0105222f-e053-40c3-b2fb-218219826c50" width="220"/> | <img src="https://github.com/user-attachments/assets/fe4f3ceb-a98a-4525-9dcd-9a9ff43a6c01" width="220"/> |
 
-| Step 1 | Step 2 | Step 3 | Step 4 |
-|--------|--------|--------|--------|
-| <img src="https://github.com/user-attachments/assets/8fd7ccfe-eef8-41b5-9366-4aa8691e4b3c" width="220"/> | <img src="https://github.com/user-attachments/assets/94cd38ee-7b6b-4e2e-b186-af9f50892995" width="220"/> | <img src="https://github.com/user-attachments/assets/0e8cffd1-e4b7-432b-a184-038c3b67c949" width="220"/> | <img src="https://github.com/user-attachments/assets/39d57da6-e037-45df-8f2f-501336aebbf4" width="220"/> |
+### 📊 Insights
+
+| Charts | Totals |
+|:------:|:------:|
+| <img src="https://github.com/user-attachments/assets/64a5ed2f-1737-4054-ad8e-f15ab39b5041" width="220"/> | <img src="https://github.com/user-attachments/assets/52bb3db5-735a-4cf3-98b9-c6257d24eca7" width="220"/> |
 
 ---
 
