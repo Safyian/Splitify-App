@@ -14,7 +14,6 @@ import '../../expenses/add_expense_controller.dart';
 import '../../friends/friends_controller.dart';
 import '../../groups/Controllers/groups_controller.dart';
 import '../../navigation/nav_controller.dart';
-import '../../navigation/navigation_view.dart';
 import '../../profile/profile_controller.dart';
 import '../Views/login_view.dart';
 import '../Views/verify_email_view.dart';
@@ -103,7 +102,8 @@ class AuthController extends GetxController {
       }
 
       loadInitialAppData();
-      Get.offAll(() => NavigationView());
+      // Get.offAll(() => NavigationView());
+      await goHomeOrOnboarding();
       emailCtrl.clear();
       passCtrl.clear();
     } on DioException catch (e) {
@@ -280,7 +280,8 @@ class AuthController extends GetxController {
         await Get.find<ProfileController>().getUserDetails();
       } catch (_) {}
       loadInitialAppData();
-      Get.offAll(() => NavigationView());
+      // Get.offAll(() => NavigationView());
+      await goHomeOrOnboarding();
     } on GoogleSignInException catch (e) {
       if (e.code != GoogleSignInExceptionCode.canceled) {
         AlertWidgets.showSnackBar(message: 'Google sign-in failed');
@@ -322,7 +323,8 @@ class AuthController extends GetxController {
         await Get.find<ProfileController>().getUserDetails();
       } catch (_) {}
       loadInitialAppData();
-      Get.offAll(() => NavigationView());
+      // Get.offAll(() => NavigationView());
+      await goHomeOrOnboarding();
     } on SignInWithAppleAuthorizationException catch (e) {
       if (e.code != AuthorizationErrorCode.canceled) {
         AlertWidgets.showSnackBar(message: 'Apple sign-in failed');
@@ -374,7 +376,8 @@ class AuthController extends GetxController {
       }
 
       loadInitialAppData();
-      Get.offAll(() => NavigationView());
+      // Get.offAll(() => NavigationView());
+      await goHomeOrOnboarding();
     } catch (e) {
       String message = 'Something went wrong. Please try again.';
       if (e is DioException && e.response != null) {

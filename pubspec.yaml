@@ -70,12 +70,12 @@ flutter_launcher_icons:
 
   image_path: "assets/images/splittify_icon_1024.png"
 
-  adaptive_icon_background: "#9AD9C9"
+  adaptive_icon_background: "assets/images/splittify_adaptive_bg_1024.png"
   adaptive_icon_foreground: "assets/images/splittify_adaptive_fg_1024.png"
 
   min_sdk_android: 21
   remove_alpha_ios: true
-  background_color_ios: "#9AD9C9"
+  background_color_ios: "#F2FBF8"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

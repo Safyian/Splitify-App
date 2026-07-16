@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:splittify/features/auth/Views/social_buttons.dart';
@@ -42,12 +41,16 @@ class RegisterView extends StatelessWidget {
                     children: [
                       SizedBox(height: 20.h),
                       // ── Branding ──────────────────────────────────────
-                      SvgPicture.asset(
-                        Constants.splitifyLogo,
-                        height: 40.w,
-                      ),
+                      Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          width: 75.w,
+                          height: 75.w,
+                          clipBehavior: Clip.antiAlias,
+                          child: Image.asset(Constants.splitifyLogo)),
 
-                      SizedBox(height: 0.065.sh),
+                      SizedBox(height: 0.04.sh),
 
                       // ── Title ─────────────────────────────────────────
                       Text(

@@ -4,7 +4,10 @@ import '../../features/activity/activity_controller.dart';
 import '../../features/auth/Controllers/auth_controller.dart';
 import '../../features/groups/Controllers/groups_controller.dart';
 import '../../features/navigation/nav_controller.dart';
+import '../../features/navigation/navigation_view.dart';
+import '../../features/onboarding/onboarding_view.dart';
 import '../../features/profile/profile_controller.dart';
+import '../utils/onboarding_helper.dart';
 
 class InitialBinding extends Bindings {
   @override
@@ -44,5 +47,20 @@ void loadInitialAppData() {
   }
   if (Get.isRegistered<ActivityController>()) {
     Get.find<ActivityController>().fetchActivity();
+  }
+}
+
+/// Post-auth landing: first-time users see onboarding once, everyone else
+/// goes straight to the app. Call this instead of navigating to NavigationView
+/// directly from any successful-auth path.
+Future<void> goHomeOrOnboarding() async {
+  if (await OnboardingHelper.hasSeenOnboarding()) {
+    Get.offAll(() => NavigationView());
+  } else {
+    Get.offAll(
+      () => OnboardingView(
+        onDone: () => Get.offAll(() => NavigationView()),
+      ),
+    );
   }
 }

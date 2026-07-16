@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:splittify/core/theme/app_themes.dart';
 
 import '../../../core/bindings/initial_binding.dart';
 import '../../../core/constants/constants.dart';
-import '../../navigation/navigation_view.dart';
 import '../../profile/profile_controller.dart';
 import '../Controllers/auth_controller.dart';
 import 'login_view.dart';
@@ -61,8 +59,12 @@ class _SplashViewState extends State<SplashView>
     }
     try {
       final ok = await profileCtrl.getUserDetails();
-      if (ok) loadInitialAppData();
-      Get.off(() => ok ? NavigationView() : LoginView());
+      if (ok) {
+        loadInitialAppData();
+        await goHomeOrOnboarding();
+      } else {
+        Get.off(() => LoginView());
+      }
     } catch (_) {
       // Token exists but network failed — offer retry instead of logging out
       Get.off(() => _ConnectionRetryView(onRetry: () {
@@ -126,12 +128,16 @@ class _SplashViewState extends State<SplashView>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Logo
-                  SvgPicture.asset(
-                    Constants.splitifyLogo,
-                    height: 88,
-                  ),
+                  Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      width: 80.w,
+                      height: 80.w,
+                      clipBehavior: Clip.antiAlias,
+                      child: Image.asset(Constants.splitifyLogo)),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 12),
 
                   // App name
                   Text(
